@@ -1,342 +1,134 @@
 <!DOCTYPE html>
-<html lang="en" class="scroll-smooth">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <meta name="theme-color" content="#059669">
-    <meta name="description" content="San Francisco High School, Quezon City - digital school portal for academics, login, and attendance scanning.">
+    <meta name="description" content="San Francisco High School, Quezon City — digital school portal for academics, login, and attendance scanning.">
     <title>San Francisco High School | Digital School Portal</title>
 
-    <!-- Google Fonts: Inter -->
+    <!-- Google Fonts: Poppins -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
 
-    <!-- FontAwesome -->
+    <!-- Font Awesome 6 -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
 
-    <!-- Tailwind CSS CDN -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    fontFamily: {
-                        inter: ['Inter', 'sans-serif'],
-                    },
-                },
-            },
-        }
-    </script>
-
-    <style>
-        /* ── Base ─────────────────────────────────────── */
-        *, *::before, *::after { box-sizing: border-box; }
-        body {
-            font-family: 'Inter', sans-serif;
-            overflow-x: hidden;
-        }
-
-        /* ── Glass Utility ────────────────────────────── */
-        .glass {
-            background: rgba(255, 255, 255, 0.45);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            border: 1px solid rgba(255, 255, 255, 0.6);
-        }
-        .glass-strong {
-            background: rgba(255, 255, 255, 0.65);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.7);
-        }
-        .glass-subtle {
-            background: rgba(255, 255, 255, 0.30);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.4);
-        }
-
-        /* ── Scroll-reveal animation ─────────────────── */
-        .reveal {
-            opacity: 0;
-            transform: translateY(32px);
-            transition: opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1),
-                        transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-        .reveal.is-visible {
-            opacity: 1;
-            transform: translateY(0);
-        }
-
-        /* stagger children */
-        .reveal-stagger .reveal:nth-child(2) { transition-delay: 0.08s; }
-        .reveal-stagger .reveal:nth-child(3) { transition-delay: 0.16s; }
-        .reveal-stagger .reveal:nth-child(4) { transition-delay: 0.24s; }
-        .reveal-stagger .reveal:nth-child(5) { transition-delay: 0.32s; }
-
-        /* ── Animated gradient orbs (background decoration) ─── */
-        .orb {
-            position: fixed;
-            border-radius: 50%;
-            filter: blur(100px);
-            opacity: 0.35;
-            pointer-events: none;
-            z-index: -1;
-        }
-        .orb-1 {
-            width: 600px; height: 600px;
-            background: radial-gradient(circle, #a7f3d0 0%, transparent 70%);
-            top: -120px; left: -100px;
-            animation: float-orb 18s ease-in-out infinite alternate;
-        }
-        .orb-2 {
-            width: 500px; height: 500px;
-            background: radial-gradient(circle, #6ee7b7 0%, transparent 70%);
-            bottom: 10%; right: -80px;
-            animation: float-orb 22s ease-in-out infinite alternate-reverse;
-        }
-        .orb-3 {
-            width: 400px; height: 400px;
-            background: radial-gradient(circle, #d1fae5 0%, transparent 70%);
-            top: 50%; left: 30%;
-            animation: float-orb 15s ease-in-out infinite alternate;
-        }
-        @keyframes float-orb {
-            0%   { transform: translate(0, 0) scale(1); }
-            100% { transform: translate(40px, -30px) scale(1.08); }
-        }
-
-        /* ── Navbar scroll state ─────────────────────── */
-        .navbar-scrolled {
-            background: rgba(255, 255, 255, 0.70) !important;
-            box-shadow: 0 1px 24px rgba(0,0,0,0.06);
-        }
-
-        /* ── Bento grid ──────────────────────────────── */
-        .bento {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            grid-auto-rows: minmax(180px, auto);
-            gap: 20px;
-        }
-        .bento-span-2 { grid-column: span 2; }
-        .bento-row-2  { grid-row: span 2; }
-
-        @media (max-width: 1024px) {
-            .bento {
-                grid-template-columns: repeat(2, 1fr);
-            }
-        }
-        @media (max-width: 640px) {
-            .bento {
-                grid-template-columns: 1fr;
-            }
-            .bento-span-2 { grid-column: span 1; }
-            .bento-row-2  { grid-row: span 1; }
-        }
-
-        /* ── Card hover lift ─────────────────────────── */
-        .card-lift {
-            transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1),
-                        box-shadow 0.35s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-        .card-lift:hover {
-            transform: translateY(-6px);
-            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.08);
-        }
-
-        /* ── Track pills ─────────────────────────────── */
-        .track-pill {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            padding: 6px 14px;
-            border-radius: 999px;
-            font-size: 0.8rem;
-            font-weight: 600;
-            background: rgba(5, 150, 105, 0.1);
-            color: #059669;
-            border: 1px solid rgba(5, 150, 105, 0.2);
-            transition: background 0.25s, transform 0.25s;
-        }
-        .track-pill:hover {
-            background: rgba(5, 150, 105, 0.2);
-            transform: scale(1.04);
-        }
-
-        /* ── Mobile nav overlay ──────────────────────── */
-        .mobile-nav-overlay {
-            position: fixed;
-            inset: 0;
-            background: rgba(0,0,0,0.3);
-            backdrop-filter: blur(4px);
-            z-index: 40;
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.3s;
-        }
-        .mobile-nav-overlay.is-open {
-            opacity: 1;
-            pointer-events: auto;
-        }
-        .mobile-nav-panel {
-            position: fixed;
-            top: 0; right: 0;
-            width: 280px; height: 100%;
-            background: rgba(255,255,255,0.92);
-            backdrop-filter: blur(20px);
-            z-index: 50;
-            transform: translateX(100%);
-            transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
-            padding: 2rem 1.5rem;
-            display: flex;
-            flex-direction: column;
-            gap: 0.5rem;
-        }
-        .mobile-nav-panel.is-open {
-            transform: translateX(0);
-        }
-
-        /* ── Decorative line on hero card ────────────── */
-        .hero-line {
-            width: 64px;
-            height: 4px;
-            border-radius: 999px;
-            background: linear-gradient(90deg, #059669, #34d399);
-        }
-
-        /* ── Footer wave ─────────────────────────────── */
-        .footer-wave {
-            display: block;
-            width: 100%;
-            height: auto;
-            margin-bottom: -4px;
-        }
-    </style>
+    <!-- Bento-Glass Design System (pure CSS, no framework) -->
+    <link rel="stylesheet" href="css/bento-glass.css">
 </head>
 
-<body class="font-inter bg-gradient-to-br from-green-50 via-slate-50 to-emerald-50 text-slate-700 min-h-screen relative">
+<body class="bg-mesh">
 
-    <!-- Background orbs -->
+    <!-- ── Decorative Background Orbs ─────────────────── -->
     <div class="orb orb-1"></div>
     <div class="orb orb-2"></div>
     <div class="orb orb-3"></div>
 
-    <!-- ════════════════════════════════════════════════
+
+    <!-- ════════════════════════════════════════════════════
          NAVBAR
-         ════════════════════════════════════════════════ -->
-    <header id="navbar" class="fixed top-0 left-0 w-full z-30 transition-all duration-300 glass-subtle">
-        <div class="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
+         ════════════════════════════════════════════════════ -->
+    <header id="navbar" class="navbar">
+        <div class="navbar-inner">
             <!-- Brand -->
-            <a href="#home" class="flex items-center gap-3 group" aria-label="Home">
-                <img src="assets/images/Logo.png" alt="SFHS logo" class="w-10 h-10 rounded-xl shadow-sm group-hover:scale-105 transition-transform object-contain bg-white">
-                <div class="hidden sm:block leading-tight">
-                    <span class="block text-sm font-bold text-slate-800 tracking-wide">SAN FRANCISCO HIGH SCHOOL</span>
-                    <span class="block text-[11px] text-slate-500 font-medium">Est. 1954 -- Quezon City</span>
+            <a href="#home" class="navbar-brand" aria-label="Home">
+                <img src="assets/images/Logo.png" alt="SFHS logo">
+                <div class="navbar-brand-text">
+                    <span class="navbar-brand-title">SAN FRANCISCO HIGH SCHOOL</span>
+                    <span class="navbar-brand-sub">Est. 1954 &mdash; Quezon City</span>
                 </div>
             </a>
 
-            <!-- Desktop Nav -->
-            <nav class="hidden md:flex items-center gap-1" aria-label="Primary navigation">
-                <a href="#home" class="px-4 py-2 text-sm font-medium text-slate-600 hover:text-emerald-700 rounded-xl hover:bg-white/40 transition-all">Home</a>
-                <a href="#about" class="px-4 py-2 text-sm font-medium text-slate-600 hover:text-emerald-700 rounded-xl hover:bg-white/40 transition-all">About</a>
-                <a href="#academics" class="px-4 py-2 text-sm font-medium text-slate-600 hover:text-emerald-700 rounded-xl hover:bg-white/40 transition-all">Academics</a>
-                <a href="#contact" class="px-4 py-2 text-sm font-medium text-slate-600 hover:text-emerald-700 rounded-xl hover:bg-white/40 transition-all">Contact</a>
+            <!-- Desktop Navigation -->
+            <nav class="navbar-links" aria-label="Primary navigation">
+                <a href="#home">Home</a>
+                <a href="#about">About</a>
+                <a href="#academics">Academics</a>
+                <a href="#contact">Contact</a>
             </nav>
 
             <!-- Desktop CTA -->
-            <div class="hidden md:flex items-center gap-3">
-                <a href="scan_attendance.php" class="px-4 py-2 text-sm font-semibold text-emerald-700 rounded-xl border border-emerald-200 hover:bg-emerald-50 transition-all">
-                    <i class="fa-solid fa-qrcode mr-1.5"></i>Scan
+            <div class="navbar-cta">
+                <a href="scan_attendance.php" class="btn btn-outline btn-sm">
+                    <i class="fa-solid fa-qrcode"></i> Scan
                 </a>
-                <a href="admin/login.php" class="px-5 py-2 text-sm font-semibold text-white bg-emerald-600 rounded-xl shadow-md shadow-emerald-200 hover:bg-emerald-700 hover:shadow-lg transition-all">
+                <a href="admin/login.php" class="btn btn-primary btn-sm">
                     Login
                 </a>
             </div>
 
             <!-- Mobile Hamburger -->
-            <button id="menuBtn" type="button" class="md:hidden flex flex-col gap-1.5 p-2 rounded-xl hover:bg-white/40 transition" aria-label="Open menu" aria-expanded="false">
-                <span class="block w-5 h-0.5 bg-slate-700 rounded transition-all origin-center" id="bar1"></span>
-                <span class="block w-5 h-0.5 bg-slate-700 rounded transition-all" id="bar2"></span>
-                <span class="block w-5 h-0.5 bg-slate-700 rounded transition-all origin-center" id="bar3"></span>
+            <button id="menuBtn" class="hamburger" type="button" aria-label="Open menu" aria-expanded="false">
+                <span></span>
+                <span></span>
+                <span></span>
             </button>
         </div>
     </header>
 
-    <!-- Mobile Nav Overlay -->
-    <div id="mobileOverlay" class="mobile-nav-overlay"></div>
-    <aside id="mobilePanel" class="mobile-nav-panel" aria-label="Mobile navigation">
-        <div class="flex items-center justify-between mb-6">
-            <span class="text-xs font-bold text-emerald-600 uppercase tracking-widest">Menu</span>
-            <button id="closeMenu" type="button" class="p-2 rounded-xl hover:bg-slate-100 transition" aria-label="Close menu">
-                <i class="fa-solid fa-xmark text-xl text-slate-600"></i>
+
+    <!-- ── Mobile Navigation ──────────────────────────── -->
+    <div id="mobileOverlay" class="mobile-overlay"></div>
+    <aside id="mobilePanel" class="mobile-panel" aria-label="Mobile navigation">
+        <div class="mobile-panel-header">
+            <span class="mobile-panel-label">Menu</span>
+            <button id="closeMenu" class="mobile-panel-close" type="button" aria-label="Close menu">
+                <i class="fa-solid fa-xmark"></i>
             </button>
         </div>
-        
+
         <!-- Banner Image -->
-        <div class="relative w-full h-36 mb-6 rounded-2xl overflow-hidden shadow-sm">
-            <img src="assets/images/SFHSbuildingHB.jpg" alt="SFHS Heritage Building" class="w-full h-full object-cover">
-            <div class="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent"></div>
-            <div class="absolute bottom-3 left-4">
-                <span class="text-white text-xs font-bold tracking-wider uppercase">SFHS Campus</span>
-            </div>
+        <div class="mobile-banner">
+            <img src="assets/images/SFHSbuildingHB.jpg" alt="SFHS Heritage Building">
+            <div class="mobile-banner-overlay"></div>
+            <span class="mobile-banner-label">SFHS Campus</span>
         </div>
 
-        <a href="#home" class="mobile-link px-4 py-3 text-sm font-medium text-slate-700 rounded-xl hover:bg-emerald-50 hover:text-emerald-700 transition-all">Home</a>
-        <a href="#about" class="mobile-link px-4 py-3 text-sm font-medium text-slate-700 rounded-xl hover:bg-emerald-50 hover:text-emerald-700 transition-all">About</a>
-        <a href="#academics" class="mobile-link px-4 py-3 text-sm font-medium text-slate-700 rounded-xl hover:bg-emerald-50 hover:text-emerald-700 transition-all">Academics</a>
-        <a href="#contact" class="mobile-link px-4 py-3 text-sm font-medium text-slate-700 rounded-xl hover:bg-emerald-50 hover:text-emerald-700 transition-all">Contact</a>
-        <hr class="my-3 border-slate-200">
-        <a href="scan_attendance.php" class="mobile-link px-4 py-3 text-sm font-semibold text-emerald-700 rounded-xl hover:bg-emerald-50 transition-all flex items-center gap-2">
-            <i class="fa-solid fa-qrcode"></i>Scan Attendance
+        <a href="#home"      class="mobile-link js-mobile-link">Home</a>
+        <a href="#about"     class="mobile-link js-mobile-link">About</a>
+        <a href="#academics" class="mobile-link js-mobile-link">Academics</a>
+        <a href="#contact"   class="mobile-link js-mobile-link">Contact</a>
+        <hr class="mobile-divider">
+        <a href="scan_attendance.php" class="mobile-link js-mobile-link font-semibold text-green-700">
+            <i class="fa-solid fa-qrcode"></i> Scan Attendance
         </a>
-        <a href="admin/login.php" class="mt-2 px-4 py-3 text-sm font-semibold text-center text-white bg-emerald-600 rounded-xl shadow-md hover:bg-emerald-700 transition-all">
+        <a href="admin/login.php" class="mobile-cta mt-2">
             Login to Portal
         </a>
     </aside>
 
 
     <main>
-        <!-- ════════════════════════════════════════════
+        <!-- ════════════════════════════════════════════════
              HERO SECTION
-             ════════════════════════════════════════════ -->
-        <section id="home" class="pt-28 pb-16 md:pt-36 md:pb-24 px-6">
-            <div class="max-w-7xl mx-auto">
-                <div class="glass-strong rounded-3xl overflow-hidden shadow-xl shadow-emerald-100/40 reveal">
-                    <div class="flex flex-col lg:flex-row-reverse items-stretch">
-                         <!-- Hero Image (Desktop Right, Mobile Top) -->
-                        <div class="lg:w-1/2 relative h-64 lg:h-auto overflow-hidden">
-                            <img src="assets/images/SFHSbuildingHB.jpg" alt="Herbert Bautista Building" class="w-full h-full object-cover">
-                            <div class="absolute inset-0 bg-gradient-to-l from-white/10 to-transparent lg:block hidden"></div>
-                            <!-- Subtle Badge -->
-                            <div class="absolute top-4 right-4 lg:left-4 lg:right-auto glass px-3 py-1.5 rounded-full">
-                                <span class="text-[10px] font-bold text-emerald-700 uppercase tracking-widest">Herbert Bautista Building</span>
-                            </div>
-                        </div>
-                        
-                        <!-- Hero Content -->
-                        <div class="lg:w-1/2 p-8 md:p-14 flex flex-col justify-center bg-white/40">
-                            <div class="hero-line mb-6"></div>
-                            <p class="text-sm font-semibold text-emerald-600 uppercase tracking-widest mb-3">Digital School Platform</p>
-                            <h1 class="text-3xl md:text-5xl font-black text-slate-800 leading-[1.1] tracking-tight mb-5">
-                                San Francisco<br>High School
-                            </h1>
-                            <p class="text-base text-slate-500 font-medium leading-relaxed mb-8">
-                                Excellence in public education since 1954. A modern institutional portal for academic information, secure access, and school system services in Quezon City.
-                            </p>
-                            <div class="flex flex-wrap gap-4">
-                                <a href="admin/login.php"
-                                   class="inline-flex items-center gap-2 px-7 py-3.5 text-sm font-bold text-white bg-emerald-600 rounded-2xl shadow-lg shadow-emerald-200 hover:bg-emerald-700 hover:shadow-xl transition-all">
-                                    <i class="fa-solid fa-right-to-bracket"></i>
-                                    Login
-                                </a>
-                                <a href="scan_attendance.php"
-                                   class="inline-flex items-center gap-2 px-7 py-3.5 text-sm font-bold text-emerald-700 border-2 border-emerald-200 bg-white/50 rounded-2xl hover:bg-emerald-50 hover:border-emerald-300 transition-all">
-                                    <i class="fa-solid fa-qrcode"></i>
-                                    Scan
-                                </a>
-                            </div>
+             ════════════════════════════════════════════════ -->
+        <section id="home" class="hero px-5">
+            <div class="container">
+                <div class="hero-card reveal">
+                    <!-- Hero Image -->
+                    <div class="hero-image">
+                        <img src="assets/images/SFHSbuildingHB.jpg" alt="Herbert Bautista Building">
+                        <span class="hero-image-badge">Herbert Bautista Building</span>
+                    </div>
+
+                    <!-- Hero Content -->
+                    <div class="hero-content">
+                        <div class="hero-line"></div>
+                        <p class="hero-subtitle">Digital School Platform</p>
+                        <h1 class="hero-title">San Francisco<br>High School</h1>
+                        <p class="hero-description">
+                            Excellence in public education since 1954. A modern institutional portal for
+                            academic information, secure access, and school system services in Quezon City.
+                        </p>
+                        <div class="hero-actions">
+                            <a href="admin/login.php" class="btn btn-primary btn-lg">
+                                <i class="fa-solid fa-right-to-bracket"></i> Login
+                            </a>
+                            <a href="scan_attendance.php" class="btn btn-outline btn-lg">
+                                <i class="fa-solid fa-qrcode"></i> Scan
+                            </a>
                         </div>
                     </div>
                 </div>
@@ -344,171 +136,196 @@
         </section>
 
 
-        <!-- ════════════════════════════════════════════
-             BENTO GRID
-             ════════════════════════════════════════════ -->
-        <section id="about" class="py-16 md:py-24 px-6">
-            <div class="max-w-7xl mx-auto">
-                <!-- Section label -->
-                <div class="mb-12 reveal">
-                    <p class="text-sm font-semibold text-emerald-600 uppercase tracking-widest mb-2">School Overview</p>
-                    <h2 class="text-3xl md:text-4xl font-extrabold text-slate-800 tracking-tight">Everything About SFHS</h2>
-                    <p class="mt-3 text-slate-500 max-w-lg">A structured overview of San Francisco High School and its academic programs, presented in one compact layout.</p>
+        <!-- ════════════════════════════════════════════════
+             BENTO GRID — SCHOOL OVERVIEW
+             ════════════════════════════════════════════════ -->
+        <section id="about" class="py-16 px-5">
+            <div class="container">
+                <!-- Section Header -->
+                <div class="mb-8 reveal">
+                    <p class="section-label">School Overview</p>
+                    <h2 class="section-title">Everything About SFHS</h2>
+                    <p class="section-desc">
+                        A structured overview of San Francisco High School and its academic
+                        programs, presented in one compact layout.
+                    </p>
                 </div>
 
                 <div class="bento reveal-stagger">
 
-                    <!-- Card 1: About SFHS (large, 2-col span) -->
-                    <article class="bento-span-2 glass rounded-3xl p-8 flex flex-col justify-between card-lift reveal">
-                        <div>
-                            <div class="w-12 h-12 rounded-2xl bg-emerald-100 flex items-center justify-center mb-5">
-                                <i class="fa-solid fa-school text-emerald-600 text-xl"></i>
-                            </div>
-                            <h3 class="text-xl font-bold text-slate-800 mb-3">About SFHS</h3>
-                            <p class="text-slate-600 leading-relaxed mb-3">
-                                San Francisco High School was established on June 9, 1954 and serves learners in Quezon City as a public secondary institution for Grades 7 through 12.
-                            </p>
-                            <p class="text-slate-500 leading-relaxed text-sm">
-                                The school was named Don Mariano Marcos High School from 1975 to 1986 before returning to its present name. Today, SFHS continues to uphold its legacy of accessible, quality public education.
-                            </p>
+                    <!-- Card 1 ▸ About (2-col) -->
+                    <article class="bento-span-2 glass-card reveal">
+                        <div class="icon-box mb-5">
+                            <i class="fa-solid fa-school"></i>
                         </div>
-                        <a href="#academics" class="inline-flex items-center gap-1.5 text-sm font-semibold text-emerald-600 mt-5 hover:text-emerald-800 transition-colors">
+                        <h3 class="text-xl font-bold text-gray-800 mb-3">About SFHS</h3>
+                        <p class="text-gray-600 leading-relaxed mb-3">
+                            San Francisco High School was established on June 9, 1954 and serves
+                            learners in Quezon City as a public secondary institution for Grades 7
+                            through 12.
+                        </p>
+                        <p class="text-sm text-gray-500 leading-relaxed">
+                            The school was named Don Mariano Marcos High School from 1975 to 1986
+                            before returning to its present name. Today, SFHS continues to uphold
+                            its legacy of accessible, quality public education.
+                        </p>
+                        <a href="#academics" class="link-arrow mt-5">
                             Explore Academics <i class="fa-solid fa-arrow-right text-xs"></i>
                         </a>
                     </article>
 
-                    <!-- Card 2: Mission & Vision (tall, 2-row span) -->
-                    <article class="bento-row-2 glass rounded-3xl p-8 flex flex-col justify-between card-lift reveal">
+                    <!-- Card 2 ▸ Mission & Vision (2-row tall) -->
+                    <article class="bento-row-2 glass-card reveal" style="display:flex;flex-direction:column;justify-content:space-between;">
                         <div>
-                            <div class="w-12 h-12 rounded-2xl bg-emerald-100 flex items-center justify-center mb-5">
-                                <i class="fa-solid fa-bullseye text-emerald-600 text-xl"></i>
+                            <div class="icon-box mb-5">
+                                <i class="fa-solid fa-bullseye"></i>
                             </div>
-                            <h3 class="text-xl font-bold text-slate-800 mb-3">Mission & Vision</h3>
+                            <h3 class="text-xl font-bold text-gray-800 mb-3">Mission &amp; Vision</h3>
                             <div class="mb-5">
-                                <h4 class="text-xs font-bold text-emerald-600 uppercase tracking-wider mb-1.5">Mission</h4>
-                                <p class="text-slate-600 text-sm leading-relaxed">
-                                    To provide inclusive and quality public secondary education that builds academically competent, values-driven, and socially responsible learners.
+                                <h4 class="text-xs font-bold text-green-600 uppercase tracking-widest mb-2">Mission</h4>
+                                <p class="text-sm text-gray-600 leading-relaxed">
+                                    To provide inclusive and quality public secondary education that
+                                    builds academically competent, values-driven, and socially
+                                    responsible learners.
                                 </p>
                             </div>
                             <div>
-                                <h4 class="text-xs font-bold text-emerald-600 uppercase tracking-wider mb-1.5">Vision</h4>
-                                <p class="text-slate-600 text-sm leading-relaxed">
-                                    A premier public secondary institution in Quezon City producing lifelong learners prepared for higher education, work, and nation-building.
+                                <h4 class="text-xs font-bold text-green-600 uppercase tracking-widest mb-2">Vision</h4>
+                                <p class="text-sm text-gray-600 leading-relaxed">
+                                    A premier public secondary institution in Quezon City producing
+                                    lifelong learners prepared for higher education, work, and
+                                    nation-building.
                                 </p>
                             </div>
                         </div>
-                        <div class="mt-6 pt-5 border-t border-white/50">
-                            <p class="text-xs text-slate-400 font-medium">Guided by DepEd standards for academic excellence.</p>
+                        <div class="mt-6" style="padding-top:var(--sp-5);border-top:1px solid rgba(255,255,255,0.45);">
+                            <p class="text-xs text-gray-400 font-medium">
+                                Guided by DepEd standards for academic excellence.
+                            </p>
                         </div>
                     </article>
 
-                    <!-- Card 3: Quick Stat (small) -->
-                    <article class="glass rounded-3xl p-8 flex flex-col justify-center items-center text-center card-lift reveal">
-                        <span class="text-5xl font-black text-emerald-600 tracking-tight">6,000+</span>
-                        <p class="text-sm font-semibold text-slate-500 mt-2 uppercase tracking-wider">Students Enrolled</p>
-                        <div class="mt-4 flex gap-2">
-                            <span class="text-xs font-medium text-slate-400 bg-white/50 px-2.5 py-1 rounded-full">Grades 7-12</span>
-                            <span class="text-xs font-medium text-slate-400 bg-white/50 px-2.5 py-1 rounded-full">Public</span>
+                    <!-- Card 3 ▸ Quick Stat (1×1) -->
+                    <article class="glass-card reveal text-center" style="display:flex;flex-direction:column;justify-content:center;align-items:center;">
+                        <span class="stat-value">6,000+</span>
+                        <p class="stat-label uppercase tracking-wide">Students Enrolled</p>
+                        <div class="flex gap-2 mt-4">
+                            <span class="pill-sm rounded-pill">Grades 7-12</span>
+                            <span class="pill-sm rounded-pill">Public</span>
                         </div>
                     </article>
 
-                    <!-- Card 4: Academic Tracks (medium) -->
-                    <article id="academics" class="bento-span-2 glass rounded-3xl p-8 card-lift reveal">
-                        <div class="w-12 h-12 rounded-2xl bg-emerald-100 flex items-center justify-center mb-5">
-                            <i class="fa-solid fa-diagram-project text-emerald-600 text-xl"></i>
+                    <!-- Card 4 ▸ Academic Tracks (2-col) -->
+                    <article id="academics" class="bento-span-2 glass-card reveal">
+                        <div class="icon-box mb-5">
+                            <i class="fa-solid fa-diagram-project"></i>
                         </div>
-                        <h3 class="text-xl font-bold text-slate-800 mb-2">Academic Tracks</h3>
-                        <p class="text-slate-500 text-sm mb-5">Senior High School pathways designed for college readiness and career preparation.</p>
-                        <div class="flex flex-wrap gap-2.5">
-                            <span class="track-pill"><i class="fa-solid fa-flask text-xs"></i> STEM</span>
-                            <span class="track-pill"><i class="fa-solid fa-briefcase text-xs"></i> ABM</span>
-                            <span class="track-pill"><i class="fa-solid fa-book text-xs"></i> HUMSS</span>
-                            <span class="track-pill"><i class="fa-solid fa-tools text-xs"></i> TVL</span>
+                        <h3 class="text-xl font-bold text-gray-800 mb-2">Academic Tracks</h3>
+                        <p class="text-sm text-gray-500 mb-5">
+                            Senior High School pathways designed for college readiness and career preparation.
+                        </p>
+                        <div class="flex flex-wrap gap-3">
+                            <span class="pill"><i class="fa-solid fa-flask text-xs"></i> STEM</span>
+                            <span class="pill"><i class="fa-solid fa-briefcase text-xs"></i> ABM</span>
+                            <span class="pill"><i class="fa-solid fa-book text-xs"></i> HUMSS</span>
+                            <span class="pill"><i class="fa-solid fa-tools text-xs"></i> TVL</span>
                         </div>
                     </article>
 
-                    <!-- Card 5: Location / Contact -->
-                    <article id="contact" class="glass rounded-3xl p-8 card-lift reveal">
-                        <div class="w-12 h-12 rounded-2xl bg-emerald-100 flex items-center justify-center mb-5">
-                            <i class="fa-solid fa-location-dot text-emerald-600 text-xl"></i>
+                    <!-- Card 5 ▸ Location & Contact (1×1) -->
+                    <article id="contact" class="glass-card reveal">
+                        <div class="icon-box mb-5">
+                            <i class="fa-solid fa-location-dot"></i>
                         </div>
-                        <h3 class="text-xl font-bold text-slate-800 mb-3">Location & Contact</h3>
-                        <address class="not-italic text-sm text-slate-600 leading-relaxed space-y-2">
+                        <h3 class="text-xl font-bold text-gray-800 mb-3">Location &amp; Contact</h3>
+                        <address class="text-sm text-gray-600 leading-relaxed flex flex-col gap-2">
                             <p>Misamis Street, Sto. Cristo / Bago Bantay, Quezon City, Metro Manila</p>
-                            <p class="flex items-center gap-2"><i class="fa-solid fa-phone text-xs text-emerald-500"></i> +63 (2) 0000-0000</p>
-                            <p class="flex items-center gap-2"><i class="fa-solid fa-envelope text-xs text-emerald-500"></i> info@sfhsqc.edu.ph</p>
-                            <p class="flex items-center gap-2"><i class="fa-regular fa-clock text-xs text-emerald-500"></i> Mon-Fri, 7 AM - 5 PM</p>
+                            <p class="flex items-center gap-2">
+                                <i class="fa-solid fa-phone text-xs text-green-500"></i>
+                                +63 (2) 0000-0000
+                            </p>
+                            <p class="flex items-center gap-2">
+                                <i class="fa-solid fa-envelope text-xs text-green-500"></i>
+                                info@sfhsqc.edu.ph
+                            </p>
+                            <p class="flex items-center gap-2">
+                                <i class="fa-regular fa-clock text-xs text-green-500"></i>
+                                Mon-Fri, 7 AM – 5 PM
+                            </p>
                         </address>
                     </article>
 
-                </div><!-- /bento -->
+                </div><!-- .bento -->
             </div>
         </section>
 
 
-        <!-- ════════════════════════════════════════════
+        <!-- ════════════════════════════════════════════════
              STATISTICS STRIP
-             ════════════════════════════════════════════ -->
-        <section class="py-14 px-6">
-            <div class="max-w-7xl mx-auto glass-strong rounded-3xl p-8 md:p-10 shadow-lg shadow-emerald-100/30 reveal">
-                <div class="grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
-                    <div>
-                        <span class="block text-3xl md:text-4xl font-black text-emerald-600">1954</span>
-                        <span class="text-sm text-slate-500 font-medium">Year Founded</span>
-                    </div>
-                    <div>
-                        <span class="block text-3xl md:text-4xl font-black text-emerald-600">6,000+</span>
-                        <span class="text-sm text-slate-500 font-medium">Active Students</span>
-                    </div>
-                    <div>
-                        <span class="block text-3xl md:text-4xl font-black text-emerald-600">7 -- 12</span>
-                        <span class="text-sm text-slate-500 font-medium">Grade Levels</span>
-                    </div>
-                    <div>
-                        <span class="block text-3xl md:text-4xl font-black text-emerald-600">Public</span>
-                        <span class="text-sm text-slate-500 font-medium">Secondary Institution</span>
+             ════════════════════════════════════════════════ -->
+        <section class="py-12 px-5">
+            <div class="container">
+                <div class="glass-strong rounded-3xl p-8 reveal" style="box-shadow:0 16px 48px rgba(16,185,129,0.08);">
+                    <div class="stat-grid">
+                        <div>
+                            <span class="stat-value">1954</span>
+                            <span class="stat-label">Year Founded</span>
+                        </div>
+                        <div>
+                            <span class="stat-value">6,000+</span>
+                            <span class="stat-label">Active Students</span>
+                        </div>
+                        <div>
+                            <span class="stat-value">7 – 12</span>
+                            <span class="stat-label">Grade Levels</span>
+                        </div>
+                        <div>
+                            <span class="stat-value">Public</span>
+                            <span class="stat-label">Secondary Institution</span>
+                        </div>
                     </div>
                 </div>
             </div>
         </section>
 
 
-        <!-- ════════════════════════════════════════════
+        <!-- ════════════════════════════════════════════════
              MAP SECTION
-             ════════════════════════════════════════════ -->
-        <section class="py-16 md:py-24 px-6">
-            <div class="max-w-7xl mx-auto">
-                <div class="grid md:grid-cols-2 gap-8 items-stretch">
-                    <!-- Copy -->
-                    <div class="glass rounded-3xl p-8 md:p-10 flex flex-col justify-center card-lift reveal">
-                        <div class="w-12 h-12 rounded-2xl bg-emerald-100 flex items-center justify-center mb-5">
-                            <i class="fa-solid fa-map-location-dot text-emerald-600 text-xl"></i>
+             ════════════════════════════════════════════════ -->
+        <section class="py-16 px-5">
+            <div class="container">
+                <div class="grid-2 items-stretch">
+                    <!-- Info Card -->
+                    <div class="glass-card reveal">
+                        <div class="icon-box icon-box-lg mb-5">
+                            <i class="fa-solid fa-map-location-dot"></i>
                         </div>
-                        <h2 class="text-2xl md:text-3xl font-extrabold text-slate-800 mb-4">Find Us on the Map</h2>
-                        <p class="text-slate-500 leading-relaxed mb-6">
-                            Located along Misamis Street in the Sto. Cristo / Bago Bantay area of Quezon City, San Francisco High School is accessible through major public transport routes.
+                        <h2 class="text-3xl font-extrabold text-gray-800 mb-4">Find Us on the Map</h2>
+                        <p class="text-gray-500 leading-relaxed mb-6">
+                            Located along Misamis Street in the Sto. Cristo / Bago Bantay area of
+                            Quezon City, San Francisco High School is accessible through major
+                            public transport routes.
                         </p>
-                        <div class="space-y-3 text-sm text-slate-600">
-                            <p class="flex items-start gap-3">
-                                <i class="fa-solid fa-location-dot text-emerald-500 mt-0.5"></i>
-                                Misamis Street, Sto. Cristo / Bago Bantay, Quezon City, Metro Manila, Philippines
+                        <div class="flex flex-col gap-3 text-sm text-gray-600">
+                            <p class="flex items-center gap-3">
+                                <i class="fa-solid fa-location-dot text-green-500"></i>
+                                Misamis Street, Sto. Cristo / Bago Bantay, Quezon City
                             </p>
-                            <p class="flex items-start gap-3">
-                                <i class="fa-solid fa-phone text-emerald-500 mt-0.5"></i>
+                            <p class="flex items-center gap-3">
+                                <i class="fa-solid fa-phone text-green-500"></i>
                                 +63 (2) 0000-0000
                             </p>
-                            <p class="flex items-start gap-3">
-                                <i class="fa-solid fa-envelope text-emerald-500 mt-0.5"></i>
+                            <p class="flex items-center gap-3">
+                                <i class="fa-solid fa-envelope text-green-500"></i>
                                 info@sfhsqc.edu.ph
                             </p>
                         </div>
                     </div>
 
-                    <!-- Map -->
-                    <div class="glass rounded-3xl overflow-hidden shadow-lg shadow-emerald-100/30 card-lift reveal min-h-[320px]">
+                    <!-- Map Embed -->
+                    <div class="glass map-frame reveal" style="box-shadow:0 12px 40px rgba(16,185,129,0.08);">
                         <iframe
                             title="San Francisco High School map"
-                            class="w-full h-full min-h-[320px]"
                             src="https://www.google.com/maps?q=San+Francisco+High+School+Misamis+Street+Quezon+City&output=embed"
                             loading="lazy"
                             referrerpolicy="no-referrer-when-downgrade">
@@ -519,101 +336,93 @@
         </section>
 
 
-        <!-- ════════════════════════════════════════════
+        <!-- ════════════════════════════════════════════════
              CTA SECTION
-             ════════════════════════════════════════════ -->
-        <section class="py-16 md:py-24 px-6">
-            <div class="max-w-4xl mx-auto glass-strong rounded-3xl p-10 md:p-14 text-center shadow-xl shadow-emerald-100/40 reveal">
-                <h2 class="text-3xl md:text-4xl font-extrabold text-slate-800 mb-4">Join the SFHS Community</h2>
-                <p class="text-slate-500 max-w-lg mx-auto mb-8 leading-relaxed">
-                    Access the school portal for login services, attendance scanning, and academic tools built for San Francisco High School.
-                </p>
-                <div class="flex flex-wrap justify-center gap-4">
-                    <a href="admin/login.php"
-                       class="inline-flex items-center gap-2 px-8 py-4 text-sm font-bold text-white bg-emerald-600 rounded-2xl shadow-lg shadow-emerald-200 hover:bg-emerald-700 hover:shadow-xl transition-all">
-                        <i class="fa-solid fa-user-lock"></i>
-                        Login to Portal
-                    </a>
-                    <a href="scan_attendance.php"
-                       class="inline-flex items-center gap-2 px-8 py-4 text-sm font-bold text-emerald-700 border-2 border-emerald-200 bg-white/50 rounded-2xl hover:bg-emerald-50 hover:border-emerald-300 transition-all">
-                        <i class="fa-solid fa-qrcode"></i>
-                        Open Scanner
-                    </a>
+             ════════════════════════════════════════════════ -->
+        <section class="py-16 px-5">
+            <div class="container container-sm">
+                <div class="glass-strong rounded-3xl p-8 text-center reveal" style="box-shadow:0 20px 60px rgba(16,185,129,0.10);">
+                    <h2 class="text-4xl font-extrabold text-gray-800 mb-4">Join the SFHS Community</h2>
+                    <p class="text-gray-500 mb-8 leading-relaxed" style="max-width:480px;margin-inline:auto;">
+                        Access the school portal for login services, attendance scanning, and
+                        academic tools built for San Francisco High School.
+                    </p>
+                    <div class="flex flex-wrap justify-center gap-4">
+                        <a href="admin/login.php" class="btn btn-primary btn-lg">
+                            <i class="fa-solid fa-user-lock"></i> Login to Portal
+                        </a>
+                        <a href="scan_attendance.php" class="btn btn-outline btn-lg">
+                            <i class="fa-solid fa-qrcode"></i> Open Scanner
+                        </a>
+                    </div>
                 </div>
             </div>
         </section>
     </main>
 
 
-    <!-- ════════════════════════════════════════════════
+    <!-- ════════════════════════════════════════════════════
          FOOTER
-         ════════════════════════════════════════════════ -->
-    <!-- Wave divider -->
+         ════════════════════════════════════════════════════ -->
     <svg class="footer-wave" viewBox="0 0 1440 80" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
-        <path fill="#065f46" fill-opacity="0.95" d="M0,40 C360,90 720,0 1080,50 C1260,70 1380,30 1440,40 L1440,80 L0,80 Z"/>
+        <path fill="#065F46" fill-opacity="0.95" d="M0,40 C360,90 720,0 1080,50 C1260,70 1380,30 1440,40 L1440,80 L0,80 Z"/>
     </svg>
-    <footer class="bg-emerald-900/95 text-emerald-100">
-        <div class="max-w-7xl mx-auto px-6 py-14">
-            <div class="grid md:grid-cols-3 gap-10">
+    <footer class="footer">
+        <div class="footer-inner">
+            <div class="footer-grid">
                 <!-- Brand -->
                 <div>
-                    <div class="flex items-center gap-3 mb-4">
-                        <img src="assets/images/Logo.png" alt="SFHS logo" class="w-10 h-10 rounded-xl object-contain bg-white">
+                    <div class="footer-brand">
+                        <img src="assets/images/Logo.png" alt="SFHS logo">
                         <div>
-                            <span class="block text-sm font-bold text-white">San Francisco High School</span>
-                            <span class="block text-xs text-emerald-300">Public Secondary Institution</span>
+                            <span class="text-sm font-bold text-white" style="display:block;">San Francisco High School</span>
+                            <span class="text-xs" style="display:block;color:var(--green-300);">Public Secondary Institution</span>
                         </div>
                     </div>
-                    <p class="text-sm text-emerald-300 leading-relaxed max-w-xs">
+                    <p class="text-sm" style="color:var(--green-300);max-width:320px;line-height:1.65;">
                         Serving the Quezon City community with quality public education since 1954.
                     </p>
                 </div>
 
                 <!-- Quick Links -->
                 <div>
-                    <h4 class="text-sm font-bold text-white uppercase tracking-wider mb-4">Quick Links</h4>
-                    <nav class="flex flex-col gap-2" aria-label="Footer navigation">
-                        <a href="#home" class="text-sm text-emerald-300 hover:text-white transition-colors">Home</a>
-                        <a href="#about" class="text-sm text-emerald-300 hover:text-white transition-colors">About</a>
-                        <a href="#academics" class="text-sm text-emerald-300 hover:text-white transition-colors">Academics</a>
-                        <a href="#contact" class="text-sm text-emerald-300 hover:text-white transition-colors">Contact</a>
+                    <h4 class="footer-heading">Quick Links</h4>
+                    <nav class="footer-links" aria-label="Footer navigation">
+                        <a href="#home">Home</a>
+                        <a href="#about">About</a>
+                        <a href="#academics">Academics</a>
+                        <a href="#contact">Contact</a>
                     </nav>
                 </div>
 
                 <!-- Contact -->
                 <div>
-                    <h4 class="text-sm font-bold text-white uppercase tracking-wider mb-4">Contact Us</h4>
-                    <address class="not-italic text-sm text-emerald-300 space-y-2">
+                    <h4 class="footer-heading">Contact Us</h4>
+                    <address class="footer-contact">
                         <p>Misamis Street, Quezon City</p>
                         <p>+63 (2) 0000-0000</p>
                         <p>info@sfhsqc.edu.ph</p>
                     </address>
-                    <div class="flex gap-3 mt-5" aria-label="Social media links">
-                        <a href="#" class="w-9 h-9 rounded-xl bg-emerald-800 flex items-center justify-center hover:bg-emerald-700 transition-colors" aria-label="Facebook">
-                            <i class="fa-brands fa-facebook-f text-sm"></i>
-                        </a>
-                        <a href="#" class="w-9 h-9 rounded-xl bg-emerald-800 flex items-center justify-center hover:bg-emerald-700 transition-colors" aria-label="YouTube">
-                            <i class="fa-brands fa-youtube text-sm"></i>
-                        </a>
-                        <a href="#" class="w-9 h-9 rounded-xl bg-emerald-800 flex items-center justify-center hover:bg-emerald-700 transition-colors" aria-label="Email">
-                            <i class="fa-solid fa-envelope text-sm"></i>
-                        </a>
+                    <div class="footer-socials">
+                        <a href="#" aria-label="Facebook"><i class="fa-brands fa-facebook-f"></i></a>
+                        <a href="#" aria-label="YouTube"><i class="fa-brands fa-youtube"></i></a>
+                        <a href="#" aria-label="Email"><i class="fa-solid fa-envelope"></i></a>
                     </div>
                 </div>
             </div>
 
-            <div class="mt-12 pt-6 border-t border-emerald-800 text-center">
-                <p class="text-xs text-emerald-400">&copy; 2026 San Francisco High School. All rights reserved.</p>
+            <div class="footer-bottom">
+                <p>&copy; 2026 San Francisco High School. All rights reserved.</p>
             </div>
         </div>
     </footer>
 
 
-    <!-- ════════════════════════════════════════════════
+    <!-- ════════════════════════════════════════════════════
          SCRIPTS
-         ════════════════════════════════════════════════ -->
+         ════════════════════════════════════════════════════ -->
     <script>
-        /* ── Scroll reveal (IntersectionObserver) ──── */
+        /* ── Scroll Reveal (IntersectionObserver) ──────── */
         const revealEls = document.querySelectorAll('.reveal');
         const revealObserver = new IntersectionObserver((entries) => {
             entries.forEach(entry => {
@@ -622,36 +431,39 @@
                     revealObserver.unobserve(entry.target);
                 }
             });
-        }, { threshold: 0.12 });
+        }, { threshold: 0.10 });
         revealEls.forEach(el => revealObserver.observe(el));
 
-        /* ── Navbar scroll effect ──────────────────── */
+        /* ── Navbar Scroll Effect ──────────────────────── */
         const navbar = document.getElementById('navbar');
         window.addEventListener('scroll', () => {
-            navbar.classList.toggle('navbar-scrolled', window.scrollY > 40);
+            navbar.classList.toggle('scrolled', window.scrollY > 40);
         }, { passive: true });
 
-        /* ── Mobile navigation ─────────────────────── */
-        const menuBtn      = document.getElementById('menuBtn');
-        const closeMenuBtn  = document.getElementById('closeMenu');
-        const overlay       = document.getElementById('mobileOverlay');
-        const panel         = document.getElementById('mobilePanel');
-        const mobileLinks   = document.querySelectorAll('.mobile-link');
+        /* ── Mobile Navigation ─────────────────────────── */
+        const menuBtn    = document.getElementById('menuBtn');
+        const closeBtn   = document.getElementById('closeMenu');
+        const overlay    = document.getElementById('mobileOverlay');
+        const panel      = document.getElementById('mobilePanel');
+        const mobileLinks = document.querySelectorAll('.js-mobile-link');
 
         function openMenu() {
             overlay.classList.add('is-open');
             panel.classList.add('is-open');
+            menuBtn.classList.add('is-active');
             menuBtn.setAttribute('aria-expanded', 'true');
             document.body.style.overflow = 'hidden';
         }
         function closeMenu() {
             overlay.classList.remove('is-open');
             panel.classList.remove('is-open');
+            menuBtn.classList.remove('is-active');
             menuBtn.setAttribute('aria-expanded', 'false');
             document.body.style.overflow = '';
         }
+
         menuBtn.addEventListener('click', openMenu);
-        closeMenuBtn.addEventListener('click', closeMenu);
+        closeBtn.addEventListener('click', closeMenu);
         overlay.addEventListener('click', closeMenu);
         mobileLinks.forEach(link => link.addEventListener('click', closeMenu));
     </script>
