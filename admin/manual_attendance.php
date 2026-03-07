@@ -4,7 +4,7 @@ requireAdmin();
 
 $currentAdmin = getCurrentAdmin();
 $pageTitle = 'Manual Attendance';
-$pageIcon = 'clipboard-check';
+$pageIcon = 'pen-to-square';
 
 // Add external CSS - matching manage_sections design
 $additionalCSS = ['../css/manual-attendance-modern.css'];
@@ -204,49 +204,19 @@ try {
 }
 
 // Include the modern admin header
+$breadcrumb = [
+    ['label' => 'Dashboard', 'icon' => 'house', 'url' => 'dashboard.php'],
+    ['label' => 'Manual Attendance', 'icon' => 'pen-to-square', 'url' => 'manual_attendance.php']
+];
 include 'includes/header_modern.php';
 ?>
 
 <!-- External CSS loaded via $additionalCSS array -->
 
-<!-- Page Header — Glassmorphism Bento -->
-<div class="page-header-glass">
-    <div class="page-header-inner">
-        <nav class="breadcrumb-glass" aria-label="Breadcrumb">
-            <a href="dashboard.php" class="breadcrumb-item" title="Dashboard">
-                <i class="fas fa-home"></i> Dashboard
-            </a>
-            <span class="breadcrumb-sep" aria-hidden="true"><i class="fas fa-chevron-right"></i></span>
-            <span class="breadcrumb-item active" aria-current="page">
-                <i class="fas fa-<?php echo $pageIcon; ?>"></i> <?php echo $pageTitle; ?>
-            </span>
-        </nav>
-        <div class="page-header-content-glass">
-            <div class="page-header-title-row">
-                <div class="page-header-icon">
-                    <i class="fas fa-<?php echo $pageIcon; ?>"></i>
-                </div>
-                <div class="page-header-text">
-                    <h1><?php echo $pageTitle; ?></h1>
-                    <p><i class="fas fa-clock"></i> Mark time in/out manually or scan QR codes for fast check-in</p>
-                </div>
-            </div>
-            <div class="page-header-actions">
-                <button class="btn-header-glass secondary" onclick="window.location.reload()">
-                    <i class="fas fa-sync-alt"></i> Refresh
-                </button>
-                <a href="view_students.php" class="btn-header-glass primary">
-                    <i class="fas fa-users"></i> View Students
-                </a>
-            </div>
-        </div>
-    </div>
-</div>
-
 <!-- Info Alert -->
 <div class="alert alert-info">
     <div class="alert-icon">
-        <i class="fas fa-info-circle"></i>
+        <i class="fa-solid fa-circle-info"></i>
     </div>
     <div class="alert-content">
         <strong>Manual Attendance System</strong>
@@ -259,15 +229,15 @@ include 'includes/header_modern.php';
 <!-- Modern Tabs -->
 <div class="modern-tabs">
     <button class="modern-tab active" data-tab="scanner">
-        <i class="fas fa-qrcode"></i>
+        <i class="fa-solid fa-qrcode"></i>
         <span>QR Scanner</span>
     </button>
     <button class="modern-tab" data-tab="single">
-        <i class="fas fa-user-clock"></i>
+        <i class="fa-solid fa-user-clock"></i>
         <span>Single Entry</span>
     </button>
     <button class="modern-tab" data-tab="bulk">
-        <i class="fas fa-users-cog"></i>
+        <i class="fa-solid fa-user-group-gear"></i>
         <span>Bulk Entry</span>
     </button>
 </div>
@@ -279,23 +249,23 @@ include 'includes/header_modern.php';
             <div class="card-header-modern">
                 <div class="card-header-left">
                     <div class="card-icon-badge">
-                        <i class="fas fa-qrcode"></i>
+                        <i class="fa-solid fa-qrcode"></i>
                     </div>
                     <div>
                         <h3 class="card-title-modern">QR Code Scanner</h3>
                         <p class="card-subtitle-modern">
-                            <i class="fas fa-camera"></i>
+                            <i class="fa-solid fa-camera"></i>
                             <span>Scan student QR codes for instant attendance</span>
                         </p>
                     </div>
                 </div>
                 <div class="scanner-controls">
                     <button id="start-scan-btn" class="btn btn-primary">
-                        <i class="fas fa-play"></i>
+                        <i class="fa-solid fa-play"></i>
                         <span>Start Scanner</span>
                     </button>
                     <button id="stop-scan-btn" class="btn btn-danger" style="display: none;">
-                        <i class="fas fa-stop"></i>
+                        <i class="fa-solid fa-stop"></i>
                         <span>Stop Scanner</span>
                     </button>
                 </div>
@@ -308,23 +278,23 @@ include 'includes/header_modern.php';
                         </div>
                     </div>
                     <div id="scanner-status" class="scanner-status">
-                        <p><i class="fas fa-qrcode"></i> Click "Start Scanner" to begin scanning QR codes</p>
+                        <p><i class="fa-solid fa-qrcode"></i> Click "Start Scanner" to begin scanning QR codes</p>
                     </div>
                     
                     <!-- Performance Stats -->
                     <div id="scanner-stats" class="scanner-stats" style="display: none;">
                         <div class="stat-item">
-                            <i class="fas fa-qrcode"></i>
+                            <i class="fa-solid fa-qrcode"></i>
                             <span class="stat-label">Scans</span>
                             <span class="stat-value" id="scan-count">0</span>
                         </div>
                         <div class="stat-item">
-                            <i class="fas fa-check-circle"></i>
+                            <i class="fa-solid fa-circle-check"></i>
                             <span class="stat-label">Success</span>
                             <span class="stat-value" id="success-count">0</span>
                         </div>
                         <div class="stat-item">
-                            <i class="fas fa-tachometer-alt"></i>
+                            <i class="fa-solid fa-gauge"></i>
                             <span class="stat-label">Avg Time</span>
                             <span class="stat-value" id="avg-time">0ms</span>
                         </div>
@@ -337,12 +307,12 @@ include 'includes/header_modern.php';
             <div class="card-header-modern">
                 <div class="card-header-left">
                     <div class="card-icon-badge">
-                        <i class="fas fa-list-check"></i>
+                        <i class="fa-solid fa-list-check"></i>
                     </div>
                     <div>
                         <h3 class="card-title-modern">Today's Attendance</h3>
                         <p class="card-subtitle-modern">
-                            <i class="fas fa-calendar-day"></i>
+                            <i class="fa-solid fa-calendar-day"></i>
                             <span>View scanned attendance records for today</span>
                         </p>
                     </div>
@@ -356,7 +326,7 @@ include 'includes/header_modern.php';
                 <div class="today-attendance-section">
                     <div id="today-attendance-list" class="attendance-list">
                         <div class="empty-state">
-                            <i class="fas fa-clipboard-list"></i>
+                            <i class="fa-solid fa-clipboard-list"></i>
                             <h3>No attendance yet today</h3>
                             <p>Scanned attendance will appear here</p>
                         </div>
@@ -374,12 +344,12 @@ include 'includes/header_modern.php';
             <div class="card-header-modern">
                 <div class="card-header-left">
                     <div class="card-icon-badge">
-                        <i class="fas fa-user-clock"></i>
+                        <i class="fa-solid fa-user-clock"></i>
                     </div>
                     <div>
                         <h3 class="card-title-modern">Single Entry</h3>
                         <p class="card-subtitle-modern">
-                            <i class="fas fa-edit"></i>
+                            <i class="fa-solid fa-pen-to-square"></i>
                             <span>Mark time in/out for individual students</span>
                         </p>
                     </div>
@@ -390,14 +360,14 @@ include 'includes/header_modern.php';
                 <div class="action-type-buttons">
                     <button type="button" class="action-type-btn active" data-action-type="time_in">
                         <div class="action-type-icon">
-                            <i class="fas fa-sign-in-alt"></i>
+                            <i class="fa-solid fa-right-to-bracket"></i>
                         </div>
                         <span class="action-type-label">Time In</span>
                         <span class="action-type-desc">Mark arrival</span>
                     </button>
                     <button type="button" class="action-type-btn" data-action-type="time_out">
                         <div class="action-type-icon">
-                            <i class="fas fa-sign-out-alt"></i>
+                            <i class="fa-solid fa-right-from-bracket"></i>
                         </div>
                         <span class="action-type-label">Time Out</span>
                         <span class="action-type-desc">Mark departure</span>
@@ -411,7 +381,7 @@ include 'includes/header_modern.php';
                     
                     <div class="form-group-modern">
                         <label for="lrn" class="form-label-modern">
-                            <i class="fas fa-id-card"></i>
+                            <i class="fa-solid fa-id-card"></i>
                             <span>Student LRN</span>
                             <span class="required">*</span>
                         </label>
@@ -428,7 +398,7 @@ include 'includes/header_modern.php';
                     <div class="form-grid-modern">
                         <div class="form-group-modern">
                             <label for="date" class="form-label-modern">
-                                <i class="fas fa-calendar"></i>
+                                <i class="fa-solid fa-calendar"></i>
                                 <span>Date</span>
                                 <span class="required">*</span>
                             </label>
@@ -442,7 +412,7 @@ include 'includes/header_modern.php';
                         
                         <div class="form-group-modern">
                             <label for="time" class="form-label-modern">
-                                <i class="fas fa-clock"></i>
+                                <i class="fa-solid fa-clock"></i>
                                 <span>Time</span>
                                 <span class="required">*</span>
                             </label>
@@ -456,7 +426,7 @@ include 'includes/header_modern.php';
                     </div>
                     
                     <button type="submit" class="btn btn-primary btn-lg">
-                        <i class="fas fa-save"></i>
+                        <i class="fa-solid fa-floppy-disk"></i>
                         <span id="submit-btn-text">Mark Time In</span>
                     </button>
                 </form>
@@ -467,12 +437,12 @@ include 'includes/header_modern.php';
             <div class="card-header-modern">
                 <div class="card-header-left">
                     <div class="card-icon-badge">
-                        <i class="fas fa-users"></i>
+                        <i class="fa-solid fa-user-group"></i>
                     </div>
                     <div>
                         <h3 class="card-title-modern">Quick Select Student</h3>
                         <p class="card-subtitle-modern">
-                            <i class="fas fa-mouse-pointer"></i>
+                            <i class="fa-solid fa-arrow-pointer"></i>
                             <span>Click a student to auto-fill their LRN</span>
                         </p>
                     </div>
@@ -494,7 +464,7 @@ include 'includes/header_modern.php';
                                             <?php echo htmlspecialchars($student['first_name'] . ' ' . $student['last_name']); ?>
                                         </p>
                                         <p class="student-class">
-                                            <i class="fas fa-graduation-cap"></i>
+                                            <i class="fa-solid fa-graduation-cap"></i>
                                             <?php echo htmlspecialchars($student['class']); ?>
                                         </p>
                                     </div>
@@ -504,7 +474,7 @@ include 'includes/header_modern.php';
                         <?php endforeach; ?>
                     <?php else: ?>
                         <div class="empty-state">
-                            <i class="fas fa-user-slash"></i>
+                            <i class="fa-solid fa-user-slash"></i>
                             <h3>No students found</h3>
                             <p>Add students to see them here</p>
                         </div>
@@ -522,12 +492,12 @@ include 'includes/header_modern.php';
             <div class="card-header-modern">
                 <div class="card-header-left">
                     <div class="card-icon-badge">
-                        <i class="fas fa-users-cog"></i>
+                        <i class="fa-solid fa-user-group-gear"></i>
                     </div>
                     <div>
                         <h3 class="card-title-modern">Bulk Entry</h3>
                         <p class="card-subtitle-modern">
-                            <i class="fas fa-list"></i>
+                            <i class="fa-solid fa-list"></i>
                             <span>Mark time in/out for multiple students at once</span>
                         </p>
                     </div>
@@ -538,14 +508,14 @@ include 'includes/header_modern.php';
                 <div class="action-type-buttons">
                     <button type="button" class="action-type-btn active" data-bulk-action-type="time_in">
                         <div class="action-type-icon">
-                            <i class="fas fa-sign-in-alt"></i>
+                            <i class="fa-solid fa-right-to-bracket"></i>
                         </div>
                         <span class="action-type-label">Bulk Time In</span>
                         <span class="action-type-desc">Mark multiple arrivals</span>
                     </button>
                     <button type="button" class="action-type-btn" data-bulk-action-type="time_out">
                         <div class="action-type-icon">
-                            <i class="fas fa-sign-out-alt"></i>
+                            <i class="fa-solid fa-right-from-bracket"></i>
                         </div>
                         <span class="action-type-label">Bulk Time Out</span>
                         <span class="action-type-desc">Mark multiple departures</span>
@@ -559,7 +529,7 @@ include 'includes/header_modern.php';
                     
                     <div class="form-group-modern">
                         <label for="bulk_lrns" class="form-label-modern">
-                            <i class="fas fa-list-ol"></i>
+                            <i class="fa-solid fa-list-ol"></i>
                             <span>Student LRNs (One per line)</span>
                             <span class="required">*</span>
                         </label>
@@ -576,7 +546,7 @@ include 'includes/header_modern.php';
                     <div class="form-grid-modern">
                         <div class="form-group-modern">
                             <label for="bulk_date" class="form-label-modern">
-                                <i class="fas fa-calendar"></i>
+                                <i class="fa-solid fa-calendar"></i>
                                 <span>Date</span>
                                 <span class="required">*</span>
                             </label>
@@ -590,7 +560,7 @@ include 'includes/header_modern.php';
                         
                         <div class="form-group-modern">
                             <label for="bulk_time" class="form-label-modern">
-                                <i class="fas fa-clock"></i>
+                                <i class="fa-solid fa-clock"></i>
                                 <span>Time</span>
                                 <span class="required">*</span>
                             </label>
@@ -604,7 +574,7 @@ include 'includes/header_modern.php';
                     </div>
                     
                     <button type="submit" class="btn btn-success btn-lg">
-                        <i class="fas fa-check-double"></i>
+                        <i class="fa-solid fa-check-double"></i>
                         <span id="bulk-submit-btn-text">Mark Bulk Time In</span>
                     </button>
                 </form>
@@ -615,12 +585,12 @@ include 'includes/header_modern.php';
             <div class="card-header-modern">
                 <div class="card-header-left">
                     <div class="card-icon-badge">
-                        <i class="fas fa-copy"></i>
+                        <i class="fa-solid fa-copy"></i>
                     </div>
                     <div>
                         <h3 class="card-title-modern">Export by Class</h3>
                         <p class="card-subtitle-modern">
-                            <i class="fas fa-download"></i>
+                            <i class="fa-solid fa-download"></i>
                             <span>Copy LRNs by class for bulk operations</span>
                         </p>
                     </div>
@@ -644,7 +614,7 @@ include 'includes/header_modern.php';
                         <div class="class-export-card" style="padding: var(--space-4); background: var(--gray-50); border: 2px solid var(--gray-200); border-radius: var(--radius-lg);">
                             <div class="class-export-header" style="display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--space-3);">
                                 <h4 class="class-export-title" style="display: flex; align-items: center; gap: var(--space-2); font-size: 0.9375rem; font-weight: 600; color: var(--gray-800); margin: 0;">
-                                    <i class="fas fa-graduation-cap"></i>
+                                    <i class="fa-solid fa-graduation-cap"></i>
                                     <?php echo htmlspecialchars($className); ?>
                                 </h4>
                                 <span class="student-count-badge" style="padding: var(--space-1) var(--space-2); background: var(--primary-100); color: var(--primary-700); border-radius: var(--radius-md); font-size: 0.75rem; font-weight: 600;">
@@ -662,7 +632,7 @@ include 'includes/header_modern.php';
                                 data-action="copy-class-lrns" 
                                 data-class="<?php echo htmlspecialchars($className); ?>"
                                 style="width: 100%; margin-top: var(--space-3);">
-                                <i class="fas fa-copy"></i>
+                                <i class="fa-solid fa-copy"></i>
                                 <span>Copy LRNs</span>
                             </button>
                         </div>
@@ -705,7 +675,7 @@ include 'includes/header_modern.php';
         
         alert.innerHTML = `
             <div class="alert-icon">
-                <i class="fas fa-${icons[type]}"></i>
+                <i class="fa-solid fa-${icons[type]}"></i>
             </div>
             <div class="alert-content">
                 <strong>${type.charAt(0).toUpperCase() + type.slice(1)}!</strong>
@@ -753,9 +723,9 @@ include 'includes/header_modern.php';
             
             const submitBtnText = document.getElementById('submit-btn-text');
             if (actionType === 'time_in') {
-                submitBtnText.innerHTML = '<i class="fas fa-sign-in-alt"></i> Mark Time In';
+                submitBtnText.innerHTML = '<i class="fa-solid fa-right-to-bracket"></i> Mark Time In';
             } else {
-                submitBtnText.innerHTML = '<i class="fas fa-sign-out-alt"></i> Mark Time Out';
+                submitBtnText.innerHTML = '<i class="fa-solid fa-right-from-bracket"></i> Mark Time Out';
             }
         });
     });
@@ -816,7 +786,7 @@ include 'includes/header_modern.php';
             '': 'qrcode'
         };
         
-        statusElement.innerHTML = `<p><i class="fas fa-${icons[type] || icons['']}"></i> ${message}</p>`;
+        statusElement.innerHTML = `<p><i class="fa-solid fa-${icons[type] || icons['']}"></i> ${message}</p>`;
         statusElement.className = `scanner-status ${type}`;
     }
     
@@ -1063,7 +1033,7 @@ include 'includes/header_modern.php';
         if (success) {
             resultDiv.className = 'scan-result scan-result-success';
             resultDiv.innerHTML = `
-                <h4><i class="fas fa-check-circle"></i> Attendance Marked Successfully</h4>
+                <h4><i class="fa-solid fa-circle-check"></i> Attendance Marked Successfully</h4>
                 <div class="scan-result-details">
                     <p><strong>Student:</strong> <span>${result.student_name || 'Unknown'}</span></p>
                     <p><strong>LRN:</strong> <span>${result.lrn || 'N/A'}</span></p>
@@ -1074,7 +1044,7 @@ include 'includes/header_modern.php';
         } else {
             resultDiv.className = 'scan-result scan-result-error';
             resultDiv.innerHTML = `
-                <h4><i class="fas fa-exclamation-circle"></i> Error</h4>
+                <h4><i class="fa-solid fa-circle-exclamation"></i> Error</h4>
                 <p>${result.message || 'Unknown error occurred'}</p>
             `;
         }
@@ -1105,8 +1075,8 @@ include 'includes/header_modern.php';
                             <div class="attendance-info">
                                 <p class="attendance-name">${record.first_name || ''} ${record.last_name || 'Unknown'}</p>
                                 <p class="attendance-details">
-                                    <i class="fas fa-clock"></i> ${record.time || 'N/A'}
-                                    <i class="fas fa-graduation-cap"></i> ${record.class || 'N/A'}
+                                    <i class="fa-solid fa-clock"></i> ${record.time || 'N/A'}
+                                    <i class="fa-solid fa-graduation-cap"></i> ${record.class || 'N/A'}
                                 </p>
                             </div>
                             <span class="status-badge status-${record.status}">${record.status}</span>
@@ -1117,7 +1087,7 @@ include 'includes/header_modern.php';
             } else {
                 listContainer.innerHTML = `
                     <div class="empty-state">
-                        <i class="fas fa-clipboard-list"></i>
+                        <i class="fa-solid fa-clipboard-list"></i>
                         <h3>No attendance yet today</h3>
                         <p>Scanned attendance will appear here</p>
                     </div>
@@ -1127,7 +1097,7 @@ include 'includes/header_modern.php';
             console.error('Error loading today\'s attendance:', error);
             document.getElementById('today-attendance-list').innerHTML = `
                 <div class="empty-state">
-                    <i class="fas fa-exclamation-triangle"></i>
+                    <i class="fa-solid fa-triangle-exclamation"></i>
                     <h3>Error loading attendance</h3>
                     <p>Please try again later</p>
                 </div>

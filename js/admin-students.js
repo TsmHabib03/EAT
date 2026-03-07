@@ -242,7 +242,7 @@ function printQR() {
             text-align: center;
             max-width: 400px;
             background: white;
-            border: 3px solid #10B981;
+            border: 3px solid #1ea85b;
             border-radius: 16px;
             padding: 40px;
             box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);

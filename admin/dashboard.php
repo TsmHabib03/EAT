@@ -160,6 +160,10 @@ $activeSections = $dashboardData['activeSections'];
 $recentAttendance = $dashboardData['recentActivity'];
 
 // Include the modern admin header
+$breadcrumb = [
+    ['label' => 'Dashboard', 'icon' => 'house', 'url' => 'dashboard.php']
+];
+$breadcrumbEnhanced = true;
 include 'includes/header_modern.php';
 ?>
 
@@ -176,25 +180,11 @@ include 'includes/header_modern.php';
     </div>
 </div>
 
-<!-- Page Header — Glassmorphism Bento -->
-<div class="page-header-glass">
-    <div class="page-header-inner">
-        <nav class="breadcrumb-glass" aria-label="Breadcrumb">
-            <span class="breadcrumb-item active" aria-current="page">
-                <i class="fas fa-home"></i> Dashboard
-            </span>
-        </nav>
-        <div class="page-header-content-glass">
-            <div class="page-header-title-row">
-                <div class="page-header-icon">
-                    <i class="fas fa-home"></i>
-                </div>
-                <div class="page-header-text">
-                    <h1>Welcome back, <?php echo isset($currentAdmin) ? sanitizeOutput($currentAdmin['username']) : 'Admin'; ?></h1>
-                    <p><i class="fas fa-calendar-day"></i> <?php echo date('l, F j, Y'); ?></p>
-                </div>
-            </div>
-        </div>
+<!-- Dashboard Welcome -->
+<div class="dash-welcome">
+    <div class="dash-welcome-text">
+        <h1 class="dash-welcome-title">Welcome back, <?php echo isset($currentAdmin) ? sanitizeOutput($currentAdmin['username']) : 'Admin'; ?></h1>
+        <p class="dash-welcome-date"><i class="fa-solid fa-calendar-day"></i> <?php echo date('l, F j, Y'); ?></p>
     </div>
 </div>
 
@@ -203,48 +193,48 @@ include 'includes/header_modern.php';
     <!-- Total Students -->
     <div class="dash-stat-card">
         <div class="dash-stat-icon dash-stat-icon-green">
-            <i class="fas fa-users"></i>
+            <i class="fa-solid fa-user-group"></i>
         </div>
         <div class="dash-stat-value"><?php echo number_format($totalStudents); ?></div>
         <div class="dash-stat-label">Total Students</div>
         <div class="dash-stat-footer">
-            <i class="fas fa-layer-group"></i> <?php echo $activeSections; ?> sections
+            <i class="fa-solid fa-table-cells-large"></i> <?php echo $activeSections; ?> sections
         </div>
     </div>
 
     <!-- Present Today -->
     <div class="dash-stat-card">
         <div class="dash-stat-icon dash-stat-icon-green">
-            <i class="fas fa-user-check"></i>
+            <i class="fa-solid fa-user-check"></i>
         </div>
         <div class="dash-stat-value"><?php echo number_format($presentToday); ?></div>
         <div class="dash-stat-label">Present Today</div>
         <div class="dash-stat-footer">
-            <i class="fas fa-arrow-up"></i> <?php echo $attendanceRate; ?>% rate
+            <i class="fa-solid fa-arrow-up"></i> <?php echo $attendanceRate; ?>% rate
         </div>
     </div>
 
     <!-- Absent Today -->
     <div class="dash-stat-card">
         <div class="dash-stat-icon dash-stat-icon-amber">
-            <i class="fas fa-user-xmark"></i>
+            <i class="fa-solid fa-user-xmark"></i>
         </div>
         <div class="dash-stat-value"><?php echo number_format($absentToday); ?></div>
         <div class="dash-stat-label">Absent Today</div>
-        <div class="dash-stat-footer" style="color: #B45309;">
-            <i class="fas fa-arrow-down"></i> <?php echo number_format(100 - $attendanceRate, 1); ?>% of total
+        <div class="dash-stat-footer" style="color: var(--amber-600);">
+            <i class="fa-solid fa-arrow-down"></i> <?php echo number_format(100 - $attendanceRate, 1); ?>% of total
         </div>
     </div>
 
     <!-- Total Records -->
     <div class="dash-stat-card">
-        <div class="dash-stat-icon dash-stat-icon-purple">
-            <i class="fas fa-clipboard-list"></i>
+        <div class="dash-stat-icon dash-stat-icon-green">
+            <i class="fa-solid fa-clipboard-list"></i>
         </div>
         <div class="dash-stat-value"><?php echo number_format($totalRecords); ?></div>
         <div class="dash-stat-label">Total Records</div>
-        <div class="dash-stat-footer" style="color: #6D28D9;">
-            <i class="fas fa-database"></i> All time
+        <div class="dash-stat-footer">
+            <i class="fa-solid fa-database"></i> All time
         </div>
     </div>
 </div>
@@ -254,7 +244,7 @@ include 'includes/header_modern.php';
     <!-- Weekly Attendance Chart — spans 2 columns -->
     <div class="dash-card bento-span-2">
         <div class="dash-card-header">
-            <h3 class="dash-card-title"><i class="fas fa-chart-line"></i> Weekly Attendance Trend</h3>
+            <h3 class="dash-card-title"><i class="fa-solid fa-chart-line"></i> Weekly Attendance Trend</h3>
         </div>
         <div class="dash-card-body">
             <div class="dash-chart-wrap">
@@ -266,24 +256,24 @@ include 'includes/header_modern.php';
     <!-- Quick Actions -->
     <div class="dash-card">
         <div class="dash-card-header">
-            <h3 class="dash-card-title"><i class="fas fa-bolt"></i> Quick Actions</h3>
+            <h3 class="dash-card-title"><i class="fa-solid fa-bolt"></i> Quick Actions</h3>
         </div>
         <div class="dash-card-body">
             <div class="dash-actions">
                 <a href="manage_students.php" class="dash-action">
-                    <i class="fas fa-user-plus"></i>
+                    <i class="fa-solid fa-user-plus"></i>
                     <span>Add Student</span>
                 </a>
                 <a href="manual_attendance.php" class="dash-action">
-                    <i class="fas fa-clipboard-check"></i>
+                    <i class="fa-solid fa-pen-to-square"></i>
                     <span>Manual Entry</span>
                 </a>
                 <a href="../scan_attendance.php" class="dash-action" target="_blank">
-                    <i class="fas fa-qrcode"></i>
+                    <i class="fa-solid fa-qrcode"></i>
                     <span>QR Scanner</span>
                 </a>
                 <a href="attendance_reports_sections.php" class="dash-action">
-                    <i class="fas fa-chart-bar"></i>
+                    <i class="fa-solid fa-chart-column"></i>
                     <span>Reports</span>
                 </a>
             </div>
@@ -293,7 +283,7 @@ include 'includes/header_modern.php';
     <!-- Section Chart -->
     <div class="dash-card">
         <div class="dash-card-header">
-            <h3 class="dash-card-title"><i class="fas fa-chart-pie"></i> Attendance by Section</h3>
+            <h3 class="dash-card-title"><i class="fa-solid fa-chart-pie"></i> Attendance by Section</h3>
         </div>
         <div class="dash-card-body">
             <div class="dash-chart-wrap" style="height: 260px;">
@@ -305,7 +295,7 @@ include 'includes/header_modern.php';
     <!-- Recent Attendance — spans 2 columns -->
     <div class="dash-card bento-span-2">
         <div class="dash-card-header">
-            <h3 class="dash-card-title"><i class="fas fa-clock-rotate-left"></i> Recent Attendance</h3>
+            <h3 class="dash-card-title"><i class="fa-solid fa-clock-rotate-left"></i> Recent Attendance</h3>
             <a href="attendance_reports_sections.php" class="btn btn-sm btn-outline">View All</a>
         </div>
         <div class="dash-card-body-flush">
@@ -328,7 +318,7 @@ include 'includes/header_modern.php';
                 <?php endforeach; ?>
             <?php else: ?>
                 <div class="dash-empty">
-                    <i class="fas fa-inbox"></i>
+                    <i class="fa-solid fa-inbox"></i>
                     <p>No attendance records yet today</p>
                 </div>
             <?php endif; ?>
@@ -339,7 +329,7 @@ include 'includes/header_modern.php';
     <div class="dash-card">
         <div class="dash-card-header">
             <h3 class="dash-card-title">
-                <i class="fas fa-exclamation-triangle" style="color: #B45309;"></i>
+                <i class="fa-solid fa-triangle-exclamation" style="color: var(--amber-600);"></i>
                 Needs Attention
             </h3>
             <a href="manual_attendance.php" class="btn btn-sm btn-outline">Fix Records</a>
@@ -347,7 +337,7 @@ include 'includes/header_modern.php';
         <div class="dash-card-body-flush" style="max-height: 380px; overflow-y: auto;">
             <div id="needsAttentionList">
                 <div class="dash-empty">
-                    <i class="fas fa-spinner fa-spin"></i>
+                    <i class="fa-solid fa-spinner fa-spin"></i>
                     <p>Loading...</p>
                 </div>
             </div>
@@ -357,7 +347,7 @@ include 'includes/header_modern.php';
     <!-- System Information -->
     <div class="dash-card">
         <div class="dash-card-header">
-            <h3 class="dash-card-title"><i class="fas fa-info-circle"></i> System Information</h3>
+            <h3 class="dash-card-title"><i class="fa-solid fa-circle-info"></i> System Information</h3>
         </div>
         <div class="dash-card-body">
             <div class="dash-sysinfo-row">
@@ -378,7 +368,7 @@ include 'includes/header_modern.php';
 
 <script>
 /**
- * AttendEase Dashboard - Interactive Data Visualization
+ * San Francisco High School Dashboard - Interactive Data Visualization
  * Fully functional dashboard with real-time data and Chart.js integration
  */
 
@@ -397,6 +387,23 @@ include 'includes/header_modern.php';
     let weeklyChart = null;
     let sectionChart = null;
     
+    // Glass-style tooltip — translucent white card with soft border
+    const tooltipStyle = {
+        backgroundColor: 'rgba(255,255,255,0.92)',
+        titleColor: '#0f172a',
+        bodyColor: '#64748b',
+        borderColor: 'rgba(255,255,255,0.5)',
+        borderWidth: 1,
+        padding: 12,
+        titleFont: { size: 13, weight: 'bold', family: "'Manrope', sans-serif" },
+        bodyFont: { size: 12, family: "'Manrope', sans-serif" },
+        bodySpacing: 6,
+        cornerRadius: 10,
+        displayColors: true,
+        boxPadding: 4,
+        caretSize: 6
+    };
+
     /**
      * Initialize Weekly Attendance Trend Chart
      * Bar chart showing Present vs Absent for last 7 days
@@ -416,12 +423,12 @@ include 'includes/header_modern.php';
         const presentData = weeklyData.map(day => parseInt(day.present) || 0);
         const absentData = weeklyData.map(day => parseInt(day.absent) || 0);
         
-        // Emerald Color Palette
-        const asjColors = {
+        // New Green Palette
+        const chartColors = {
             green: {
-                primary: '#10B981',
-                light: 'rgba(16, 185, 129, 0.8)',
-                lighter: 'rgba(16, 185, 129, 0.5)'
+                primary: '#1ea85b',
+                light: 'rgba(30, 168, 91, 0.8)',
+                lighter: 'rgba(30, 168, 91, 0.5)'
             },
             red: {
                 primary: '#EF4444',
@@ -439,8 +446,8 @@ include 'includes/header_modern.php';
                     {
                         label: 'Present',
                         data: presentData,
-                        backgroundColor: asjColors.green.light,
-                        borderColor: asjColors.green.primary,
+                        backgroundColor: chartColors.green.light,
+                        borderColor: chartColors.green.primary,
                         borderWidth: 2,
                         borderRadius: 6,
                         borderSkipped: false
@@ -448,8 +455,8 @@ include 'includes/header_modern.php';
                     {
                         label: 'Absent',
                         data: absentData,
-                        backgroundColor: asjColors.red.light,
-                        borderColor: asjColors.red.primary,
+                        backgroundColor: chartColors.red.light,
+                        borderColor: chartColors.red.primary,
                         borderWidth: 2,
                         borderRadius: 6,
                         borderSkipped: false
@@ -471,6 +478,7 @@ include 'includes/header_modern.php';
                             boxWidth: 12,
                             boxHeight: 12,
                             padding: 15,
+                            color: '#64748b',
                             font: {
                                 size: 12,
                                 weight: '600'
@@ -480,18 +488,7 @@ include 'includes/header_modern.php';
                         }
                     },
                     tooltip: {
-                        backgroundColor: 'rgba(0, 0, 0, 0.8)',
-                        padding: 12,
-                        titleFont: {
-                            size: 13,
-                            weight: 'bold'
-                        },
-                        bodyFont: {
-                            size: 12
-                        },
-                        bodySpacing: 6,
-                        cornerRadius: 8,
-                        displayColors: true,
+                        ...tooltipStyle,
                         callbacks: {
                             title: function(context) {
                                 return context[0].label || '';
@@ -512,6 +509,7 @@ include 'includes/header_modern.php';
                             display: false
                         },
                         ticks: {
+                            color: '#64748b',
                             font: {
                                 size: 11,
                                 weight: '500'
@@ -521,10 +519,11 @@ include 'includes/header_modern.php';
                     y: {
                         beginAtZero: true,
                         grid: {
-                            color: 'rgba(0, 0, 0, 0.05)',
+                            color: '#e2e8f0',
                             drawBorder: false
                         },
                         ticks: {
+                            color: '#64748b',
                             precision: 0,
                             font: {
                                 size: 11
@@ -551,21 +550,21 @@ include 'includes/header_modern.php';
         const presentData = sectionData.map(s => parseInt(s.present) || 0);
         const totalData = sectionData.map(s => parseInt(s.total) || 0);
         
-        // Emerald palette for sections
-        const asjSectionColors = [
-            'rgba(16, 185, 129, 0.82)',   // Emerald 500
-            'rgba(37, 99, 235, 0.78)',    // Blue 600
-            'rgba(109, 40, 217, 0.78)',   // Violet 700
-            'rgba(180, 83, 9, 0.78)',     // Amber 700
-            'rgba(5, 150, 105, 0.82)',    // Emerald 600
-            'rgba(190, 18, 60, 0.78)',    // Rose 700
-            'rgba(4, 120, 87, 0.82)',     // Emerald 700
-            'rgba(29, 78, 216, 0.78)',    // Blue 700
-            'rgba(52, 211, 153, 0.78)',   // Emerald 400
-            'rgba(124, 58, 237, 0.78)'    // Violet 600
+        // Green spectrum palette for sections
+        const sectionColors = [
+            'rgba(23, 138, 74, 0.85)',    // --green-700
+            'rgba(30, 168, 91, 0.85)',    // --green-600
+            'rgba(39, 195, 106, 0.82)',   // --green-500
+            'rgba(68, 207, 131, 0.80)',   // --green-400
+            'rgba(100, 221, 156, 0.78)',  // --green-300
+            'rgba(145, 233, 183, 0.75)',  // --green-200
+            'rgba(100, 116, 139, 0.75)',  // --gray-500 contrast
+            'rgba(148, 163, 184, 0.70)',  // --gray-400
+            'rgba(15, 110, 60, 0.85)',    // deep green
+            'rgba(180, 240, 210, 0.80)'   // light green
         ];
         
-        const borderColors = asjSectionColors.map(c => c.replace('0.8', '1'));
+        const sectionBorderColors = sectionColors.map(c => c.replace(/0\.\d+\)$/, '1)'));
         
         // Create chart
         sectionChart = new Chart(ctx, {
@@ -574,8 +573,8 @@ include 'includes/header_modern.php';
                 labels: labels,
                 datasets: [{
                     data: presentData,
-                    backgroundColor: asjSectionColors,
-                    borderColor: borderColors,
+                    backgroundColor: sectionColors,
+                    borderColor: sectionBorderColors,
                     borderWidth: 2,
                     hoverOffset: 10,
                     spacing: 2
@@ -592,6 +591,7 @@ include 'includes/header_modern.php';
                             boxWidth: 12,
                             boxHeight: 12,
                             padding: 12,
+                            color: '#64748b',
                             font: {
                                 size: 11,
                                 weight: '600'
@@ -619,23 +619,12 @@ include 'includes/header_modern.php';
                             const index = legendItem.index;
                             const chart = legend.chart;
                             const meta = chart.getDatasetMeta(0);
-                            
-                            // Toggle visibility
                             meta.data[index].hidden = !meta.data[index].hidden;
                             chart.update();
                         }
                     },
                     tooltip: {
-                        backgroundColor: 'rgba(0, 0, 0, 0.8)',
-                        padding: 12,
-                        titleFont: {
-                            size: 13,
-                            weight: 'bold'
-                        },
-                        bodyFont: {
-                            size: 12
-                        },
-                        cornerRadius: 8,
+                        ...tooltipStyle,
                         callbacks: {
                             label: function(context) {
                                 const label = context.label || '';
@@ -685,7 +674,7 @@ include 'includes/header_modern.php';
         if (needsAttention.length === 0) {
             container.innerHTML = `
                 <div class="dash-empty">
-                    <i class="fas fa-check-circle"></i>
+                    <i class="fa-solid fa-circle-check"></i>
                     <p>All attendance records are complete!</p>
                 </div>
             `;
@@ -704,7 +693,7 @@ include 'includes/header_modern.php';
                 <div class="dash-attention-item">
                     <div class="dash-attention-left">
                         <div class="dash-attention-icon">
-                            <i class="fas fa-exclamation"></i>
+                            <i class="fa-solid fa-exclamation"></i>
                         </div>
                         <div class="dash-attention-info">
                             <h4>${escapeHtml(record.first_name)} ${escapeHtml(record.last_name)}</h4>

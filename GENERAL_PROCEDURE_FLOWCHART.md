@@ -1,11 +1,11 @@
 # GENERAL PROCEDURE FLOWCHART
 ## Academy of St. Joseph Claveria, Cagayan Inc.
-### AttendEase - Attendance Management System
+### San Francisco High School - Attendance Management System
 
 ---
 
 ## I. GENERAL PROCEDURE - PRODUCT MAKING PROCEDURE
-### AttendEase Attendance System Development
+### San Francisco High School Attendance System Development
 
 ```mermaid
 flowchart TD
@@ -453,7 +453,7 @@ mmdc -i GENERAL_PROCEDURE_FLOWCHART.md -o flowchart.png
 ---
 
 **Document Information:**
-- **System**: AttendEase Attendance Management System
+- **System**: San Francisco High School Attendance Management System
 - **Institution**: Academy of St. Joseph Claveria, Cagayan Inc.
 - **Version**: 1.0
 - **Last Updated**: November 17, 2025

@@ -4,1096 +4,546 @@ requireAdmin();
 
 $currentAdmin = getCurrentAdmin();
 $pageTitle = 'Attendance Reports';
-$pageIcon = 'chart-bar';
+$pageIcon = 'chart-column';
+
+$breadcrumb = [
+    ['label' => 'Dashboard', 'icon' => 'house', 'url' => 'dashboard.php'],
+    ['label' => 'Attendance Reports', 'icon' => 'chart-column', 'url' => 'attendance_reports_sections.php']
+];
 
 // Include the modern admin header
 include 'includes/header_modern.php';
+
+// Fetch sections for the filter
+$sectionOptions = [];
+try {
+    $stmt = $pdo->query("SELECT section_name FROM sections WHERE is_active = 1 ORDER BY section_name");
+    $sectionOptions = $stmt->fetchAll(PDO::FETCH_COLUMN);
+} catch (Exception $e) {
+    $sectionOptions = [];
+}
 ?>
 
-<style>
-    /* ===== ASJ COLOR SYSTEM ===== */
-    :root {
-        /* ASJ Brand Colors */
-        --asj-green-50: #E8F5E9;
-        --asj-green-100: #C8E6C9;
-        --asj-green-400: #66BB6A;
-        --asj-green-500: #4CAF50;
-        --asj-green-600: #43A047;
-        --asj-green-700: #388E3C;
-        
-        --asj-gold-50: #FFF9E6;
-        --asj-gold-400: #FFD54F;
-        --asj-gold-500: #FFC107;
-        --asj-gold-600: #FFB300;
-        
-        /* Modern Neutrals */
-        --neutral-50: #FAFBFC;
-        --neutral-100: #F4F6F8;
-        --neutral-200: #E5E9ED;
-        --neutral-300: #D0D7DE;
-        --neutral-400: #8B96A5;
-        --neutral-500: #6E7C8C;
-        --neutral-600: #556575;
-        --neutral-700: #3E4C59;
-        --neutral-900: #1F2937;
-        
-        /* Semantic Colors */
-        --success-light: #D1FAE5;
-        --success: #10B981;
-        --success-dark: #059669;
-        
-        --error-light: #FEE2E2;
-        --error: #EF4444;
-        --error-dark: #DC2626;
-        
-        --warning-light: #FEF3C7;
-        --warning: #F59E0B;
-        --warning-dark: #D97706;
-        
-        --info-light: #DBEAFE;
-        --info: #3B82F6;
-        --info-dark: #2563EB;
-    }
-
-    /* ===== FILTERS SECTION ===== */
-    .filters-card {
-        background: white;
-        border-radius: var(--radius-xl);
-        box-shadow: var(--shadow-md);
-        border: 1px solid var(--gray-200);
-        margin-bottom: var(--space-6);
-        overflow: hidden;
-    }
-
-    .filters-header {
-        padding: var(--space-6);
-        border-bottom: 1px solid var(--gray-200);
-        background: linear-gradient(to right, var(--asj-green-50), var(--neutral-50));
-    }
-
-    .filters-header h2 {
-        font-size: var(--text-xl);
-        font-weight: var(--font-bold);
-        color: var(--gray-900);
-        margin: 0;
-        display: flex;
-        align-items: center;
-        gap: var(--space-2);
-    }
-
-    .filters-header h2 i {
-        color: var(--asj-green-600);
-    }
-
-    .filters-body {
-        padding: var(--space-6);
-    }
-
-    .filters-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-        gap: var(--space-4);
-        margin-bottom: var(--space-6);
-    }
-
-    .filter-actions {
-        display: flex;
-        gap: var(--space-3);
-        justify-content: flex-end;
-        padding-top: var(--space-4);
-        border-top: 1px solid var(--gray-200);
-    }
-
-    /* ===== STATS CARDS ===== */
-    .stats-overview {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-        gap: var(--space-4);
-        margin-bottom: var(--space-6);
-    }
-
-    .stat-card-modern {
-        background: white;
-        border-radius: var(--radius-xl);
-        padding: var(--space-6);
-        box-shadow: var(--shadow-md);
-        border: 1px solid var(--gray-200);
-        transition: all var(--transition-base);
-        position: relative;
-        overflow: hidden;
-    }
-
-    .stat-card-modern::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        right: 0;
-        width: 100px;
-        height: 100px;
-        border-radius: 50%;
-        opacity: 0.1;
-        transition: all var(--transition-base);
-    }
-
-    .stat-card-modern:hover {
-        transform: translateY(-4px);
-        box-shadow: var(--shadow-xl);
-    }
-
-    .stat-card-modern.primary::before {
-        background: var(--asj-green-500);
-    }
-
-    .stat-card-modern.success::before {
-        background: var(--success);
-    }
-
-    .stat-card-modern.warning::before {
-        background: var(--warning);
-    }
-
-    .stat-card-modern.info::before {
-        background: var(--info);
-    }
-
-    .stat-card-content {
-        display: flex;
-        align-items: center;
-        gap: var(--space-4);
-        position: relative;
-        z-index: 1;
-    }
-
-    .stat-icon-modern {
-        width: 60px;
-        height: 60px;
-        border-radius: var(--radius-xl);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: var(--text-3xl);
-        flex-shrink: 0;
-    }
-
-    .stat-card-modern.primary .stat-icon-modern {
-        background: linear-gradient(135deg, var(--asj-green-500), var(--asj-green-600));
-        color: white;
-        box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
-    }
-
-    .stat-card-modern.success .stat-icon-modern {
-        background: linear-gradient(135deg, var(--success), var(--success-dark));
-        color: white;
-        box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
-    }
-
-    .stat-card-modern.warning .stat-icon-modern {
-        background: linear-gradient(135deg, var(--warning), var(--warning-dark));
-        color: white;
-        box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
-    }
-
-    .stat-card-modern.info .stat-icon-modern {
-        background: linear-gradient(135deg, var(--info), var(--info-dark));
-        color: white;
-        box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
-    }
-
-    .stat-details {
-        flex: 1;
-    }
-
-    .stat-value {
-        font-size: var(--text-3xl);
-        font-weight: var(--font-bold);
-        color: var(--gray-900);
-        line-height: 1;
-        margin-bottom: var(--space-2);
-    }
-
-    .stat-label {
-        font-size: var(--text-sm);
-        color: var(--gray-600);
-        font-weight: var(--font-medium);
-    }
-
-    /* ===== RESULTS TABLE ===== */
-    .results-card {
-        background: white;
-        border-radius: var(--radius-xl);
-        box-shadow: var(--shadow-md);
-        border: 1px solid var(--gray-200);
-        overflow: hidden;
-    }
-
-    .results-header {
-        padding: var(--space-6);
-        border-bottom: 1px solid var(--gray-200);
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        flex-wrap: wrap;
-        gap: var(--space-4);
-        background: var(--gray-50);
-    }
-
-    .results-header h2 {
-        font-size: var(--text-xl);
-        font-weight: var(--font-bold);
-        color: var(--gray-900);
-        margin: 0;
-        display: flex;
-        align-items: center;
-        gap: var(--space-2);
-    }
-
-    .results-actions {
-        display: flex;
-        gap: var(--space-2);
-        flex-wrap: wrap;
-    }
-
-    .results-body {
-        padding: var(--space-6);
-    }
-
-    .table-wrapper {
-        overflow-x: auto;
-        border-radius: var(--radius-lg);
-        border: 1px solid var(--gray-200);
-    }
-
-    .modern-table {
-        width: 100%;
-        border-collapse: collapse;
-        font-size: var(--text-sm);
-    }
-
-    .modern-table thead {
-        background: linear-gradient(135deg, var(--asj-green-500) 0%, var(--asj-green-700) 100%);
-    }
-
-    .modern-table th {
-        padding: var(--space-4);
-        text-align: left;
-        font-weight: var(--font-semibold);
-        color: white;
-        white-space: nowrap;
-        font-size: var(--text-sm);
-    }
-
-    .modern-table tbody tr {
-        border-bottom: 1px solid var(--gray-200);
-        transition: background-color var(--transition-base);
-    }
-
-    .modern-table tbody tr:hover {
-        background: var(--asj-green-50);
-    }
-
-    .modern-table tbody tr:last-child {
-        border-bottom: none;
-    }
-
-    .modern-table td {
-        padding: var(--space-4);
-        color: var(--gray-700);
-    }
-
-    .student-name-cell {
-        font-weight: var(--font-semibold);
-        color: var(--gray-900);
-    }
-
-    .status-badge-modern {
-        display: inline-flex;
-        align-items: center;
-        gap: var(--space-1);
-        padding: var(--space-1) var(--space-3);
-        border-radius: var(--radius-full);
-        font-size: var(--text-xs);
-        font-weight: var(--font-semibold);
-        white-space: nowrap;
-    }
-
-    .status-completed {
-        background: var(--success-light);
-        color: var(--success-dark);
-    }
-
-    .status-incomplete {
-        background: var(--warning-light);
-        color: var(--warning-dark);
-    }
-
-    .section-badge {
-        display: inline-flex;
-        align-items: center;
-        padding: var(--space-1) var(--space-3);
-        border-radius: var(--radius-full);
-        font-size: var(--text-xs);
-        font-weight: var(--font-semibold);
-        background: var(--asj-green-100);
-        color: var(--asj-green-700);
-    }
-
-    /* ===== EMPTY STATE ===== */
-    .empty-state {
-        text-align: center;
-        padding: var(--space-16) var(--space-8);
-    }
-
-    .empty-state i {
-        font-size: 80px;
-        background: linear-gradient(135deg, var(--asj-green-400), var(--asj-green-600));
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        background-clip: text;
-        margin-bottom: var(--space-4);
-    }
-
-    .empty-state h3 {
-        font-size: var(--text-xl);
-        color: var(--gray-700);
-        margin-bottom: var(--space-2);
-    }
-
-    .empty-state p {
-        font-size: var(--text-base);
-        color: var(--gray-500);
-    }
-
-    /* ===== PAGINATION ===== */
-    .pagination-wrapper {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        gap: var(--space-2);
-        padding: var(--space-6);
-        border-top: 1px solid var(--gray-200);
-    }
-
-    .page-btn {
-        padding: var(--space-2) var(--space-4);
-        border: 1px solid var(--gray-300);
-        background: white;
-        color: var(--gray-700);
-        border-radius: var(--radius-lg);
-        font-size: var(--text-sm);
-        font-weight: var(--font-medium);
-        cursor: pointer;
-        transition: all var(--transition-base);
-        min-width: 40px;
-    }
-
-    .page-btn:hover:not(:disabled) {
-        background: var(--asj-green-600);
-        color: white;
-        border-color: var(--asj-green-600);
-        transform: translateY(-2px);
-        box-shadow: 0 4px 8px rgba(76, 175, 80, 0.2);
-    }
-
-    .page-btn.active {
-        background: var(--asj-green-600);
-        color: white;
-        border-color: var(--asj-green-600);
-    }
-
-    .page-btn:disabled {
-        opacity: 0.4;
-        cursor: not-allowed;
-    }
-
-    .page-dots {
-        padding: var(--space-2);
-        color: var(--gray-500);
-    }
-
-    /* ===== LOADING OVERLAY ===== */
-    .loading-overlay {
-        position: fixed;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: rgba(0, 0, 0, 0.7);
-        backdrop-filter: blur(4px);
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        z-index: 9999;
-        color: white;
-    }
-
-    .spinner {
-        width: 60px;
-        height: 60px;
-        border: 4px solid rgba(255, 255, 255, 0.3);
-        border-top-color: white;
-        border-radius: 50%;
-        animation: spin 1s linear infinite;
-        margin-bottom: var(--space-4);
-    }
-
-    @keyframes spin {
-        to { transform: rotate(360deg); }
-    }
-
-    .loading-text {
-        font-size: var(--text-lg);
-        font-weight: var(--font-semibold);
-    }
-
-    /* ===== RESPONSIVE DESIGN ===== */
-    @media (max-width: 768px) {
-        .filters-grid {
-            grid-template-columns: 1fr;
-        }
-
-        .filter-actions {
-            flex-direction: column;
-        }
-
-        .filter-actions .btn {
-            width: 100%;
-        }
-
-        .stats-overview {
-            grid-template-columns: 1fr;
-        }
-
-        .results-header {
-            flex-direction: column;
-            align-items: flex-start;
-        }
-
-        .results-actions {
-            width: 100%;
-        }
-
-        .results-actions .btn {
-            flex: 1;
-        }
-
-        .table-wrapper {
-            border-radius: 0;
-            margin: 0 calc(-1 * var(--space-6));
-        }
-
-        .modern-table {
-            font-size: var(--text-xs);
-        }
-
-        .modern-table th,
-        .modern-table td {
-            padding: var(--space-2);
-        }
-
-        .pagination-wrapper {
-            flex-wrap: wrap;
-        }
-    }
-
-    @media (max-width: 480px) {
-        .filters-body,
-        .results-body {
-            padding: var(--space-4);
-        }
-
-        .stat-card-content {
-            flex-direction: column;
-            text-align: center;
-        }
-
-        .stat-value {
-            font-size: var(--text-2xl);
-        }
-    }
-
-    /* ===== PRINT STYLES ===== */
-    @media print {
-        .page-header-glass,
-        .filters-card,
-        .results-header .results-actions,
-        .pagination-wrapper,
-        .desktop-sidebar,
-        .mobile-topbar,
-        .filter-actions {
-            display: none !important;
-        }
-
-        .results-card {
-            box-shadow: none;
-            border: 1px solid #000;
-        }
-
-        .modern-table {
-            font-size: 10pt;
-        }
-
-        .modern-table thead {
-            background: #333 !important;
-            -webkit-print-color-adjust: exact;
-            print-color-adjust: exact;
-        }
-
-        body {
-            background: white;
-        }
-    }
-</style>
-
-<!-- Page Header — Glassmorphism Bento -->
-<div class="page-header-glass">
-    <div class="page-header-inner">
-        <!-- Breadcrumb -->
-        <nav class="breadcrumb-glass" aria-label="Breadcrumb">
-            <a href="dashboard.php" class="breadcrumb-item" title="Dashboard">
-                <i class="fas fa-home"></i> Dashboard
-            </a>
-            <span class="breadcrumb-sep" aria-hidden="true"><i class="fas fa-chevron-right"></i></span>
-            <span class="breadcrumb-item active" aria-current="page">
-                <i class="fas fa-chart-bar"></i> Attendance Reports
-            </span>
-        </nav>
-        <!-- Title -->
-        <div class="page-header-title-row">
-            <div class="page-header-icon">
-                <i class="fas fa-chart-bar"></i>
-            </div>
-            <div class="page-header-text">
-                <h1>Attendance Reports</h1>
-                <p>Generate comprehensive attendance reports by section and date range</p>
-            </div>
+<!-- ===== Report Stepper ===== -->
+<div class="stepper" id="reportStepper">
+    <div class="stepper-step active" data-step="1">
+        <div class="stepper-circle">1</div>
+        <span class="stepper-label">Select Range</span>
+    </div>
+    <div class="stepper-connector"></div>
+    <div class="stepper-step" data-step="2">
+        <div class="stepper-circle">2</div>
+        <span class="stepper-label">Preview</span>
+    </div>
+    <div class="stepper-connector"></div>
+    <div class="stepper-step" data-step="3">
+        <div class="stepper-circle">3</div>
+        <span class="stepper-label">Export</span>
+    </div>
+</div>
+
+<!-- ===== Step 1: Select Range ===== -->
+<div class="stepper-panel active" id="stepPanel1">
+    <div class="card">
+        <div class="card-header" style="display:flex;align-items:center;gap:.5rem;">
+            <i class="fa-solid fa-filter" style="color:var(--green-600);"></i>
+            <h2 style="margin:0;font-size:1.125rem;font-weight:700;">Report Filters</h2>
+        </div>
+        <div class="card-body">
+            <form id="reportFilters" autocomplete="off">
+                <div class="filters-grid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:1rem;margin-bottom:1.5rem;">
+                    <!-- Section Filter -->
+                    <div class="form-group">
+                        <label for="section_filter" class="form-label">
+                            <i class="fa-solid fa-table-cells-large"></i> Section
+                        </label>
+                        <select id="section_filter" name="section" class="form-input">
+                            <option value="">All Sections</option>
+                            <?php foreach ($sectionOptions as $sec): ?>
+                            <option value="<?php echo htmlspecialchars($sec); ?>"><?php echo htmlspecialchars($sec); ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+
+                    <!-- Start Date -->
+                    <div class="form-group">
+                        <label for="start_date" class="form-label">
+                            <i class="fa-solid fa-calendar-days"></i> Start Date
+                        </label>
+                        <input type="date" id="start_date" name="start_date" class="form-input" value="<?= date('Y-m-01') ?>">
+                    </div>
+
+                    <!-- End Date -->
+                    <div class="form-group">
+                        <label for="end_date" class="form-label">
+                            <i class="fa-solid fa-calendar-check"></i> End Date
+                        </label>
+                        <input type="date" id="end_date" name="end_date" class="form-input" value="<?= date('Y-m-d') ?>">
+                    </div>
+
+                    <!-- Student Search -->
+                    <div class="form-group">
+                        <label for="student_search" class="form-label">
+                            <i class="fa-solid fa-magnifying-glass"></i> Student Name / LRN
+                        </label>
+                        <input type="text" id="student_search" name="student_search" class="form-input" placeholder="Search by name or LRN…">
+                    </div>
+                </div>
+
+                <div style="display:flex;gap:.75rem;justify-content:flex-end;flex-wrap:wrap;">
+                    <button type="button" id="resetFilters" class="btn btn-outline">
+                        <i class="fa-solid fa-arrows-rotate"></i> Reset
+                    </button>
+                    <button type="submit" class="btn btn-solid">
+                        <i class="fa-solid fa-chart-line"></i> Generate Report
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
 </div>
 
-<!-- Filters Card -->
-<div class="filters-card">
-    <div class="filters-header">
-        <h2><i class="fas fa-filter"></i> Report Filters</h2>
-    </div>
-    <div class="filters-body">
-        <form id="reportFilters">
-            <div class="filters-grid">
-                <!-- Section Filter -->
-                <div class="form-group">
-                    <label for="section_filter" class="form-label">
-                        <i class="fas fa-layer-group"></i> Section
-                    </label>
-                    <select id="section_filter" name="section" class="form-control">
-                        <option value="">All Sections</option>
-                        <?php
-                        try {
-                            $stmt = $pdo->query("SELECT section_name FROM sections WHERE status = 'active' ORDER BY section_name");
-                            while ($row = $stmt->fetch()) {
-                                echo "<option value='" . htmlspecialchars($row['section_name']) . "'>" . htmlspecialchars($row['section_name']) . "</option>";
-                            }
-                        } catch (Exception $e) {
-                            echo "<option value=''>Error loading sections</option>";
-                        }
-                        ?>
-                    </select>
-                </div>
-
-                <!-- Start Date -->
-                <div class="form-group">
-                    <label for="start_date" class="form-label">
-                        <i class="fas fa-calendar-alt"></i> Start Date
-                    </label>
-                    <input type="date" id="start_date" name="start_date" class="form-control" value="<?= date('Y-m-01') ?>">
-                </div>
-
-                <!-- End Date -->
-                <div class="form-group">
-                    <label for="end_date" class="form-label">
-                        <i class="fas fa-calendar-check"></i> End Date
-                    </label>
-                    <input type="date" id="end_date" name="end_date" class="form-control" value="<?= date('Y-m-d') ?>">
-                </div>
-
-                <!-- Student Search (Optional) -->
-                <div class="form-group">
-                    <label for="student_search" class="form-label">
-                        <i class="fas fa-search"></i> Student Name/LRN
-                    </label>
-                    <input type="text" id="student_search" name="student_search" class="form-control" placeholder="Search by name or LRN...">
-                </div>
+<!-- ===== Step 2: Preview ===== -->
+<div class="stepper-panel" id="stepPanel2">
+    <!-- KPI Chips -->
+    <div id="summarySection" style="display:none;margin-bottom:1.5rem;">
+        <div style="display:flex;flex-wrap:wrap;gap:.75rem;">
+            <div class="kpi-chip">
+                <i class="fa-solid fa-clipboard-list"></i>
+                <span class="kpi-chip-value" id="total_records">0</span>
+                <span class="kpi-chip-label">Total Records</span>
             </div>
+            <div class="kpi-chip">
+                <i class="fa-solid fa-circle-check"></i>
+                <span class="kpi-chip-value" id="completed_count">0</span>
+                <span class="kpi-chip-label">Completed</span>
+            </div>
+            <div class="kpi-chip">
+                <i class="fa-solid fa-clock"></i>
+                <span class="kpi-chip-value" id="incomplete_count">0</span>
+                <span class="kpi-chip-label">Incomplete</span>
+            </div>
+            <div class="kpi-chip">
+                <i class="fa-solid fa-table-cells-large"></i>
+                <span class="kpi-chip-value" id="sections_count">0</span>
+                <span class="kpi-chip-label">Sections</span>
+            </div>
+        </div>
+    </div>
 
-            <div class="filter-actions">
-                <button type="button" id="resetFilters" class="btn btn-secondary">
-                    <i class="fas fa-undo"></i> Reset Filters
-                </button>
-                <button type="submit" class="btn btn-primary">
-                    <i class="fas fa-chart-line"></i> Generate Report
+    <!-- Results Table -->
+    <div id="resultsCard" class="card" style="display:none;">
+        <div class="card-header" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.75rem;">
+            <h2 style="margin:0;font-size:1.125rem;font-weight:700;display:flex;align-items:center;gap:.5rem;">
+                <i class="fa-solid fa-table" style="color:var(--green-600);"></i> Attendance Records
+            </h2>
+            <div style="display:flex;align-items:center;gap:.5rem;flex-wrap:wrap;">
+                <div class="density-toggle">
+                    <button type="button" class="density-option active" data-density="normal" title="Normal density">
+                        <i class="fa-solid fa-bars"></i>
+                    </button>
+                    <button type="button" class="density-option" data-density="compact" title="Compact density">
+                        <i class="fa-solid fa-bars-staggered"></i>
+                    </button>
+                </div>
+                <button type="button" class="btn btn-ghost btn-sm" id="backToFilters">
+                    <i class="fa-solid fa-arrow-left"></i> Back
                 </button>
             </div>
-        </form>
+        </div>
+        <div class="card-body" style="padding:0;">
+            <div class="table-responsive" id="tableContainer">
+                <table class="table" id="reportTable">
+                    <thead>
+                        <tr>
+                            <th>LRN</th>
+                            <th>Student Name</th>
+                            <th>Section</th>
+                            <th>Date</th>
+                            <th>Time In</th>
+                            <th>Time Out</th>
+                            <th>Duration</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="attendanceTableBody">
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Empty State -->
+            <div id="noResults" class="empty-state" style="display:none;">
+                <i class="fa-solid fa-inbox"></i>
+                <h3>No Records Found</h3>
+                <p>No attendance records match your selected filters. Try adjusting your search criteria.</p>
+            </div>
+
+            <!-- Pagination -->
+            <div id="paginationContainer" class="pagination" style="display:none;"></div>
+        </div>
+    </div>
+
+    <!-- Step navigation -->
+    <div style="display:flex;gap:.75rem;justify-content:flex-end;margin-top:1.5rem;" id="step2Nav" class="step-nav-buttons">
+        <button type="button" class="btn btn-outline" id="prevToStep1">
+            <i class="fa-solid fa-arrow-left"></i> Back to Filters
+        </button>
+        <button type="button" class="btn btn-solid" id="nextToStep3">
+            <i class="fa-solid fa-arrow-right"></i> Continue to Export
+        </button>
     </div>
 </div>
 
-<!-- Summary Stats -->
-<div id="summarySection" style="display: none;">
-    <div class="stats-overview">
-        <div class="stat-card-modern primary">
-            <div class="stat-card-content">
-                <div class="stat-icon-modern">
-                    <i class="fas fa-clipboard-list"></i>
-                </div>
-                <div class="stat-details">
-                    <div class="stat-value" id="total_records">0</div>
-                    <div class="stat-label">Total Records</div>
-                </div>
+<!-- ===== Step 3: Export ===== -->
+<div class="stepper-panel" id="stepPanel3">
+    <div class="card">
+        <div class="card-header" style="display:flex;align-items:center;gap:.5rem;">
+            <i class="fa-solid fa-download" style="color:var(--green-600);"></i>
+            <h2 style="margin:0;font-size:1.125rem;font-weight:700;">Export Report</h2>
+        </div>
+        <div class="card-body">
+            <p style="color:var(--gray-500);margin-bottom:1.5rem;">Choose an export format below. The report includes <strong id="exportRecordCount">0</strong> records.</p>
+
+            <div style="display:flex;gap:1rem;flex-wrap:wrap;margin-bottom:1.5rem;">
+                <button type="button" class="btn btn-solid" id="exportCSV">
+                    <i class="fa-solid fa-file-csv"></i> Export CSV
+                </button>
+                <button type="button" class="btn btn-outline" id="printReport">
+                    <i class="fa-solid fa-print"></i> Print Report
+                </button>
             </div>
-        </div>
 
-        <div class="stat-card-modern success">
-            <div class="stat-card-content">
-                <div class="stat-icon-modern">
-                    <i class="fas fa-check-circle"></i>
+            <!-- Progress bar (shown during export) -->
+            <div id="exportProgress" style="display:none;margin-bottom:1rem;">
+                <div class="progress-bar">
+                    <div class="progress-bar-fill" id="exportProgressFill" style="width:0%;"></div>
                 </div>
-                <div class="stat-details">
-                    <div class="stat-value" id="completed_count">0</div>
-                    <div class="stat-label">Completed (In & Out)</div>
-                </div>
+                <p style="font-size:.875rem;color:var(--gray-500);margin-top:.5rem;" id="exportProgressText">Preparing export…</p>
             </div>
-        </div>
 
-        <div class="stat-card-modern warning">
-            <div class="stat-card-content">
-                <div class="stat-icon-modern">
-                    <i class="fas fa-clock"></i>
-                </div>
-                <div class="stat-details">
-                    <div class="stat-value" id="incomplete_count">0</div>
-                    <div class="stat-label">Incomplete (In Only)</div>
-                </div>
+            <!-- Toast area -->
+            <div id="exportToastArea"></div>
+
+            <div style="display:flex;gap:.75rem;justify-content:flex-start;margin-top:1.5rem;">
+                <button type="button" class="btn btn-outline" id="prevToStep2">
+                    <i class="fa-solid fa-arrow-left"></i> Back to Preview
+                </button>
+                <button type="button" class="btn btn-ghost" id="newReport">
+                    <i class="fa-solid fa-plus"></i> New Report
+                </button>
             </div>
-        </div>
-
-        <div class="stat-card-modern info">
-            <div class="stat-card-content">
-                <div class="stat-icon-modern">
-                    <i class="fas fa-layer-group"></i>
-                </div>
-                <div class="stat-details">
-                    <div class="stat-value" id="sections_count">0</div>
-                    <div class="stat-label">Sections Covered</div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Results Table -->
-<div id="resultsCard" class="results-card" style="display: none;">
-    <div class="results-header">
-        <h2>
-            <i class="fas fa-table"></i> Attendance Records
-        </h2>
-        <div class="results-actions">
-            <button id="printReport" class="btn btn-secondary btn-sm">
-                <i class="fas fa-print"></i> Print
-            </button>
-            <button id="exportCSV" class="btn btn-success btn-sm">
-                <i class="fas fa-file-csv"></i> Export CSV
-            </button>
-        </div>
-    </div>
-    <div class="results-body">
-        <!-- Table Container -->
-        <div class="table-wrapper" id="tableContainer">
-            <table class="modern-table">
-                <thead>
-                    <tr>
-                        <th>LRN</th>
-                        <th>Student Name</th>
-                        <th>Section</th>
-                        <th>Date</th>
-                        <th>Time In</th>
-                        <th>Time Out</th>
-                        <th>Duration</th>
-                        <th>Status</th>
-                    </tr>
-                </thead>
-                <tbody id="attendanceTableBody">
-                    <!-- Populated via JavaScript -->
-                </tbody>
-            </table>
-        </div>
-
-        <!-- Empty State -->
-        <div id="noResults" class="empty-state" style="display: none;">
-            <i class="fas fa-inbox"></i>
-            <h3>No Records Found</h3>
-            <p>No attendance records match your selected filters. Try adjusting your search criteria.</p>
-        </div>
-
-        <!-- Pagination -->
-        <div id="paginationContainer" class="pagination-wrapper" style="display: none;">
-            <!-- Populated via JavaScript -->
         </div>
     </div>
 </div>
 
 <script>
 /**
- * Attendance Reports - Modern Implementation
- * Enhanced with responsive design and smooth animations
+ * Attendance Reports — Stepper-based UI
  */
+(function() {
+    'use strict';
 
-// State Management
-let currentPage = 1;
-let rowsPerPage = 20;
-let allRecords = [];
-let currentFilters = {};
+    let currentStep = 1;
+    let currentPage = 1;
+    const rowsPerPage = 20;
+    let allRecords = [];
+    let currentFilters = {};
 
-// Initialize on page load
-document.addEventListener('DOMContentLoaded', function() {
-    console.log('✅ Attendance Reports System initialized');
-    
-    // Form submission handler
+    // DOM refs
+    const stepperSteps = document.querySelectorAll('.stepper-step');
+    const stepPanels = [
+        document.getElementById('stepPanel1'),
+        document.getElementById('stepPanel2'),
+        document.getElementById('stepPanel3')
+    ];
+
+    // ---- Stepper Navigation ----
+    function goToStep(step) {
+        if (step < 1 || step > 3) return;
+        currentStep = step;
+
+        stepperSteps.forEach(el => {
+            const s = parseInt(el.dataset.step);
+            el.classList.toggle('active', s === step);
+            el.classList.toggle('completed', s < step);
+        });
+
+        // Update connectors
+        document.querySelectorAll('.stepper-connector').forEach((c, i) => {
+            c.classList.toggle('active', (i + 1) < step);
+        });
+
+        stepPanels.forEach((p, i) => {
+            if (p) {
+                p.classList.toggle('active', i + 1 === step);
+            }
+        });
+    }
+
+    // ---- Form Submit ----
     document.getElementById('reportFilters').addEventListener('submit', async function(e) {
         e.preventDefault();
         await generateReport();
     });
 
-    // Reset filters handler
-    document.getElementById('resetFilters').addEventListener('click', function() {
+    // ---- Navigation Buttons ----
+    document.getElementById('prevToStep1').addEventListener('click', () => goToStep(1));
+    document.getElementById('nextToStep3').addEventListener('click', () => {
+        if (allRecords.length === 0) {
+            showToast('Generate a report first before exporting.', 'warning');
+            return;
+        }
+        document.getElementById('exportRecordCount').textContent = allRecords.length;
+        goToStep(3);
+    });
+    document.getElementById('prevToStep2').addEventListener('click', () => goToStep(2));
+    document.getElementById('backToFilters').addEventListener('click', () => goToStep(1));
+    document.getElementById('newReport').addEventListener('click', () => {
         resetFilters();
+        goToStep(1);
     });
 
-    // Export CSV handler
-    document.getElementById('exportCSV').addEventListener('click', function() {
-        exportToCSV();
-    });
+    // ---- Reset ----
+    document.getElementById('resetFilters').addEventListener('click', resetFilters);
 
-    // Print report handler
-    document.getElementById('printReport').addEventListener('click', function() {
-        window.print();
-    });
-});
-
-// Generate Report Function
-async function generateReport() {
-    const formData = new FormData(document.getElementById('reportFilters'));
-    const params = new URLSearchParams(formData);
-    
-    // Store current filters
-    currentFilters = {
-        section: formData.get('section'),
-        start_date: formData.get('start_date'),
-        end_date: formData.get('end_date'),
-        student_search: formData.get('student_search')
-    };
-
-    try {
-        showLoading('Generating report...');
-        
-        const response = await fetch('../api/get_attendance_report_sections.php?' + params.toString());
-        
-        if (!response.ok) {
-            throw new Error('Network response was not ok');
-        }
-        
-        const data = await response.json();
-        hideLoading();
-
-        if (data.success) {
-            allRecords = data.records || [];
-            displaySummary(data.summary || {});
-            currentPage = 1;
-            displayRecords();
-            
-            // Show summary and results sections
-            document.getElementById('summarySection').style.display = 'block';
-            document.getElementById('resultsCard').style.display = 'block';
-            
-            // Smooth scroll to results
-            document.getElementById('summarySection').scrollIntoView({ behavior: 'smooth', block: 'start' });
-            
-            showNotification('Report generated successfully!', 'success');
-        } else {
-            showNotification(data.message || 'Error generating report', 'error');
-        }
-    } catch (error) {
-        hideLoading();
-        console.error('Report generation error:', error);
-        showNotification('Error fetching report data. Please try again.', 'error');
-    }
-}
-
-// Display Summary Statistics
-function displaySummary(summary) {
-    document.getElementById('total_records').textContent = summary.total_records || 0;
-    document.getElementById('completed_count').textContent = summary.completed_count || 0;
-    document.getElementById('incomplete_count').textContent = summary.incomplete_count || 0;
-    document.getElementById('sections_count').textContent = summary.sections_count || 0;
-}
-
-// Display Records in Table
-function displayRecords() {
-    const tbody = document.getElementById('attendanceTableBody');
-    const tableContainer = document.getElementById('tableContainer');
-    const noResults = document.getElementById('noResults');
-    const paginationContainer = document.getElementById('paginationContainer');
-    
-    tbody.innerHTML = '';
-
-    if (allRecords.length === 0) {
-        tableContainer.style.display = 'none';
-        noResults.style.display = 'flex';
-        paginationContainer.style.display = 'none';
-        return;
+    function resetFilters() {
+        document.getElementById('reportFilters').reset();
+        document.getElementById('start_date').value = '<?= date("Y-m-01") ?>';
+        document.getElementById('end_date').value = '<?= date("Y-m-d") ?>';
+        document.getElementById('summarySection').style.display = 'none';
+        document.getElementById('resultsCard').style.display = 'none';
+        allRecords = [];
+        currentFilters = {};
+        currentPage = 1;
     }
 
-    tableContainer.style.display = 'block';
-    noResults.style.display = 'none';
-    paginationContainer.style.display = 'flex';
+    // ---- Generate Report ----
+    async function generateReport() {
+        const formData = new FormData(document.getElementById('reportFilters'));
+        const params = new URLSearchParams(formData);
 
-    const start = (currentPage - 1) * rowsPerPage;
-    const end = start + rowsPerPage;
-    const pageRecords = allRecords.slice(start, end);
+        currentFilters = {
+            section: formData.get('section'),
+            start_date: formData.get('start_date'),
+            end_date: formData.get('end_date'),
+            student_search: formData.get('student_search')
+        };
 
-    pageRecords.forEach((record, index) => {
-        const row = document.createElement('tr');
-        row.style.animation = `fadeIn 0.3s ease ${index * 0.05}s forwards`;
-        row.style.opacity = '0';
-        
-        const statusClass = record.time_out ? 'status-completed' : 'status-incomplete';
-        const statusText = record.time_out ? 'Completed' : 'Incomplete';
-        const statusIcon = record.time_out ? 'fa-check-circle' : 'fa-clock';
-        
-        row.innerHTML = `
-            <td><strong>${escapeHtml(record.lrn)}</strong></td>
-            <td class="student-name-cell">${escapeHtml(record.student_name)}</td>
-            <td><span class="section-badge">${escapeHtml(record.section)}</span></td>
-            <td>${escapeHtml(record.date_formatted)}</td>
-            <td>${escapeHtml(record.time_in || '-')}</td>
-            <td>${escapeHtml(record.time_out || '-')}</td>
-            <td>${escapeHtml(record.duration)}</td>
-            <td>
-                <span class="status-badge-modern ${statusClass}">
-                    <i class="fas ${statusIcon}"></i>
-                    ${statusText}
-                </span>
-            </td>
-        `;
-        
-        tbody.appendChild(row);
-    });
+        try {
+            showLoading('Generating report…');
 
-    renderPagination();
-}
+            const response = await fetch('../api/get_attendance_report_sections.php?' + params.toString());
+            if (!response.ok) throw new Error('Network error');
 
-// Render Pagination Controls
-function renderPagination() {
-    const totalPages = Math.ceil(allRecords.length / rowsPerPage);
-    const pagination = document.getElementById('paginationContainer');
-    pagination.innerHTML = '';
+            const data = await response.json();
+            hideLoading();
 
-    if (totalPages <= 1) {
-        pagination.style.display = 'none';
-        return;
-    }
-
-    pagination.style.display = 'flex';
-
-    // Previous button
-    const prevBtn = createPageButton('‹ Prev', currentPage === 1, () => {
-        if (currentPage > 1) {
-            currentPage--;
-            displayRecords();
-            scrollToTop();
-        }
-    });
-    pagination.appendChild(prevBtn);
-
-    // Page numbers
-    const pageNumbers = generatePageNumbers(currentPage, totalPages);
-    pageNumbers.forEach(page => {
-        if (page === '...') {
-            const dots = document.createElement('span');
-            dots.className = 'page-dots';
-            dots.textContent = '...';
-            pagination.appendChild(dots);
-        } else {
-            const pageBtn = createPageButton(page, false, () => {
-                currentPage = page;
+            if (data.success) {
+                allRecords = data.records || [];
+                displaySummary(data.summary || {});
+                currentPage = 1;
                 displayRecords();
-                scrollToTop();
-            }, page === currentPage);
-            pagination.appendChild(pageBtn);
+
+                document.getElementById('summarySection').style.display = 'block';
+                document.getElementById('resultsCard').style.display = 'block';
+
+                // Move to step 2
+                goToStep(2);
+                showToast('Report generated — ' + allRecords.length + ' records found.', 'success');
+            } else {
+                showToast(data.message || 'Error generating report.', 'error');
+            }
+        } catch (err) {
+            hideLoading();
+            console.error(err);
+            showToast('Error fetching report data. Please try again.', 'error');
         }
+    }
+
+    // ---- Summary ----
+    function displaySummary(summary) {
+        document.getElementById('total_records').textContent = summary.total_records || 0;
+        document.getElementById('completed_count').textContent = summary.completed_count || 0;
+        document.getElementById('incomplete_count').textContent = summary.incomplete_count || 0;
+        document.getElementById('sections_count').textContent = summary.sections_count || 0;
+    }
+
+    // ---- Table ----
+    function displayRecords() {
+        const tbody = document.getElementById('attendanceTableBody');
+        const tableContainer = document.getElementById('tableContainer');
+        const noResults = document.getElementById('noResults');
+        const paginationContainer = document.getElementById('paginationContainer');
+
+        tbody.innerHTML = '';
+
+        if (allRecords.length === 0) {
+            tableContainer.style.display = 'none';
+            noResults.style.display = 'flex';
+            paginationContainer.style.display = 'none';
+            return;
+        }
+
+        tableContainer.style.display = 'block';
+        noResults.style.display = 'none';
+
+        const start = (currentPage - 1) * rowsPerPage;
+        const end = start + rowsPerPage;
+        const pageRecords = allRecords.slice(start, end);
+
+        pageRecords.forEach((rec) => {
+            const row = document.createElement('tr');
+            const completed = !!rec.time_out;
+            row.innerHTML = `
+                <td><strong>${esc(rec.lrn)}</strong></td>
+                <td>${esc(rec.student_name)}</td>
+                <td><span class="badge badge-green">${esc(rec.section)}</span></td>
+                <td>${esc(rec.date_formatted)}</td>
+                <td>${esc(rec.time_in || '-')}</td>
+                <td>${esc(rec.time_out || '-')}</td>
+                <td>${esc(rec.duration)}</td>
+                <td>
+                    <span class="badge ${completed ? 'badge-green' : 'badge-amber'}">
+                        <i class="fa-solid ${completed ? 'fa-circle-check' : 'fa-clock'}"></i>
+                        ${completed ? 'Completed' : 'Incomplete'}
+                    </span>
+                </td>`;
+            tbody.appendChild(row);
+        });
+
+        renderPagination();
+    }
+
+    // ---- Pagination ----
+    function renderPagination() {
+        const totalPages = Math.ceil(allRecords.length / rowsPerPage);
+        const container = document.getElementById('paginationContainer');
+        container.innerHTML = '';
+
+        if (totalPages <= 1) { container.style.display = 'none'; return; }
+        container.style.display = 'flex';
+
+        addPageBtn(container, '‹', currentPage === 1, () => { currentPage--; displayRecords(); });
+
+        const pages = genPages(currentPage, totalPages);
+        pages.forEach(p => {
+            if (p === '...') {
+                const dots = document.createElement('span');
+                dots.className = 'pagination-dots';
+                dots.textContent = '…';
+                container.appendChild(dots);
+            } else {
+                addPageBtn(container, p, false, () => { currentPage = p; displayRecords(); }, p === currentPage);
+            }
+        });
+
+        addPageBtn(container, '›', currentPage === totalPages, () => { currentPage++; displayRecords(); });
+    }
+
+    function addPageBtn(parent, text, disabled, onClick, active) {
+        const btn = document.createElement('button');
+        btn.textContent = text;
+        btn.className = 'pagination-btn' + (active ? ' active' : '');
+        btn.disabled = disabled;
+        if (!disabled) btn.onclick = onClick;
+        parent.appendChild(btn);
+    }
+
+    function genPages(cur, total) {
+        if (total <= 7) return Array.from({length: total}, (_, i) => i + 1);
+        const p = [];
+        if (cur <= 4) { for (let i = 1; i <= 5; i++) p.push(i); p.push('...'); p.push(total); }
+        else if (cur >= total - 3) { p.push(1); p.push('...'); for (let i = total - 4; i <= total; i++) p.push(i); }
+        else { p.push(1); p.push('...'); p.push(cur - 1); p.push(cur); p.push(cur + 1); p.push('...'); p.push(total); }
+        return p;
+    }
+
+    // ---- Export CSV ----
+    document.getElementById('exportCSV').addEventListener('click', function() {
+        if (allRecords.length === 0) {
+            showToast('No data to export.', 'warning');
+            return;
+        }
+
+        const prog = document.getElementById('exportProgress');
+        const fill = document.getElementById('exportProgressFill');
+        const text = document.getElementById('exportProgressText');
+        prog.style.display = 'block';
+        fill.style.width = '0%';
+        text.textContent = 'Preparing export…';
+
+        // Animate progress bar
+        let pct = 0;
+        const iv = setInterval(() => {
+            pct += 10 + Math.random() * 15;
+            if (pct > 90) pct = 90;
+            fill.style.width = pct + '%';
+            text.textContent = 'Exporting… ' + Math.round(pct) + '%';
+        }, 200);
+
+        const params = new URLSearchParams(currentFilters);
+        window.location.href = '../api/export_attendance_sections_csv.php?' + params.toString();
+
+        setTimeout(() => {
+            clearInterval(iv);
+            fill.style.width = '100%';
+            text.textContent = 'Export complete!';
+            showToast('CSV exported successfully.', 'success');
+            setTimeout(() => { prog.style.display = 'none'; }, 2000);
+        }, 1500);
     });
 
-    // Next button
-    const nextBtn = createPageButton('Next ›', currentPage === totalPages, () => {
-        if (currentPage < totalPages) {
-            currentPage++;
-            displayRecords();
-            scrollToTop();
-        }
+    // ---- Print ----
+    document.getElementById('printReport').addEventListener('click', () => window.print());
+
+    // ---- Density Toggle ----
+    document.querySelectorAll('.density-option').forEach(btn => {
+        btn.addEventListener('click', function() {
+            document.querySelectorAll('.density-option').forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+            const table = document.getElementById('reportTable');
+            if (this.dataset.density === 'compact') {
+                table.classList.add('table-compact');
+            } else {
+                table.classList.remove('table-compact');
+            }
+        });
     });
-    pagination.appendChild(nextBtn);
-}
 
-// Helper function to create page buttons
-function createPageButton(text, disabled, onClick, active = false) {
-    const btn = document.createElement('button');
-    btn.textContent = text;
-    btn.className = 'page-btn' + (active ? ' active' : '');
-    btn.disabled = disabled;
-    if (!disabled) {
-        btn.onclick = onClick;
-    }
-    return btn;
-}
-
-// Generate page numbers with ellipsis
-function generatePageNumbers(current, total) {
-    const pages = [];
-    
-    if (total <= 7) {
-        for (let i = 1; i <= total; i++) {
-            pages.push(i);
-        }
-    } else {
-        if (current <= 4) {
-            for (let i = 1; i <= 5; i++) pages.push(i);
-            pages.push('...');
-            pages.push(total);
-        } else if (current >= total - 3) {
-            pages.push(1);
-            pages.push('...');
-            for (let i = total - 4; i <= total; i++) pages.push(i);
-        } else {
-            pages.push(1);
-            pages.push('...');
-            for (let i = current - 1; i <= current + 1; i++) pages.push(i);
-            pages.push('...');
-            pages.push(total);
-        }
-    }
-    
-    return pages;
-}
-
-// Export to CSV
-function exportToCSV() {
-    if (allRecords.length === 0) {
-        showNotification('No data to export', 'warning');
-        return;
+    // ---- Helpers ----
+    function esc(text) {
+        const d = document.createElement('div');
+        d.textContent = text;
+        return d.innerHTML;
     }
 
-    const section = currentFilters.section || 'All_Sections';
-    const startDate = currentFilters.start_date.replace(/-/g, '');
-    const endDate = currentFilters.end_date.replace(/-/g, '');
-    
-    const params = new URLSearchParams(currentFilters);
-    window.location.href = '../api/export_attendance_sections_csv.php?' + params.toString();
-    
-    showNotification('Exporting report to CSV...', 'info');
-}
-
-// Reset Filters
-function resetFilters() {
-    document.getElementById('reportFilters').reset();
-    document.getElementById('start_date').value = '<?= date('Y-m-01') ?>';
-    document.getElementById('end_date').value = '<?= date('Y-m-d') ?>';
-    document.getElementById('summarySection').style.display = 'none';
-    document.getElementById('resultsCard').style.display = 'none';
-    
-    allRecords = [];
-    currentFilters = {};
-    currentPage = 1;
-    
-    showNotification('Filters reset successfully', 'info');
-}
-
-// Show Loading Overlay
-function showLoading(message = 'Loading...') {
-    const overlay = document.createElement('div');
-    overlay.id = 'loadingOverlay';
-    overlay.className = 'loading-overlay';
-    overlay.innerHTML = `
-        <div class="spinner"></div>
-        <div class="loading-text">${message}</div>
-    `;
-    document.body.appendChild(overlay);
-}
-
-// Hide Loading Overlay
-function hideLoading() {
-    const overlay = document.getElementById('loadingOverlay');
-    if (overlay) {
-        overlay.style.opacity = '0';
-        setTimeout(() => overlay.remove(), 300);
+    function showLoading(msg) {
+        const ov = document.createElement('div');
+        ov.id = 'loadingOverlay';
+        ov.style.cssText = 'position:fixed;inset:0;background:rgba(255,255,255,.7);backdrop-filter:blur(4px);z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1rem;';
+        ov.innerHTML = '<div class="spinner"></div><div style="font-weight:600;color:var(--gray-700);">' + msg + '</div>';
+        document.body.appendChild(ov);
     }
-}
 
-// Show Notification
-function showNotification(message, type = 'info') {
-    const container = document.createElement('div');
-    container.style.cssText = 'position: fixed; top: 20px; right: 20px; z-index: 10000;';
-    
-    const icons = {
-        success: 'check-circle',
-        error: 'exclamation-circle',
-        warning: 'exclamation-triangle',
-        info: 'info-circle'
-    };
-    
-    const alert = document.createElement('div');
-    alert.className = `alert alert-${type}`;
-    alert.style.cssText = 'min-width: 300px; animation: slideInRight 0.3s ease; box-shadow: var(--shadow-xl);';
-    
-    alert.innerHTML = `
-        <div class="alert-icon">
-            <i class="fas fa-${icons[type]}"></i>
-        </div>
-        <div class="alert-content">${message}</div>
-    `;
-    
-    container.appendChild(alert);
-    document.body.appendChild(container);
-    
-    setTimeout(() => {
-        alert.style.animation = 'slideOutRight 0.3s ease';
-        setTimeout(() => container.remove(), 300);
-    }, 4000);
-}
-
-// Scroll to top of results
-function scrollToTop() {
-    document.getElementById('resultsCard').scrollIntoView({ behavior: 'smooth', block: 'start' });
-}
-
-// Escape HTML to prevent XSS
-function escapeHtml(text) {
-    const map = {
-        '&': '&amp;',
-        '<': '&lt;',
-        '>': '&gt;',
-        '"': '&quot;',
-        "'": '&#039;'
-    };
-    return text.toString().replace(/[&<>"']/g, m => map[m]);
-}
-
-// Add fadeIn animation
-const style = document.createElement('style');
-style.textContent = `
-    @keyframes fadeIn {
-        from { opacity: 0; transform: translateY(10px); }
-        to { opacity: 1; transform: translateY(0); }
+    function hideLoading() {
+        const ov = document.getElementById('loadingOverlay');
+        if (ov) { ov.style.opacity = '0'; setTimeout(() => ov.remove(), 300); }
     }
-`;
-document.head.appendChild(style);
+
+    function showToast(message, type) {
+        const toast = document.createElement('div');
+        toast.className = 'toast toast-' + type;
+        const icons = { success: 'fa-circle-check', error: 'fa-circle-exclamation', warning: 'fa-triangle-exclamation', info: 'fa-circle-info' };
+        toast.innerHTML = '<i class="fa-solid ' + (icons[type] || icons.info) + '"></i><span>' + message + '</span>';
+        document.body.appendChild(toast);
+        requestAnimationFrame(() => toast.classList.add('show'));
+        setTimeout(() => {
+            toast.classList.remove('show');
+            setTimeout(() => toast.remove(), 300);
+        }, 4000);
+    }
+
+})();
 </script>
 
 <?php include 'includes/footer_modern.php'; ?>

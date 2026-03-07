@@ -9,47 +9,47 @@
     <aside class="mobile-drawer" id="admin-mobile-menu">
         <div class="mobile-drawer-header">
             <div class="mobile-drawer-brand">
-                <div class="sidebar-logo-icon" style="width:36px;height:36px;font-size:0.9rem;">
-                    <i class="fas fa-shield-alt"></i>
+                <div class="sidebar-logo-icon" style="width:36px;height:36px;">
+                    <img src="../assets/image/logo.png" alt="San Francisco High School logo" class="sidebar-logo-img">
                 </div>
-                <span style="font-weight:700;color:var(--green-700);font-size:0.95rem;">Admin Menu</span>
+                <span style="font-weight:700;color:var(--green-700);font-size:0.95rem;">SFHS Admin</span>
             </div>
-            <button class="mobile-drawer-close" onclick="toggleAdminMenu()">
-                <i class="fas fa-times"></i>
+            <button class="mobile-drawer-close" onclick="toggleAdminMenu()" aria-label="Close menu">
+                <i class="fa-solid fa-xmark"></i>
             </button>
         </div>
-        <nav class="mobile-drawer-nav">
+        <nav class="mobile-drawer-nav" aria-label="Mobile navigation">
             <div class="mobile-drawer-label">Main</div>
             <a href="dashboard.php" class="mobile-drawer-link <?php echo (basename($_SERVER['PHP_SELF']) == 'dashboard.php') ? 'active' : ''; ?>">
-                <i class="fas fa-home"></i> Dashboard
+                <i class="fa-solid fa-house"></i> Dashboard
             </a>
             
             <div class="mobile-drawer-label">Management</div>
             <a href="view_students.php" class="mobile-drawer-link <?php echo (in_array(basename($_SERVER['PHP_SELF']), ['view_students.php', 'manage_students.php'])) ? 'active' : ''; ?>">
-                <i class="fas fa-users"></i> Students
+                <i class="fa-solid fa-user-group"></i> Students
             </a>
             <a href="manage_sections.php" class="mobile-drawer-link <?php echo (basename($_SERVER['PHP_SELF']) == 'manage_sections.php') ? 'active' : ''; ?>">
-                <i class="fas fa-layer-group"></i> Sections
+                <i class="fa-solid fa-table-cells-large"></i> Sections
             </a>
             
             <div class="mobile-drawer-label">Attendance</div>
             <a href="manual_attendance.php" class="mobile-drawer-link <?php echo (basename($_SERVER['PHP_SELF']) == 'manual_attendance.php') ? 'active' : ''; ?>">
-                <i class="fas fa-clipboard-check"></i> Manual Entry
+                <i class="fa-solid fa-pen-to-square"></i> Manual Entry
             </a>
             <a href="attendance_reports_sections.php" class="mobile-drawer-link <?php echo (basename($_SERVER['PHP_SELF']) == 'attendance_reports_sections.php') ? 'active' : ''; ?>">
-                <i class="fas fa-chart-bar"></i> Reports
+                <i class="fa-solid fa-chart-column"></i> Reports
             </a>
             
             <hr class="mobile-drawer-divider">
             <div class="mobile-drawer-label">Quick Actions</div>
             <a href="../scan_attendance.php" class="mobile-drawer-link" target="_blank">
-                <i class="fas fa-qrcode"></i> QR Scanner
+                <i class="fa-solid fa-qrcode"></i> QR Scanner
             </a>
             <a href="../index.php" class="mobile-drawer-link" target="_blank">
-                <i class="fas fa-globe"></i> View Site
+                <i class="fa-solid fa-arrow-up-right-from-square"></i> View Site
             </a>
             <a href="logout.php" class="mobile-drawer-link mobile-drawer-link-danger">
-                <i class="fas fa-sign-out-alt"></i> Logout
+                <i class="fa-solid fa-right-from-bracket"></i> Logout
             </a>
         </nav>
     </aside>
@@ -137,14 +137,14 @@
             if (!searchInput || !searchResults) return;
 
             var pages = [
-                { name: 'Dashboard',        icon: 'fa-home',            url: 'dashboard.php' },
-                { name: 'Students',          icon: 'fa-users',           url: 'view_students.php' },
-                { name: 'Manage Students',   icon: 'fa-user-edit',       url: 'manage_students.php' },
-                { name: 'Sections',          icon: 'fa-layer-group',     url: 'manage_sections.php' },
-                { name: 'Manual Entry',      icon: 'fa-clipboard-check', url: 'manual_attendance.php' },
-                { name: 'Reports',           icon: 'fa-chart-bar',       url: 'attendance_reports_sections.php' },
-                { name: 'QR Scanner',        icon: 'fa-qrcode',          url: '../scan_attendance.php' },
-                { name: 'View Site',         icon: 'fa-globe',           url: '../index.php' }
+                { name: 'Dashboard',        icon: 'fa-house',               url: 'dashboard.php' },
+                { name: 'Students',          icon: 'fa-user-group',          url: 'view_students.php' },
+                { name: 'Manage Students',   icon: 'fa-user-pen',            url: 'manage_students.php' },
+                { name: 'Sections',          icon: 'fa-table-cells-large',   url: 'manage_sections.php' },
+                { name: 'Manual Entry',      icon: 'fa-pen-to-square',       url: 'manual_attendance.php' },
+                { name: 'Reports',           icon: 'fa-chart-column',        url: 'attendance_reports_sections.php' },
+                { name: 'QR Scanner',        icon: 'fa-qrcode',              url: '../scan_attendance.php' },
+                { name: 'View Site',         icon: 'fa-arrow-up-right-from-square', url: '../index.php' }
             ];
 
             searchInput.addEventListener('input', function() {
@@ -163,7 +163,7 @@
                         el.href = p.url;
                         el.className = 'topbar-search-result-item';
                         el.setAttribute('role', 'option');
-                        el.innerHTML = '<i class="fas ' + p.icon + '"></i><span>' + p.name + '</span>';
+                        el.innerHTML = '<i class="fa-solid ' + p.icon + '"></i><span>' + p.name + '</span>';
                         return el.outerHTML;
                     }).join('');
                 } else {
@@ -212,6 +212,20 @@
 
                 link.addEventListener('mouseleave', hideTooltip);
             });
+        })();
+
+        /* ── Breadcrumb Sticky Shadow ────────────────────────────── */
+        (function() {
+            var bar = document.getElementById('breadcrumbBar');
+            if (!bar) return;
+            var sentinel = document.createElement('div');
+            sentinel.style.height = '1px';
+            sentinel.style.marginBottom = '-1px';
+            bar.parentNode.insertBefore(sentinel, bar);
+            var observer = new IntersectionObserver(function(entries) {
+                bar.classList.toggle('stuck', !entries[0].isIntersecting);
+            }, { threshold: [1] });
+            observer.observe(sentinel);
         })();
     </script>
 

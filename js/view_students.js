@@ -108,7 +108,7 @@ function printQR() {
                         color: #333;
                     }
                     h1 {
-                        color: #10B981;
+                        color: #1ea85b;
                         margin-bottom: 10px;
                         font-size: 2em;
                     }
@@ -132,7 +132,7 @@ function printQR() {
                         margin: 20px 0;
                     }
                     .header {
-                        border-bottom: 2px solid #10B981;
+                        border-bottom: 2px solid #1ea85b;
                         padding-bottom: 20px;
                         margin-bottom: 30px;
                     }

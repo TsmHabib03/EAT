@@ -1,4 +1,4 @@
-# AttendEaseV2 — Copilot Instructions
+# San Francisco High School — Copilot Instructions
 
 ## Architecture
 

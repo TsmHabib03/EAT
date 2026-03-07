@@ -184,7 +184,7 @@ After database import, log in with:
 - **QR Codes**: Generated automatically using the student's LRN as the primary data
 
 ### Time In/Time Out System
-AttendEase uses a simple, flexible attendance tracking model:
+San Francisco High School uses a simple, flexible attendance tracking model:
 
 1. **Time In**: Records when a student arrives
    - Captured via QR scan or manual entry
@@ -835,7 +835,7 @@ define('DB_PASS', '');               // Correct password?
 
 ## 🤝 Contributing
 
-We welcome contributions to improve AttendEase! Here's how you can help:
+We welcome contributions to improve San Francisco High School! Here's how you can help:
 
 ### Bug Reports
 - Check existing issues before creating new ones

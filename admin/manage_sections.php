@@ -4,7 +4,7 @@ requireAdmin();
 
 $currentAdmin = getCurrentAdmin();
 $pageTitle = 'Manage Sections';
-$pageIcon = 'layer-group';
+$pageIcon = 'table-cells-large';
 
 // Add manage-sections CSS - New Modern Design with cache buster
 $additionalCSS = ['../css/manage-sections-modern.css?v=' . time()];
@@ -152,50 +152,22 @@ try {
     $messageType = 'error';
 }
 
+$breadcrumb = [
+    ['label' => 'Dashboard', 'icon' => 'house', 'url' => 'dashboard.php'],
+    ['label' => 'Manage Sections', 'icon' => 'table-cells-large', 'url' => 'manage_sections.php']
+];
+$breadcrumbAction = ['label' => 'Add Section', 'icon' => 'circle-plus', 'url' => '#', 'target' => ''];
+
 include 'includes/header_modern.php';
 ?>
-
-<!-- Page Header — Glassmorphism Bento -->
-<div class="page-header-glass">
-    <div class="page-header-inner">
-        <nav class="breadcrumb-glass" aria-label="Breadcrumb">
-            <a href="dashboard.php" class="breadcrumb-item" title="Dashboard">
-                <i class="fas fa-home"></i> Dashboard
-            </a>
-            <span class="breadcrumb-sep" aria-hidden="true"><i class="fas fa-chevron-right"></i></span>
-            <span class="breadcrumb-item active" aria-current="page">
-                <i class="fas fa-<?php echo $pageIcon; ?>"></i> <?php echo $pageTitle; ?>
-            </span>
-        </nav>
-        <div class="page-header-content-glass">
-            <div class="page-header-title-row">
-                <div class="page-header-icon">
-                    <i class="fas fa-<?php echo $pageIcon; ?>"></i>
-                </div>
-                <div class="page-header-text">
-                    <h1><?php echo $pageTitle; ?></h1>
-                    <p><i class="fas fa-info-circle"></i> Manage school sections, grades, and advisers</p>
-                </div>
-            </div>
-            <div class="page-header-actions">
-                <button class="btn-header-glass secondary" onclick="window.location.reload()">
-                    <i class="fas fa-sync-alt"></i> Refresh
-                </button>
-                <button class="btn-header-glass primary" data-action="add-section">
-                    <i class="fas fa-plus-circle"></i> Add New Section
-                </button>
-            </div>
-        </div>
-    </div>
-</div>
 
 <!-- Stats Overview - Enhanced -->
 <div class="stats-grid stats-grid-enhanced">
     <div class="stat-card stat-card-animated" data-stat="total">
         <div class="stat-card-inner">
             <div class="stat-icon-wrapper">
-                <div class="stat-icon stat-icon-purple">
-                    <i class="fas fa-layer-group"></i>
+                <div class="stat-icon stat-icon-green">
+                    <i class="fa-solid fa-table-cells-large"></i>
                 </div>
                 <div class="stat-icon-bg"></div>
             </div>
@@ -203,12 +175,12 @@ include 'includes/header_modern.php';
                 <div class="stat-value-wrapper">
                     <h3 class="stat-value" data-count="<?php echo count($sections); ?>">0</h3>
                     <span class="stat-trend stat-trend-up">
-                        <i class="fas fa-arrow-up"></i>
+                        <i class="fa-solid fa-arrow-up"></i>
                     </span>
                 </div>
                 <p class="stat-label">Total Sections</p>
                 <div class="stat-progress">
-                    <div class="stat-progress-bar stat-progress-purple" style="width: 100%"></div>
+                    <div class="stat-progress-bar stat-progress-green" style="width: 100%"></div>
                 </div>
             </div>
         </div>
@@ -217,8 +189,8 @@ include 'includes/header_modern.php';
     <div class="stat-card stat-card-animated" data-stat="students" style="animation-delay: 0.1s;">
         <div class="stat-card-inner">
             <div class="stat-icon-wrapper">
-                <div class="stat-icon stat-icon-pink">
-                    <i class="fas fa-user-graduate"></i>
+                <div class="stat-icon stat-icon-green">
+                    <i class="fa-solid fa-user-graduate"></i>
                 </div>
                 <div class="stat-icon-bg"></div>
             </div>
@@ -226,12 +198,12 @@ include 'includes/header_modern.php';
                 <div class="stat-value-wrapper">
                     <h3 class="stat-value" data-count="<?php echo array_sum(array_column($sections, 'student_count')); ?>">0</h3>
                     <span class="stat-trend stat-trend-up">
-                        <i class="fas fa-arrow-up"></i>
+                        <i class="fa-solid fa-arrow-up"></i>
                     </span>
                 </div>
                 <p class="stat-label">Total Students</p>
                 <div class="stat-progress">
-                    <div class="stat-progress-bar stat-progress-pink" style="width: 85%"></div>
+                    <div class="stat-progress-bar stat-progress-green" style="width: 85%"></div>
                 </div>
             </div>
         </div>
@@ -240,8 +212,8 @@ include 'includes/header_modern.php';
     <div class="stat-card stat-card-animated" data-stat="active" style="animation-delay: 0.2s;">
         <div class="stat-card-inner">
             <div class="stat-icon-wrapper">
-                <div class="stat-icon stat-icon-blue">
-                    <i class="fas fa-check-circle"></i>
+                <div class="stat-icon stat-icon-green">
+                    <i class="fa-solid fa-circle-check"></i>
                 </div>
                 <div class="stat-icon-bg"></div>
             </div>
@@ -249,12 +221,12 @@ include 'includes/header_modern.php';
                 <div class="stat-value-wrapper">
                     <h3 class="stat-value" data-count="<?php echo count(array_filter($sections, fn($s) => $s['status'] === 'active')); ?>">0</h3>
                     <span class="stat-trend stat-trend-neutral">
-                        <i class="fas fa-minus"></i>
+                        <i class="fa-solid fa-minus"></i>
                     </span>
                 </div>
                 <p class="stat-label">Active Sections</p>
                 <div class="stat-progress">
-                    <div class="stat-progress-bar stat-progress-blue" style="width: 92%"></div>
+                    <div class="stat-progress-bar stat-progress-green" style="width: 92%"></div>
                 </div>
             </div>
         </div>
@@ -264,7 +236,7 @@ include 'includes/header_modern.php';
         <div class="stat-card-inner">
             <div class="stat-icon-wrapper">
                 <div class="stat-icon stat-icon-green">
-                    <i class="fas fa-chalkboard-teacher"></i>
+                    <i class="fa-solid fa-chalkboard-user"></i>
                 </div>
                 <div class="stat-icon-bg"></div>
             </div>
@@ -272,7 +244,7 @@ include 'includes/header_modern.php';
                 <div class="stat-value-wrapper">
                     <h3 class="stat-value" data-count="<?php echo count(array_unique(array_filter(array_column($sections, 'adviser')))); ?>">0</h3>
                     <span class="stat-trend stat-trend-up">
-                        <i class="fas fa-arrow-up"></i>
+                        <i class="fa-solid fa-arrow-up"></i>
                     </span>
                 </div>
                 <p class="stat-label">Advisers</p>
@@ -289,14 +261,14 @@ include 'includes/header_modern.php';
     <div class="card-header-modern card-header-enhanced">
         <div class="card-header-left">
             <div class="card-icon-badge">
-                <i class="fas fa-list"></i>
+                <i class="fa-solid fa-list"></i>
             </div>
             <div>
                 <h2 class="card-title-modern">
                     All Sections
                 </h2>
                 <p class="card-subtitle-modern">
-                    <i class="fas fa-info-circle"></i>
+                    <i class="fa-solid fa-info-circle"></i>
                     View and manage all school sections
                 </p>
             </div>
@@ -304,17 +276,17 @@ include 'includes/header_modern.php';
         <div class="card-actions card-actions-enhanced">
             <div class="filter-group">
                 <div class="search-box-enhanced">
-                    <i class="fas fa-search search-icon"></i>
+                    <i class="fa-solid fa-search search-icon"></i>
                     <input type="text" id="searchSections" placeholder="Search sections, advisers..." autocomplete="off">
                     <button class="search-clear" id="clearSearch" style="display: none;">
-                        <i class="fas fa-times"></i>
+                        <i class="fa-solid fa-times"></i>
                     </button>
                 </div>
                 <div class="filter-dropdown">
                     <button class="filter-btn" id="filterBtn">
-                        <i class="fas fa-filter"></i>
+                        <i class="fa-solid fa-filter"></i>
                         <span>Filter</span>
-                        <i class="fas fa-chevron-down"></i>
+                        <i class="fa-solid fa-chevron-down"></i>
                     </button>
                     <div class="filter-menu" id="filterMenu">
                         <div class="filter-option">
@@ -364,7 +336,7 @@ include 'includes/header_modern.php';
                     <div class="empty-state-circle circle-3"></div>
                     <div class="empty-state-icon-wrapper">
                         <div class="empty-state-icon-modern">
-                            <i class="fas fa-layer-group"></i>
+                            <i class="fa-solid fa-table-cells-large"></i>
                         </div>
                     </div>
                 </div>
@@ -377,32 +349,32 @@ include 'includes/header_modern.php';
                     <div class="empty-state-features">
                         <div class="empty-feature">
                             <div class="feature-icon">
-                                <i class="fas fa-users"></i>
+                                <i class="fa-solid fa-user-group"></i>
                             </div>
                             <span>Organize Students</span>
                         </div>
                         <div class="empty-feature">
                             <div class="feature-icon">
-                                <i class="fas fa-graduation-cap"></i>
+                                <i class="fa-solid fa-graduation-cap"></i>
                             </div>
                             <span>Track by Grade</span>
                         </div>
                         <div class="empty-feature">
                             <div class="feature-icon">
-                                <i class="fas fa-chalkboard-teacher"></i>
+                                <i class="fa-solid fa-chalkboard-user"></i>
                             </div>
                             <span>Assign Advisers</span>
                         </div>
                     </div>
                     <button class="btn-empty-action" data-action="add-section">
                         <span class="btn-empty-icon">
-                            <i class="fas fa-plus"></i>
+                            <i class="fa-solid fa-plus"></i>
                         </span>
                         <span class="btn-empty-text">Create Your First Section</span>
                         <span class="btn-empty-shine"></span>
                     </button>
                     <p class="empty-state-help">
-                        <i class="fas fa-lightbulb"></i>
+                        <i class="fa-solid fa-lightbulb"></i>
                         <strong>Pro Tip:</strong> Sections are automatically created when you add students with new section names
                     </p>
                 </div>
@@ -415,46 +387,46 @@ include 'includes/header_modern.php';
                             <tr>
                                 <th class="th-sortable" data-sort="name">
                                     <div class="th-content">
-                                        <i class="fas fa-layer-group th-icon"></i>
+                                        <i class="fa-solid fa-table-cells-large th-icon"></i>
                                         <span>Section Name</span>
-                                        <i class="fas fa-sort sort-icon"></i>
+                                        <i class="fa-solid fa-sort sort-icon"></i>
                                     </div>
                                 </th>
                                 <th class="th-sortable" data-sort="grade">
                                     <div class="th-content">
-                                        <i class="fas fa-graduation-cap th-icon"></i>
+                                        <i class="fa-solid fa-graduation-cap th-icon"></i>
                                         <span>Grade Level</span>
-                                        <i class="fas fa-sort sort-icon"></i>
+                                        <i class="fa-solid fa-sort sort-icon"></i>
                                     </div>
                                 </th>
                                 <th>
                                     <div class="th-content">
-                                        <i class="fas fa-chalkboard-teacher th-icon"></i>
+                                        <i class="fa-solid fa-chalkboard-user th-icon"></i>
                                         <span>Adviser</span>
                                     </div>
                                 </th>
                                 <th>
                                     <div class="th-content">
-                                        <i class="fas fa-calendar-alt th-icon"></i>
+                                        <i class="fa-solid fa-calendar-days th-icon"></i>
                                         <span>School Year</span>
                                     </div>
                                 </th>
                                 <th class="th-sortable" data-sort="students">
                                     <div class="th-content">
-                                        <i class="fas fa-users th-icon"></i>
+                                        <i class="fa-solid fa-user-group th-icon"></i>
                                         <span>Students</span>
-                                        <i class="fas fa-sort sort-icon"></i>
+                                        <i class="fa-solid fa-sort sort-icon"></i>
                                     </div>
                                 </th>
                                 <th>
                                     <div class="th-content">
-                                        <i class="fas fa-info-circle th-icon"></i>
+                                        <i class="fa-solid fa-circle-info th-icon"></i>
                                         <span>Status</span>
                                     </div>
                                 </th>
                                 <th class="th-actions">
                                     <div class="th-content">
-                                        <i class="fas fa-cog th-icon"></i>
+                                        <i class="fa-solid fa-gear th-icon"></i>
                                         <span>Actions</span>
                                     </div>
                                 </th>
@@ -471,7 +443,7 @@ include 'includes/header_modern.php';
                                     <div class="table-cell-content">
                                         <div class="section-name-wrapper">
                                             <div class="section-icon">
-                                                <i class="fas fa-bookmark"></i>
+                                                <i class="fa-solid fa-bookmark"></i>
                                             </div>
                                             <strong class="section-name"><?php echo htmlspecialchars($section['section_name']); ?></strong>
                                         </div>
@@ -480,7 +452,7 @@ include 'includes/header_modern.php';
                                 <td>
                                     <?php if ($section['grade_level']): ?>
                                         <span class="grade-badge grade-badge-enhanced">
-                                            <i class="fas fa-graduation-cap"></i>
+                                            <i class="fa-solid fa-graduation-cap"></i>
                                             <span>
                                                 <?php 
                                                 // Display grade level properly
@@ -512,7 +484,7 @@ include 'includes/header_modern.php';
                                 <td>
                                     <?php if ($section['school_year']): ?>
                                         <span class="school-year-badge">
-                                            <i class="fas fa-calendar"></i>
+                                            <i class="fa-solid fa-calendar"></i>
                                             <?php echo htmlspecialchars($section['school_year']); ?>
                                         </span>
                                     <?php else: ?>
@@ -521,7 +493,7 @@ include 'includes/header_modern.php';
                                 </td>
                                 <td class="td-centered">
                                     <span class="badge badge-info badge-enhanced">
-                                        <i class="fas fa-users"></i>
+                                        <i class="fa-solid fa-user-group"></i>
                                         <span class="badge-text"><?php echo $section['student_count']; ?> student<?php echo $section['student_count'] != 1 ? 's' : ''; ?></span>
                                     </span>
                                 </td>
@@ -532,7 +504,7 @@ include 'includes/header_modern.php';
                                     $statusIcon = $status === 'active' ? 'check-circle' : 'times-circle';
                                     ?>
                                     <span class="status-badge status-badge-enhanced status-<?php echo $statusClass; ?>">
-                                        <i class="fas fa-<?php echo $statusIcon; ?> status-icon"></i>
+                                        <i class="fa-solid fa-<?php echo $statusIcon; ?> status-icon"></i>
                                         <span><?php echo ucfirst($status); ?></span>
                                     </span>
                                 </td>
@@ -543,7 +515,7 @@ include 'includes/header_modern.php';
                                             data-action="edit"
                                             data-section='<?php echo json_encode($section); ?>'
                                             title="Edit Section">
-                                            <i class="fas fa-edit"></i>
+                                            <i class="fa-solid fa-pen-to-square"></i>
                                             <span class="btn-tooltip">Edit</span>
                                         </button>
                                         <button 
@@ -553,7 +525,7 @@ include 'includes/header_modern.php';
                                             data-name="<?php echo htmlspecialchars($section['section_name']); ?>"
                                             data-count="<?php echo $section['student_count']; ?>"
                                             title="Delete Section">
-                                            <i class="fas fa-trash"></i>
+                                            <i class="fa-solid fa-trash"></i>
                                             <span class="btn-tooltip">Delete</span>
                                         </button>
                                     </div>
@@ -582,7 +554,7 @@ include 'includes/header_modern.php';
             <div class="modal-header modal-header-enhanced">
                 <div class="modal-header-content">
                     <div class="modal-icon-wrapper">
-                        <i class="fas fa-layer-group"></i>
+                        <i class="fa-solid fa-table-cells-large"></i>
                     </div>
                     <div>
                         <h3 class="modal-title" id="modalTitle">Add New Section</h3>
@@ -590,7 +562,7 @@ include 'includes/header_modern.php';
                     </div>
                 </div>
                 <button class="modal-close modal-close-enhanced" data-action="close-modal" data-modal="sectionModal">
-                    <i class="fas fa-times"></i>
+                    <i class="fa-solid fa-times"></i>
                 </button>
             </div>
             <div class="modal-body modal-body-enhanced">
@@ -678,11 +650,11 @@ include 'includes/header_modern.php';
                     
                     <div class="modal-actions">
                         <button type="button" class="btn btn-secondary" data-action="close-modal" data-modal="sectionModal">
-                            <i class="fas fa-times"></i>
+                            <i class="fa-solid fa-times"></i>
                             <span>Cancel</span>
                         </button>
                         <button type="submit" class="btn btn-primary" id="submitBtn">
-                            <i class="fas fa-save"></i>
+                            <i class="fa-solid fa-save"></i>
                             <span>Save Section</span>
                         </button>
                     </div>
@@ -699,7 +671,7 @@ include 'includes/header_modern.php';
             <div class="modal-body modal-body-centered">
                 <div class="delete-icon-wrapper delete-icon-animated">
                     <div class="delete-icon-circle">
-                        <i class="fas fa-exclamation-triangle"></i>
+                        <i class="fa-solid fa-triangle-exclamation"></i>
                     </div>
                     <div class="delete-icon-ripple"></div>
                 </div>
@@ -709,7 +681,7 @@ include 'includes/header_modern.php';
                     <strong class="delete-section-highlight" id="deleteSectionName"></strong>?
                 </p>
                 <p id="deleteWarning" class="delete-warning delete-warning-enhanced" style="display: none;">
-                    <i class="fas fa-shield-alt"></i>
+                    <i class="fa-solid fa-graduation-cap"></i>
                     <span></span>
                 </p>
                 
@@ -719,7 +691,7 @@ include 'includes/header_modern.php';
                         class="btn btn-secondary btn-modal" 
                         data-action="close-modal" 
                         data-modal="deleteModal">
-                        <i class="fas fa-times"></i>
+                        <i class="fa-solid fa-times"></i>
                         <span>Cancel</span>
                     </button>
                     <button 
@@ -727,7 +699,7 @@ include 'includes/header_modern.php';
                         class="btn btn-danger btn-modal" 
                         id="confirmDeleteBtn"
                         data-action="confirm-delete">
-                        <i class="fas fa-trash"></i>
+                        <i class="fa-solid fa-trash"></i>
                         <span>Yes, Delete</span>
                     </button>
                 </div>
@@ -768,7 +740,7 @@ function showNotification(message, type = 'info') {
     
     notification.innerHTML = `
         <div class="alert-icon">
-            <i class="fas fa-${icons[type] || 'info-circle'}"></i>
+            <i class="fa-solid fa-${icons[type] || 'info-circle'}"></i>
         </div>
         <div class="alert-content">${message}</div>
     `;
@@ -819,7 +791,7 @@ function closeModal(modalId) {
 function openAddModal() {
     const titleElement = document.querySelector('#modalTitle');
     
-    titleElement.innerHTML = '<i class="fas fa-plus-circle"></i> Add New Section';
+    titleElement.innerHTML = '<i class="fa-solid fa-circle-plus"></i> Add New Section';
     
     document.getElementById('formAction').value = 'add';
     document.getElementById('sectionForm').reset();
@@ -832,7 +804,7 @@ function openAddModal() {
 // Edit Section
 function editSection(section) {
     const titleElement = document.querySelector('#modalTitle');
-    titleElement.innerHTML = '<i class="fas fa-edit"></i> Edit Section';
+    titleElement.innerHTML = '<i class="fa-solid fa-pen-to-square"></i> Edit Section';
     
     document.getElementById('formAction').value = 'edit';
     document.getElementById('sectionId').value = section.id;
@@ -1103,7 +1075,7 @@ document.addEventListener('DOMContentLoaded', function() {
             emptyState.className = 'empty-state-search';
             emptyState.innerHTML = `
                 <div class="empty-state-icon">
-                    <i class="fas fa-search"></i>
+                    <i class="fa-solid fa-search"></i>
                 </div>
                 <h3>No sections found</h3>
                 <p>${searchTerm ? `No results for "${searchTerm}"` : 'Try adjusting your filters'}</p>

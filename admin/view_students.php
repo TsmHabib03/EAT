@@ -4,7 +4,7 @@ requireAdmin();
 
 $currentAdmin = getCurrentAdmin();
 $pageTitle = 'Student List';
-$pageIcon = 'users';
+$pageIcon = 'user-group';
 
 // Get all students with attendance stats
 try {
@@ -60,34 +60,25 @@ try {
     $totalStudents = 0;
 }
 
+$breadcrumb = [
+    ['label' => 'Dashboard', 'icon' => 'house', 'url' => 'dashboard.php'],
+    ['label' => 'Students', 'icon' => 'user-group', 'url' => 'view_students.php']
+];
+$breadcrumbAction = ['label' => 'Add Student', 'icon' => 'user-plus', 'url' => 'manage_students.php'];
+
 include 'includes/header_modern.php';
 ?>
 
 <style>
-    /* ===== ASJ MODERN CSS VARIABLES ===== */
+    /* ===== VIEW STUDENTS PAGE-SPECIFIC STYLES ===== */
     :root {
-        /* ASJ Brand Colors */
-        --asj-green-50: #E8F5E9;
-        --asj-green-100: #C8E6C9;
-        --asj-green-400: #66BB6A;
-        --asj-green-500: #4CAF50;
-        --asj-green-600: #43A047;
-        --asj-green-700: #388E3C;
-        --asj-gold-50: #FFF9E6;
-        --asj-gold-400: #FFD54F;
-        --asj-gold-500: #FFC107;
-        --asj-gold-600: #FFB300;
-        
-        /* Modern Neutrals */
-        --neutral-50: #FAFBFC;
-        --neutral-100: #F4F6F8;
-        --neutral-200: #E5E9ED;
-        --neutral-300: #D0D7DE;
-        --neutral-400: #8B96A5;
-        --neutral-500: #6E7C8C;
-        --neutral-600: #556575;
-        --neutral-700: #3E4C59;
-        --neutral-900: #1F2937;
+        /* Page-specific color aliases (mapped to new palette) */
+        --asj-green-50: var(--green-050);
+        --asj-green-100: var(--green-100);
+        --asj-green-400: var(--green-500);
+        --asj-green-500: var(--green-600);
+        --asj-green-600: var(--green-600);
+        --asj-green-700: var(--green-700);
         
         /* Semantic Colors */
         --success-light: #D1FAE5;
@@ -104,382 +95,20 @@ include 'includes/header_modern.php';
         --info-dark: #2563EB;
         
         /* Legacy compatibility */
-        --primary-50: #E8F5E9;
-        --primary-100: #C8E6C9;
-        --primary-400: #66BB6A;
-        --primary-500: #4CAF50;
-        --primary-600: #43A047;
-        --primary-700: #388E3C;
+        --primary-50: var(--green-050);
+        --primary-100: var(--green-100);
+        --primary-400: var(--green-500);
+        --primary-500: var(--green-600);
+        --primary-600: var(--green-600);
+        --primary-700: var(--green-700);
         --accent-500: #FFC107;
         --accent-600: #FFB300;
         --blue-50: #DBEAFE;
-        --red-500: #EF4444;
-        --red-600: #DC2626;
-        --gray-50: #FAFBFC;
-        --gray-100: #F4F6F8;
-        --gray-200: #E5E9ED;
-        --gray-300: #D0D7DE;
-        --gray-400: #8B96A5;
-        --gray-500: #6E7C8C;
-        --gray-600: #556575;
-        --gray-700: #3E4C59;
-        --gray-900: #1F2937;
-        
-        /* Spacing */
-        --space-1: 0.25rem;
-        --space-2: 0.5rem;
-        --space-3: 0.75rem;
-        --space-4: 1rem;
-        --space-5: 1.25rem;
-        --space-6: 1.5rem;
-        --space-8: 2rem;
-        --space-12: 3rem;
-        
-        /* Border Radius */
-        --radius-sm: 6px;
-        --radius-md: 10px;
-        --radius-lg: 14px;
-        --radius-xl: 18px;
-        --radius-2xl: 24px;
-        --radius-full: 9999px;
-        
-        /* Typography */
-        --text-xs: 0.75rem;
-        --text-sm: 0.875rem;
-        --text-base: 1rem;
-        --text-lg: 1.125rem;
-        --text-xl: 1.25rem;
-        --text-2xl: 1.5rem;
-        --text-6xl: 3.75rem;
-        
-        /* Shadows */
-        --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.04);
-        --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.04);
-        --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.07), 0 2px 4px rgba(0, 0, 0, 0.05);
-        --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1), 0 4px 6px rgba(0, 0, 0, 0.05);
-        --shadow-xl: 0 20px 25px rgba(0, 0, 0, 0.12), 0 10px 10px rgba(0, 0, 0, 0.04);
-        --shadow-2xl: 0 25px 50px rgba(0, 0, 0, 0.15);
-        
+
         /* Transitions */
         --transition-fast: 150ms ease-in-out;
         --transition-base: 200ms ease-in-out;
         --transition-slow: 300ms ease-in-out;
-    }
-
-    /* ===== PAGE HEADER ENHANCED - ASJ THEMED ===== */
-    .page-header-enhanced {
-        position: relative;
-        background: linear-gradient(135deg, var(--asj-green-500) 0%, var(--asj-green-700) 100%);
-        border-radius: var(--radius-2xl);
-        margin-bottom: var(--space-8);
-        overflow: hidden;
-        box-shadow: 0 10px 40px -10px rgba(76, 175, 80, 0.4);
-        animation: headerSlideIn 0.6s ease-out;
-    }
-
-    @keyframes headerSlideIn {
-        from {
-            opacity: 0;
-            transform: translateY(-20px);
-        }
-        to {
-            opacity: 1;
-            transform: translateY(0);
-        }
-    }
-
-    .page-header-background {
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        overflow: hidden;
-    }
-
-    .header-gradient-overlay {
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: radial-gradient(circle at top right, rgba(255, 255, 255, 0.1) 0%, transparent 60%);
-    }
-
-    .header-pattern {
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        opacity: 0.05;
-        background-image: 
-            repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(255, 255, 255, 0.1) 10px, rgba(255, 255, 255, 0.1) 20px),
-            repeating-linear-gradient(-45deg, transparent, transparent 10px, rgba(255, 255, 255, 0.1) 10px, rgba(255, 255, 255, 0.1) 20px);
-    }
-
-    .page-header-content-enhanced {
-        position: relative;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        padding: var(--space-8) var(--space-6);
-        gap: var(--space-6);
-        z-index: 1;
-    }
-
-    .page-title-section {
-        display: flex;
-        align-items: center;
-        gap: var(--space-5);
-        flex: 1;
-    }
-
-    .page-icon-enhanced {
-        width: 80px;
-        height: 80px;
-        background: rgba(255, 255, 255, 0.15);
-        backdrop-filter: blur(10px);
-        border: 2px solid rgba(255, 255, 255, 0.2);
-        border-radius: var(--radius-2xl);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 32px;
-        color: white;
-        flex-shrink: 0;
-        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
-        transition: all 0.3s ease;
-    }
-
-    .page-icon-enhanced:hover {
-        transform: translateY(-4px) rotate(5deg);
-        box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
-    }
-
-    .page-title-content {
-        flex: 1;
-        min-width: 0;
-    }
-
-    .breadcrumb-nav {
-        display: flex;
-        align-items: center;
-        gap: var(--space-2);
-        margin-bottom: var(--space-2);
-        font-size: var(--text-sm);
-    }
-
-    .breadcrumb-link {
-        display: flex;
-        align-items: center;
-        gap: var(--space-2);
-        color: rgba(255, 255, 255, 0.8);
-        text-decoration: none;
-        transition: all var(--transition-base);
-        padding: var(--space-1) var(--space-2);
-        border-radius: var(--radius-md);
-    }
-
-    .breadcrumb-link:hover {
-        color: white;
-        background: rgba(255, 255, 255, 0.1);
-    }
-
-    .breadcrumb-separator {
-        color: rgba(255, 255, 255, 0.5);
-        font-size: 10px;
-    }
-
-    .breadcrumb-current {
-        color: white;
-        font-weight: 600;
-    }
-
-    .page-title-enhanced {
-        color: white;
-        font-size: 2.5rem;
-        font-weight: 700;
-        margin: 0;
-        line-height: 1.2;
-        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    }
-
-    .page-subtitle-enhanced {
-        display: flex;
-        align-items: center;
-        gap: var(--space-2);
-        color: rgba(255, 255, 255, 0.9);
-        font-size: var(--text-base);
-        margin: var(--space-2) 0 0;
-        font-weight: 400;
-    }
-
-    .page-actions-enhanced {
-        display: flex;
-        align-items: center;
-        gap: var(--space-3);
-        flex-shrink: 0;
-    }
-
-    .btn-header {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        gap: var(--space-2);
-        padding: var(--space-3) var(--space-5);
-        border: none;
-        border-radius: var(--radius-lg);
-        font-size: var(--text-base);
-        font-weight: 600;
-        cursor: pointer;
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        white-space: nowrap;
-        position: relative;
-        overflow: hidden;
-    }
-
-    .btn-header::before {
-        content: '';
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        width: 0;
-        height: 0;
-        border-radius: 50%;
-        background: rgba(255, 255, 255, 0.3);
-        transform: translate(-50%, -50%);
-        transition: width 0.6s, height 0.6s;
-    }
-
-    .btn-header:hover::before {
-        width: 300px;
-        height: 300px;
-    }
-
-    .btn-header-secondary {
-        background: rgba(255, 255, 255, 0.15);
-        backdrop-filter: blur(10px);
-        color: white;
-        border: 2px solid rgba(255, 255, 255, 0.2);
-    }
-
-    .btn-header-secondary:hover {
-        background: rgba(255, 255, 255, 0.25);
-        border-color: rgba(255, 255, 255, 0.3);
-        transform: translateY(-2px);
-        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
-    }
-
-    .btn-header-primary {
-        background: white;
-        color: var(--primary-600);
-        border: 2px solid white;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-    }
-
-    .btn-header-primary:hover {
-        background: var(--gray-50);
-        transform: translateY(-2px);
-        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
-    }
-
-    .btn-header i {
-        position: relative;
-        z-index: 1;
-    }
-
-    .btn-header span {
-        position: relative;
-        z-index: 1;
-    }
-
-    /* Responsive Header */
-    @media (max-width: 992px) {
-        .page-header-content-enhanced {
-            flex-direction: column;
-            align-items: flex-start;
-            padding: var(--space-6) var(--space-5);
-        }
-        
-        .page-title-section {
-            width: 100%;
-        }
-        
-        .page-actions-enhanced {
-            width: 100%;
-            justify-content: flex-start;
-        }
-        
-        .page-icon-enhanced {
-            width: 64px;
-            height: 64px;
-            font-size: 26px;
-        }
-        
-        .page-title-enhanced {
-            font-size: 2rem;
-        }
-    }
-
-    @media (max-width: 768px) {
-        .page-header-content-enhanced {
-            padding: var(--space-5) var(--space-4);
-        }
-        
-        .page-title-section {
-            flex-direction: column;
-            align-items: flex-start;
-            gap: var(--space-3);
-        }
-        
-        .page-icon-enhanced {
-            width: 56px;
-            height: 56px;
-            font-size: 22px;
-        }
-        
-        .page-title-enhanced {
-            font-size: 1.75rem;
-        }
-        
-        .page-actions-enhanced {
-            flex-direction: column;
-            width: 100%;
-        }
-        
-        .btn-header {
-            width: 100%;
-            justify-content: center;
-        }
-    }
-
-    @media (max-width: 480px) {
-        .page-header-enhanced {
-            border-radius: var(--radius-xl);
-            margin-bottom: var(--space-6);
-        }
-        
-        .page-header-content-enhanced {
-            padding: var(--space-4) var(--space-3);
-        }
-        
-        .breadcrumb-nav {
-            flex-wrap: wrap;
-        }
-        
-        .page-title-enhanced {
-            font-size: 1.5rem;
-        }
-        
-        .page-subtitle-enhanced {
-            font-size: var(--text-sm);
-        }
-        
-        .btn-header {
-            padding: var(--space-2) var(--space-4);
-            font-size: var(--text-sm);
-        }
     }
 
     /* Page Header Stats */
@@ -578,7 +207,7 @@ include 'includes/header_modern.php';
     .filter-search input:focus {
         outline: none;
         border-color: var(--asj-green-500);
-        box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.1);
+        box-shadow: 0 0 0 3px rgba(30, 168, 91, 0.15);
     }
 
     .filter-search-icon {
@@ -607,7 +236,7 @@ include 'includes/header_modern.php';
     .filter-select select:focus {
         outline: none;
         border-color: var(--asj-green-500);
-        box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.1);
+        box-shadow: 0 0 0 3px rgba(30, 168, 91, 0.15);
     }
 
     /* Responsive Table */
@@ -621,11 +250,11 @@ include 'includes/header_modern.php';
 
     .table-header {
         padding: var(--space-5);
-        border-bottom: 2px solid var(--neutral-200);
+        border-bottom: 2px solid var(--gray-200);
         display: flex;
         align-items: center;
         justify-content: space-between;
-        background: linear-gradient(135deg, var(--asj-green-50) 0%, var(--neutral-50) 100%);
+        background: linear-gradient(135deg, var(--asj-green-50) 0%, var(--gray-50) 100%);
     }
 
     .table-title {
@@ -826,7 +455,7 @@ include 'includes/header_modern.php';
     }
 
     .btn-warning:hover {
-        background: linear-gradient(135deg, var(--warning-dark), #b45309);
+        background: linear-gradient(135deg, var(--warning-dark), var(--warning-dark));
         transform: translateY(-1px);
         box-shadow: var(--shadow-md);
     }
@@ -843,18 +472,18 @@ include 'includes/header_modern.php';
     }
 
     .btn-secondary {
-        background: var(--neutral-200);
-        color: var(--neutral-700);
+        background: var(--gray-200);
+        color: var(--gray-700);
     }
 
     .btn-secondary:hover {
-        background: var(--neutral-300);
+        background: var(--gray-300);
     }
 
     .btn-outline {
         background: white;
-        border: 2px solid var(--neutral-300);
-        color: var(--neutral-700);
+        border: 2px solid var(--gray-300);
+        color: var(--gray-700);
     }
 
     .btn-outline:hover {
@@ -1008,7 +637,7 @@ include 'includes/header_modern.php';
         display: flex;
         justify-content: space-between;
         align-items: center;
-        background: linear-gradient(135deg, var(--primary-50) 0%, var(--blue-50) 100%);
+        background: linear-gradient(135deg, var(--primary-50) 0%, var(--asj-green-100) 100%);
     }
 
     .modal-title {
@@ -1359,45 +988,11 @@ include 'includes/header_modern.php';
     }
 </style>
 
-<!-- Page Header — Glassmorphism Bento -->
-<div class="page-header-glass">
-    <div class="page-header-inner">
-        <nav class="breadcrumb-glass" aria-label="Breadcrumb">
-            <a href="dashboard.php" class="breadcrumb-item" title="Dashboard">
-                <i class="fas fa-home"></i> Dashboard
-            </a>
-            <span class="breadcrumb-sep" aria-hidden="true"><i class="fas fa-chevron-right"></i></span>
-            <span class="breadcrumb-item active" aria-current="page">
-                <i class="fas fa-<?php echo $pageIcon; ?>"></i> <?php echo $pageTitle; ?>
-            </span>
-        </nav>
-        <div class="page-header-content-glass">
-            <div class="page-header-title-row">
-                <div class="page-header-icon">
-                    <i class="fas fa-<?php echo $pageIcon; ?>"></i>
-                </div>
-                <div class="page-header-text">
-                    <h1><?php echo $pageTitle; ?></h1>
-                    <p><i class="fas fa-info-circle"></i> View and manage all registered students</p>
-                </div>
-            </div>
-            <div class="page-header-actions">
-                <button class="btn-header-glass secondary" onclick="window.location.reload()">
-                    <i class="fas fa-sync-alt"></i> Refresh
-                </button>
-                <a href="manage_students.php" class="btn-header-glass primary">
-                    <i class="fas fa-user-plus"></i> Add Student
-                </a>
-            </div>
-        </div>
-    </div>
-</div>
-
 <!-- Stats Bar -->
 <div class="stats-bar">
     <div class="stat-item">
         <div class="stat-icon">
-            <i class="fas fa-users"></i>
+            <i class="fa-solid fa-user-group"></i>
         </div>
         <div class="stat-details">
             <h3><?php echo $totalStudents; ?></h3>
@@ -1406,7 +1001,7 @@ include 'includes/header_modern.php';
     </div>
     <div class="stat-item">
         <div class="stat-icon">
-            <i class="fas fa-chalkboard"></i>
+            <i class="fa-solid fa-chalkboard"></i>
         </div>
         <div class="stat-details">
             <h3><?php echo count($classes); ?></h3>
@@ -1416,7 +1011,7 @@ include 'includes/header_modern.php';
     <?php if (!empty($_GET['search']) || !empty($_GET['class'])): ?>
     <div class="stat-item">
         <div class="stat-icon">
-            <i class="fas fa-filter"></i>
+            <i class="fa-solid fa-filter"></i>
         </div>
         <div class="stat-details">
             <h3><?php echo count($students); ?></h3>
@@ -1431,7 +1026,7 @@ include 'includes/header_modern.php';
     <form method="GET" action="" id="filterForm">
         <div class="filter-row">
             <div class="filter-search">
-                <i class="fas fa-search filter-search-icon"></i>
+                <i class="fa-solid fa-search filter-search-icon"></i>
                 <input 
                     type="text" 
                     name="search" 
@@ -1461,17 +1056,17 @@ include 'includes/header_modern.php';
                 </select>
             </div>
             <button type="submit" class="btn btn-primary">
-                <i class="fas fa-search"></i>
+                <i class="fa-solid fa-search"></i>
                 <span>Search</span>
             </button>
             <?php if (!empty($_GET['search']) || !empty($_GET['class']) || !empty($_GET['section'])): ?>
                 <a href="view_students.php" class="btn btn-secondary">
-                    <i class="fas fa-times"></i>
+                    <i class="fa-solid fa-times"></i>
                     <span>Clear</span>
                 </a>
             <?php endif; ?>
             <a href="manage_students.php" class="btn btn-success">
-                <i class="fas fa-plus"></i>
+                <i class="fa-solid fa-plus"></i>
                 <span>Add New</span>
             </a>
         </div>
@@ -1482,12 +1077,12 @@ include 'includes/header_modern.php';
 <div class="responsive-table-wrapper">
     <div class="table-header">
         <h3 class="table-title">
-            <i class="fas fa-graduation-cap"></i>
+            <i class="fa-solid fa-graduation-cap"></i>
             Students Directory
         </h3>
         <div style="display: flex; gap: var(--space-2);">
             <button onclick="exportToCSV()" class="btn btn-outline">
-                <i class="fas fa-download"></i>
+                <i class="fa-solid fa-download"></i>
                 <span>Export</span>
             </button>
         </div>
@@ -1495,11 +1090,11 @@ include 'includes/header_modern.php';
 
     <?php if (empty($students)): ?>
         <div class="empty-state">
-            <i class="fas fa-user-slash"></i>
+            <i class="fa-solid fa-user-slash"></i>
             <h3>No Students Found</h3>
             <p>Try adjusting your search criteria or add a new student.</p>
             <a href="manage_students.php" class="btn btn-primary" style="margin-top: var(--space-4);">
-                <i class="fas fa-plus"></i>
+                <i class="fa-solid fa-plus"></i>
                 <span>Add Your First Student</span>
             </a>
         </div>
@@ -1529,7 +1124,7 @@ include 'includes/header_modern.php';
                         </td>
                         <td>
                             <span class="badge badge-<?php echo $student['gender'] === 'Male' ? 'primary' : 'error'; ?>">
-                                <i class="fas fa-<?php echo $student['gender'] === 'Male' ? 'mars' : 'venus'; ?>"></i>
+                                <i class="fa-solid fa-<?php echo $student['gender'] === 'Male' ? 'mars' : 'venus'; ?>"></i>
                                 <?php echo sanitizeOutput($student['gender']); ?>
                             </span>
                         </td>
@@ -1547,13 +1142,13 @@ include 'includes/header_modern.php';
                                     data-action="view"
                                     data-student='<?php echo json_encode($student); ?>'
                                     title="View Details">
-                                    <i class="fas fa-eye"></i>
+                                    <i class="fa-solid fa-eye"></i>
                                 </button>
                                 <a 
                                     href="manage_students.php?id=<?php echo $student['id']; ?>" 
                                     class="btn btn-sm btn-success" 
                                     title="Edit Student">
-                                    <i class="fas fa-edit"></i>
+                                    <i class="fa-solid fa-pen-to-square"></i>
                                 </a>
                                 <button 
                                     class="btn btn-sm btn-warning"
@@ -1563,7 +1158,7 @@ include 'includes/header_modern.php';
                                     data-name="<?php echo htmlspecialchars(trim($student['first_name'] . ' ' . $student['last_name'])); ?>"
                                     data-qrcode="<?php echo htmlspecialchars($student['qr_code'] ?? ''); ?>"
                                     title="View QR Code">
-                                    <i class="fas fa-qrcode"></i>
+                                    <i class="fa-solid fa-qrcode"></i>
                                 </button>
                                 <button 
                                     class="btn btn-sm btn-danger"
@@ -1571,7 +1166,7 @@ include 'includes/header_modern.php';
                                     data-id="<?php echo $student['id']; ?>"
                                     data-name="<?php echo htmlspecialchars(trim($student['first_name'] . ' ' . $student['last_name'])); ?>"
                                     title="Delete Student">
-                                    <i class="fas fa-trash"></i>
+                                    <i class="fa-solid fa-trash"></i>
                                 </button>
                             </div>
                         </td>
@@ -1603,7 +1198,7 @@ include 'includes/header_modern.php';
                             <span class="student-card-label">Gender</span>
                             <span class="student-card-value">
                                 <span class="badge badge-<?php echo $student['gender'] === 'Male' ? 'primary' : 'error'; ?>">
-                                    <i class="fas fa-<?php echo $student['gender'] === 'Male' ? 'mars' : 'venus'; ?>"></i>
+                                    <i class="fa-solid fa-<?php echo $student['gender'] === 'Male' ? 'mars' : 'venus'; ?>"></i>
                                     <?php echo sanitizeOutput($student['gender']); ?>
                                 </span>
                             </span>
@@ -1619,13 +1214,13 @@ include 'includes/header_modern.php';
                             data-action="view"
                             data-student='<?php echo json_encode($student); ?>'
                             title="View Details">
-                            <i class="fas fa-eye"></i>
+                            <i class="fa-solid fa-eye"></i>
                         </button>
                         <a 
                             href="manage_students.php?id=<?php echo $student['id']; ?>" 
                             class="btn btn-sm btn-success"
                             title="Edit Student">
-                            <i class="fas fa-edit"></i>
+                            <i class="fa-solid fa-pen-to-square"></i>
                         </a>
                         <button 
                             class="btn btn-sm btn-warning"
@@ -1635,7 +1230,7 @@ include 'includes/header_modern.php';
                             data-name="<?php echo htmlspecialchars(trim($student['first_name'] . ' ' . $student['last_name'])); ?>"
                             data-qrcode="<?php echo htmlspecialchars($student['qr_code'] ?? ''); ?>"
                             title="View QR Code">
-                            <i class="fas fa-qrcode"></i>
+                            <i class="fa-solid fa-qrcode"></i>
                         </button>
                         <button 
                             class="btn btn-sm btn-danger"
@@ -1643,7 +1238,7 @@ include 'includes/header_modern.php';
                             data-id="<?php echo $student['id']; ?>"
                             data-name="<?php echo htmlspecialchars(trim($student['first_name'] . ' ' . $student['last_name'])); ?>"
                             title="Delete Student">
-                            <i class="fas fa-trash"></i>
+                            <i class="fa-solid fa-trash"></i>
                         </button>
                     </div>
                 </div>
@@ -1658,11 +1253,11 @@ include 'includes/header_modern.php';
         <div class="modal-content">
             <div class="modal-header">
                 <h3 class="modal-title">
-                    <i class="fas fa-user-graduate"></i>
+                    <i class="fa-solid fa-user-graduate"></i>
                     Student Details
                 </h3>
                 <button class="modal-close" data-action="close-modal" data-modal="viewModal">
-                    <i class="fas fa-times"></i>
+                    <i class="fa-solid fa-times"></i>
                 </button>
             </div>
             <div class="modal-body">
@@ -1714,11 +1309,11 @@ include 'includes/header_modern.php';
                 </div>
                 <div class="modal-actions">
                     <a href="#" id="editStudentLink" class="btn btn-primary">
-                        <i class="fas fa-edit"></i>
+                        <i class="fa-solid fa-pen-to-square"></i>
                         <span>Edit Student</span>
                     </a>
                     <button class="btn btn-secondary" data-action="close-modal" data-modal="viewModal">
-                        <i class="fas fa-times"></i>
+                        <i class="fa-solid fa-times"></i>
                         <span>Close</span>
                     </button>
                 </div>
@@ -1733,11 +1328,11 @@ include 'includes/header_modern.php';
         <div class="modal-content">
             <div class="modal-header">
                 <h3 class="modal-title">
-                    <i class="fas fa-qrcode"></i>
+                    <i class="fa-solid fa-qrcode"></i>
                     Student QR Code
                 </h3>
                 <button class="modal-close" data-action="close-modal" data-modal="qrModal">
-                    <i class="fas fa-times"></i>
+                    <i class="fa-solid fa-times"></i>
                 </button>
             </div>
             <div class="modal-body">
@@ -1755,19 +1350,19 @@ include 'includes/header_modern.php';
                 </div>
                 <div class="modal-actions">
                     <button class="btn btn-warning" data-action="regenerate-qr" style="background: linear-gradient(135deg, #f59e0b, #d97706);">
-                        <i class="fas fa-sync-alt"></i>
+                        <i class="fa-solid fa-arrows-rotate"></i>
                         <span>Regenerate</span>
                     </button>
                     <button class="btn btn-success" data-action="download-qr">
-                        <i class="fas fa-download"></i>
+                        <i class="fa-solid fa-download"></i>
                         <span>Download</span>
                     </button>
                     <button class="btn btn-primary" data-action="print-qr">
-                        <i class="fas fa-print"></i>
+                        <i class="fa-solid fa-print"></i>
                         <span>Print</span>
                     </button>
                     <button class="btn btn-secondary" data-action="close-modal" data-modal="qrModal">
-                        <i class="fas fa-times"></i>
+                        <i class="fa-solid fa-times"></i>
                         <span>Close</span>
                     </button>
                 </div>
@@ -1782,7 +1377,7 @@ include 'includes/header_modern.php';
         <div class="modal-content">
             <div class="modal-body" style="text-align: center; padding: var(--space-8);">
                 <div style="width: 80px; height: 80px; background: linear-gradient(135deg, rgba(239, 68, 68, 0.1), rgba(220, 38, 38, 0.1)); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto var(--space-5);">
-                    <i class="fas fa-exclamation-triangle" style="font-size: 32px; color: var(--red-500);"></i>
+                    <i class="fa-solid fa-triangle-exclamation" style="font-size: 32px; color: var(--red-500);"></i>
                 </div>
                 <h3 style="font-size: var(--text-2xl); font-weight: 700; color: var(--gray-900); margin-bottom: var(--space-3);">Delete Student</h3>
                 <p style="color: var(--gray-600); margin-bottom: var(--space-2);">
@@ -1793,11 +1388,11 @@ include 'includes/header_modern.php';
                 </p>
                 <div class="modal-actions" style="justify-content: center;">
                     <button class="btn btn-secondary" data-action="close-modal" data-modal="deleteModal" style="min-width: 140px;">
-                        <i class="fas fa-times"></i>
+                        <i class="fa-solid fa-times"></i>
                         <span>Cancel</span>
                     </button>
                     <button class="btn btn-danger" data-action="confirm-delete" id="confirmDeleteBtn" style="min-width: 140px;">
-                        <i class="fas fa-trash"></i>
+                        <i class="fa-solid fa-trash"></i>
                         <span>Yes, Delete</span>
                     </button>
                 </div>
@@ -1912,7 +1507,7 @@ async function regenerateQRCode() {
     const regenerateBtn = document.querySelector('[data-action="regenerate-qr"]');
     const originalText = regenerateBtn.innerHTML;
     regenerateBtn.disabled = true;
-    regenerateBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> <span>Regenerating...</span>';
+    regenerateBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> <span>Regenerating...</span>';
     
     try {
         const response = await fetch('../api/regenerate_qrcode.php', {
@@ -2103,11 +1698,11 @@ function showNotification(message, type = 'info') {
     
     notification.innerHTML = `
         <div class="alert-icon">
-            <i class="fas fa-${icons[type] || 'info-circle'}"></i>
+            <i class="fa-solid fa-${icons[type] || 'info-circle'}"></i>
         </div>
         <div class="alert-content">${message}</div>
         <button class="alert-close" onclick="this.parentElement.remove()">
-            <i class="fas fa-times"></i>
+            <i class="fa-solid fa-times"></i>
         </button>
     `;
     
