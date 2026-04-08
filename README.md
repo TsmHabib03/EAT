@@ -88,6 +88,47 @@ This system was developed as part of a research project to modernize and streaml
 - **Dark Mode Ready**: Color scheme prepared for future dark theme implementation
 - **Toast Notifications**: Non-intrusive feedback messages for user actions
 
+## Employee Tracker Migration (Phase 1)
+
+Phase 1 implementation is now included as a non-breaking, additive backend foundation. The existing student flows continue to work while employee endpoints and schema are available for parallel testing.
+
+### What Was Added
+- New migration script: `database/migrations/2026_04_08_employee_tracker_phase1.sql`
+- New employee master/data tables: `departments`, `shifts`, `employees`, `employee_attendance`, `attendance_corrections`
+- New employee views: `v_employee_roster`, `v_employee_daily_summary`
+- New employee stored procedures: `RegisterEmployee`, `MarkEmployeeClockIn`, `MarkEmployeeClockOut`, `GetEmployeeAttendance`
+
+### New Employee API Endpoints
+- `api/register_employee.php`
+- `api/get_employees.php`
+- `api/get_employee_details.php`
+- `api/get_departments.php`
+- `api/get_shifts.php`
+- `api/mark_employee_attendance.php`
+- `api/list_employees.php`
+
+### Run Phase 1
+1. Apply the migration script to your MySQL database:
+   ```bash
+   mysql -u your_username -p your_database_name < database/migrations/2026_04_08_employee_tracker_phase1.sql
+   ```
+2. Keep current student pages and endpoints unchanged.
+3. Test employee endpoints with Postman or your admin AJAX layer before frontend cutover.
+
+### Employee Mode in Existing Pages (No Redesign)
+- Public scanner supports employee mode via URL parameter:
+   - `scan_attendance.php?mode=employee`
+- Admin manual attendance supports employee mode via URL parameter:
+   - `admin/manual_attendance.php?mode=employee`
+- Optional global default mode:
+   - Set environment variable `ATTENDANCE_MODE=employee`
+   - Supported values: `student` (default), `employee`
+
+### Notes
+- This phase intentionally does not redesign frontend pages.
+- Existing `students` and `attendance` tables are not removed.
+- The migration includes optional seed/backfill from `students` to `employees` for pilot validation.
+
 ## 📋 Requirements
 
 ### Server Requirements
