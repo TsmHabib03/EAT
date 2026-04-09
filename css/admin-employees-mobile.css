@@ -1,5 +1,5 @@
 /**
- * Admin Students - Mobile-First Responsive Design
+ * Admin Employees - Mobile-First Responsive Design
  * Optimized for touch interactions and small screens
  * Breakpoints: 320px, 480px, 768px, 1024px
  */
@@ -405,7 +405,7 @@ textarea.form-input {
         display: block;
     }
     
-    .student-card {
+    .employee-card {
         background: white;
         border-radius: 14px;
         padding: 18px;
@@ -414,12 +414,12 @@ textarea.form-input {
         transition: all 0.2s ease;
     }
     
-    .student-card:active {
+    .employee-card:active {
         transform: scale(0.98);
         box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
     }
     
-    .student-card-header {
+    .employee-card-header {
         display: flex;
         align-items: center;
         gap: 14px;
@@ -428,7 +428,7 @@ textarea.form-input {
         border-bottom: 1px solid var(--gray-100);
     }
     
-    .student-card-avatar {
+    .employee-card-avatar {
         width: 56px;
         height: 56px;
         border-radius: 50%;
@@ -443,12 +443,12 @@ textarea.form-input {
         box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
     }
     
-    .student-card-info {
+    .employee-card-info {
         flex: 1;
         min-width: 0;
     }
     
-    .student-card-info h4 {
+    .employee-card-info h4 {
         font-size: 18px;
         font-weight: 700;
         color: var(--gray-900);
@@ -458,26 +458,26 @@ textarea.form-input {
         white-space: nowrap;
     }
     
-    .student-card-info p {
+    .employee-card-info p {
         font-size: 14px;
         color: var(--gray-600);
         margin: 0;
     }
     
-    .student-card-details {
+    .employee-card-details {
         display: grid;
         grid-template-columns: 1fr 1fr;
         gap: 14px;
         margin-bottom: 16px;
     }
     
-    .student-card-field {
+    .employee-card-field {
         display: flex;
         flex-direction: column;
         gap: 6px;
     }
     
-    .student-card-label {
+    .employee-card-label {
         font-size: 11px;
         color: var(--gray-500);
         font-weight: 600;
@@ -485,24 +485,24 @@ textarea.form-input {
         letter-spacing: 0.5px;
     }
     
-    .student-card-value {
+    .employee-card-value {
         font-size: 15px;
         color: var(--gray-900);
         font-weight: 600;
     }
     
-    .student-card-actions {
+    .employee-card-actions {
         display: grid;
         grid-template-columns: repeat(2, 1fr);
         gap: 10px;
     }
     
-    .student-card-actions .btn {
+    .employee-card-actions .btn {
         width: 100%;
         font-size: 14px;
     }
     
-    .student-card-actions .btn-danger {
+    .employee-card-actions .btn-danger {
         grid-column: 1 / -1;
     }
     
@@ -767,7 +767,7 @@ textarea.form-input {
     .btn,
     .filter-bar,
     .table-actions,
-    .student-card-actions {
+    .employee-card-actions {
         display: none !important;
     }
     

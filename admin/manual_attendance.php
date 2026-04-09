@@ -6,7 +6,7 @@ $currentAdmin = getCurrentAdmin();
 $pageTitle = 'Manual Attendance';
 $pageIcon = 'pen-to-square';
 
-// Add external CSS - matching manage_sections design
+// Add external CSS - matching manage_departments design
 $additionalCSS = ['../css/manual-attendance-modern.css'];
 
 $attendanceMode = 'employee';
@@ -316,7 +316,7 @@ include 'includes/header_modern.php';
             </div>
             <div class="card-body-modern">
                 <div class="scanner-container">
-                    <div class="scanner-overlay" style="display: none;">
+                    <div class="scanner-overlay">
                         <div id="qr-reader-container">
                             <div id="qr-reader"></div>
                         </div>
@@ -493,27 +493,27 @@ include 'includes/header_modern.php';
                 </div>
             </div>
             <div class="card-body-modern">
-                <div class="students-list-modern">
+                <div class="employees-list-modern">
                     <?php if (!empty($employees)): ?>
                         <?php foreach ($employees as $employee): ?>
-                            <div class="student-item-modern" 
+                            <div class="employee-item-modern" 
                                  data-action="select-employee" 
                                  data-employee-id="<?php echo htmlspecialchars($employee['employee_id']); ?>">
-                                <div class="student-info-modern">
-                                    <div class="student-avatar">
+                                <div class="employee-info-modern">
+                                    <div class="employee-avatar">
                                         <?php echo strtoupper(substr($employee['first_name'], 0, 1)); ?>
                                     </div>
                                     <div>
-                                        <p class="student-name">
+                                        <p class="employee-name">
                                             <?php echo htmlspecialchars($employee['first_name'] . ' ' . $employee['last_name']); ?>
                                         </p>
-                                        <p class="student-class">
+                                        <p class="employee-group">
                                             <i class="fa-solid fa-<?php echo $groupIcon; ?>"></i>
                                             <?php echo htmlspecialchars($employee['department_code']); ?>
                                         </p>
                                     </div>
                                 </div>
-                                <span class="lrn-badge-modern"><?php echo htmlspecialchars($employee['employee_id']); ?></span>
+                                <span class="employee-id-badge-modern"><?php echo htmlspecialchars($employee['employee_id']); ?></span>
                             </div>
                         <?php endforeach; ?>
                     <?php else: ?>
@@ -661,7 +661,7 @@ include 'includes/header_modern.php';
                                     <i class="fa-solid fa-<?php echo $groupIcon; ?>"></i>
                                     <?php echo htmlspecialchars($departmentCode); ?>
                                 </h4>
-                                <span class="student-count-badge" style="padding: var(--space-1) var(--space-2); background: var(--primary-100); color: var(--primary-700); border-radius: var(--radius-md); font-size: 0.75rem; font-weight: 600;">
+                                <span class="employee-count-badge" style="padding: var(--space-1) var(--space-2); background: var(--primary-100); color: var(--primary-700); border-radius: var(--radius-md); font-size: 0.75rem; font-weight: 600;">
                                     <?php echo count($departmentEmployees); ?> <?php echo strtolower($entityPlural); ?>
                                 </span>
                             </div>
@@ -828,6 +828,8 @@ include 'includes/header_modern.php';
 
     function updateScannerStatus(message, type = '') {
         const statusElement = document.getElementById('scanner-status');
+        if (!statusElement) return;
+
         const icons = {
             scanning: 'spinner fa-spin',
             success: 'check-circle',
@@ -838,10 +840,37 @@ include 'includes/header_modern.php';
         statusElement.innerHTML = `<p><i class="fa-solid fa-${icons[type] || icons['']}"></i> ${message}</p>`;
         statusElement.className = `scanner-status ${type}`;
     }
+
+    async function waitForZXing(maxAttempts = 40, delayMs = 150) {
+        for (let attempt = 0; attempt < maxAttempts; attempt++) {
+            if (typeof ZXing !== 'undefined' && ZXing?.BrowserQRCodeReader && ZXing?.BarcodeFormat) {
+                return true;
+            }
+            await new Promise(resolve => setTimeout(resolve, delayMs));
+        }
+        return false;
+    }
     
     async function initializeQRScanner() {
         try {
             console.log(' Initializing QR Scanner...');
+
+            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                updateScannerStatus('Camera is not supported in this browser.', 'error');
+                return false;
+            }
+
+            const zxingReady = await waitForZXing();
+            if (!zxingReady) {
+                updateScannerStatus('QR scanner library failed to load. Please refresh and try again.', 'error');
+                return false;
+            }
+
+            const qrReaderHost = document.getElementById('qr-reader');
+            if (!qrReaderHost) {
+                updateScannerStatus('Scanner container not found on this page.', 'error');
+                return false;
+            }
             
             const hints = new Map();
             const formats = [ZXing.BarcodeFormat.QR_CODE];
@@ -852,10 +881,15 @@ include 'includes/header_modern.php';
             const videoInputDevices = await codeReader.listVideoInputDevices();
             
             if (videoInputDevices && videoInputDevices.length > 0) {
-                selectedDeviceId = videoInputDevices[0].deviceId;
+                const preferredDevice = videoInputDevices.find(device =>
+                    /back|rear|environment/i.test(device.label || '')
+                );
+                selectedDeviceId = (preferredDevice || videoInputDevices[0]).deviceId;
                 updateScannerStatus('Camera initialized successfully. Ready for scanning!', 'success');
+                return true;
             } else {
                 updateScannerStatus('No camera devices found', 'error');
+                return false;
             }
         } catch (error) {
             console.error(' Error initializing scanner:', error);
@@ -866,25 +900,50 @@ include 'includes/header_modern.php';
             } else {
                 updateScannerStatus('Error initializing camera: ' + error.message, 'error');
             }
+            return false;
         }
     }
     
     async function startQRScanning() {
+        if (isScanning) {
+            return;
+        }
+
+        const scannerOverlay = document.querySelector('.scanner-overlay');
+        const startScanBtn = document.getElementById('start-scan-btn');
+        const stopScanBtn = document.getElementById('stop-scan-btn');
+
+        if (!scannerOverlay || !startScanBtn || !stopScanBtn) {
+            updateScannerStatus('Scanner controls are missing on the page.', 'error');
+            return;
+        }
+
         if (!codeReader) {
-            await initializeQRScanner();
-            if (!codeReader) return;
+            const initialized = await initializeQRScanner();
+            if (!initialized || !codeReader) {
+                isScanning = false;
+                if (startScanBtn) startScanBtn.style.display = 'inline-flex';
+                if (stopScanBtn) stopScanBtn.style.display = 'none';
+                if (scannerOverlay) scannerOverlay.classList.remove('active');
+                return;
+            }
         }
 
         try {
             isScanning = true;
             resetScannerStats();
-            document.getElementById('start-scan-btn').style.display = 'none';
-            document.getElementById('stop-scan-btn').style.display = 'inline-flex';
-            document.querySelector('.scanner-overlay').style.display = 'block';
+            startScanBtn.style.display = 'none';
+            stopScanBtn.style.display = 'inline-flex';
+            scannerOverlay.classList.add('active');
             
             updateScannerStatus(' Starting scanner...', 'scanning');
             updateScannerStats();
             console.log(' Scanner starting...');
+
+            const qrReaderHost = document.getElementById('qr-reader');
+            if (!qrReaderHost) {
+                throw new Error('Scanner host element is not available.');
+            }
 
             let video = document.querySelector('#qr-reader video');
             if (!video) {
@@ -895,7 +954,7 @@ include 'includes/header_modern.php';
                 video.style.width = '100%';
                 video.style.height = '100%';
                 video.style.objectFit = 'cover';
-                document.getElementById('qr-reader').appendChild(video);
+                qrReaderHost.appendChild(video);
             }
 
             video.style.display = 'block';
@@ -938,7 +997,7 @@ include 'includes/header_modern.php';
             }
 
             // Use decodeFromVideoDevice instead of decodeFromVideoElement
-            await codeReader.decodeFromVideoDevice(undefined, video, (result, err) => {
+            await codeReader.decodeFromVideoDevice(selectedDeviceId || undefined, video, (result, err) => {
                 if (result && isScanning && !isProcessing) {
                     handleQRCodeScan(result.text);
                 }
@@ -961,6 +1020,10 @@ include 'includes/header_modern.php';
     }
 
     function stopQRScanning() {
+        const startScanBtn = document.getElementById('start-scan-btn');
+        const stopScanBtn = document.getElementById('stop-scan-btn');
+        const scannerOverlay = document.querySelector('.scanner-overlay');
+
         try {
             if (codeReader) {
                 codeReader.reset();
@@ -968,11 +1031,18 @@ include 'includes/header_modern.php';
         } catch (error) {
             console.error(' Error stopping scanner:', error);
         }
+
+        const video = document.querySelector('#qr-reader video');
+        if (video && video.srcObject) {
+            const tracks = video.srcObject.getTracks();
+            tracks.forEach(track => track.stop());
+            video.srcObject = null;
+        }
         
         isScanning = false;
-        document.getElementById('start-scan-btn').style.display = 'inline-flex';
-        document.getElementById('stop-scan-btn').style.display = 'none';
-        document.querySelector('.scanner-overlay').style.display = 'none';
+        if (startScanBtn) startScanBtn.style.display = 'inline-flex';
+        if (stopScanBtn) stopScanBtn.style.display = 'none';
+        if (scannerOverlay) scannerOverlay.classList.remove('active');
         
         const sessionSummary = scanCount > 0 ? ` (${scanCount} scan${scanCount !== 1 ? 's' : ''}, ${successCount} successful)` : '';
         updateScannerStatus(' Scanner stopped. Click "Start Scanner" to begin scanning.' + sessionSummary, '');
@@ -1291,11 +1361,20 @@ include 'includes/header_modern.php';
 
     /* ===== INITIALIZATION ===== */
     document.addEventListener('DOMContentLoaded', function() {
+        updateScannerStatus('Preparing scanner library...', 'scanning');
         initializeQRScanner();
         loadTodayAttendance();
         
-        document.getElementById('start-scan-btn').addEventListener('click', startQRScanning);
-        document.getElementById('stop-scan-btn').addEventListener('click', stopQRScanning);
+        const startScanBtn = document.getElementById('start-scan-btn');
+        const stopScanBtn = document.getElementById('stop-scan-btn');
+
+        if (startScanBtn) {
+            startScanBtn.addEventListener('click', startQRScanning);
+        }
+
+        if (stopScanBtn) {
+            stopScanBtn.addEventListener('click', stopQRScanning);
+        }
         
         const employeeIdField = document.getElementById('employee_id');
         if (employeeIdField) {

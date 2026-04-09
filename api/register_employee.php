@@ -26,6 +26,7 @@ if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== tru
 }
 
 require_once __DIR__ . '/../includes/database.php';
+require_once __DIR__ . '/../includes/qrcode_helper.php';
 
 ob_end_clean();
 ob_start();
@@ -116,7 +117,7 @@ try {
         }
     }
 
-    $qr_code = $employee_id . '|' . time();
+    $qr_code = null;
 
     $insert = $db->prepare('INSERT INTO employees (employee_id, first_name, middle_name, last_name, gender, work_email, department_code, shift_code, work_mode, hire_date, qr_code) VALUES (:employee_id, :first_name, :middle_name, :last_name, :gender, :work_email, :department_code, :shift_code, :work_mode, :hire_date, :qr_code)');
     $insert->bindParam(':employee_id', $employee_id, PDO::PARAM_STR);
@@ -143,21 +144,40 @@ try {
         $insert->bindParam(':hire_date', $hire_date, PDO::PARAM_STR);
     }
 
-    $insert->bindParam(':qr_code', $qr_code, PDO::PARAM_STR);
+    $insert->bindValue(':qr_code', null, PDO::PARAM_NULL);
 
     if (!$insert->execute()) {
         throw new Exception('Failed to register employee. Please try again.');
     }
 
-    $qr_code_url = 'https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=' . urlencode($qr_code);
+    $newEmployeeRecordId = (int) $db->lastInsertId();
+    $fullName = trim($first_name . ' ' . $middle_name . ' ' . $last_name);
+    $generatedQrPath = generateEmployeeQRCode($newEmployeeRecordId, $employee_id, $fullName);
+
+    if ($generatedQrPath) {
+        $qrUpdate = $db->prepare('UPDATE employees SET qr_code = :qr_code WHERE id = :id');
+        $qrUpdate->bindParam(':qr_code', $generatedQrPath, PDO::PARAM_STR);
+        $qrUpdate->bindParam(':id', $newEmployeeRecordId, PDO::PARAM_INT);
+        $qrUpdate->execute();
+        $qr_code = $generatedQrPath;
+    } else {
+        error_log('Employee registration warning: QR code file generation failed for Employee ID: ' . $employee_id);
+    }
+
+    $qr_code_url = $qr_code
+        ? '../' . ltrim($qr_code, './') . '?v=' . time()
+        : 'https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=' . urlencode($employee_id);
     $qr_code_html = '<img src="' . htmlspecialchars($qr_code_url, ENT_QUOTES, 'UTF-8') . '" alt="QR Code for Employee ID ' . htmlspecialchars($employee_id, ENT_QUOTES, 'UTF-8') . '">';
 
     ob_end_clean();
     echo json_encode([
         'success' => true,
         'status' => 'success',
-        'message' => 'Employee registered successfully!',
+        'message' => $qr_code
+            ? 'Employee registered successfully!'
+            : 'Employee registered, but QR file generation failed. Please regenerate QR code from the employee list.',
         'qr_code' => $qr_code_html,
+        'qr_code_path' => $qr_code,
         'employee_id' => $employee_id,
         'employee_name' => $first_name . ' ' . $last_name
     ]);

@@ -387,13 +387,13 @@ include 'includes/header_modern.php';
         }
     }
 
-    .student-name {
+    .employee-name {
         font-weight: 600;
         color: var(--gray-900);
         word-break: break-word;
     }
 
-    .student-lrn {
+    .employee-id {
         font-family: 'Courier New', monospace;
         font-weight: 600;
         color: var(--asj-green-600);
@@ -520,28 +520,28 @@ include 'includes/header_modern.php';
         display: none;
     }
 
-    .student-card {
+    .employee-card {
         padding: var(--space-4);
         border-bottom: 1px solid var(--gray-100);
         transition: all var(--transition-base);
     }
 
-    .student-card:last-child {
+    .employee-card:last-child {
         border-bottom: none;
     }
 
-    .student-card:active {
+    .employee-card:active {
         background: var(--gray-50);
     }
 
-    .student-card-header {
+    .employee-card-header {
         display: flex;
         align-items: center;
         gap: var(--space-3);
         margin-bottom: var(--space-3);
     }
 
-    .student-card-avatar {
+    .employee-card-avatar {
         width: 48px;
         height: 48px;
         border-radius: var(--radius-full);
@@ -554,32 +554,32 @@ include 'includes/header_modern.php';
         font-size: var(--text-lg);
     }
 
-    .student-card-info h4 {
+    .employee-card-info h4 {
         font-size: var(--text-base);
         font-weight: 600;
         color: var(--gray-900);
         margin: 0 0 var(--space-1) 0;
     }
 
-    .student-card-info p {
+    .employee-card-info p {
         font-size: var(--text-sm);
         color: var(--gray-500);
         margin: 0;
     }
 
-    .student-card-details {
+    .employee-card-details {
         display: grid;
         grid-template-columns: 1fr 1fr;
         gap: var(--space-3);
         margin-bottom: var(--space-3);
     }
 
-    .student-card-field {
+    .employee-card-field {
         display: flex;
         flex-direction: column;
     }
 
-    .student-card-label {
+    .employee-card-label {
         font-size: var(--text-xs);
         color: var(--gray-500);
         margin-bottom: var(--space-1);
@@ -588,13 +588,13 @@ include 'includes/header_modern.php';
         letter-spacing: 0.05em;
     }
 
-    .student-card-value {
+    .employee-card-value {
         font-size: var(--text-sm);
         color: var(--gray-900);
         font-weight: 500;
     }
 
-    .student-card-actions {
+    .employee-card-actions {
         display: flex;
         gap: var(--space-2);
     }
@@ -1143,10 +1143,10 @@ include 'includes/header_modern.php';
                 <?php foreach ($employees as $employee): ?>
                     <tr>
                         <td>
-                            <span class="student-lrn"><?php echo sanitizeOutput($employee['employee_id']); ?></span>
+                            <span class="employee-id"><?php echo sanitizeOutput($employee['employee_id']); ?></span>
                         </td>
                         <td>
-                            <span class="student-name"><?php echo sanitizeOutput(trim($employee['first_name'] . ' ' . $employee['middle_name'] . ' ' . $employee['last_name'])); ?></span>
+                            <span class="employee-name"><?php echo sanitizeOutput(trim($employee['first_name'] . ' ' . $employee['middle_name'] . ' ' . $employee['last_name'])); ?></span>
                         </td>
                         <td>
                             <span class="badge badge-<?php echo $employee['gender'] === 'Male' ? 'primary' : 'error'; ?>">
@@ -1205,36 +1205,36 @@ include 'includes/header_modern.php';
         <!-- Mobile Cards -->
         <div class="mobile-cards">
             <?php foreach ($employees as $employee): ?>
-                <div class="student-card">
-                    <div class="student-card-header">
-                        <div class="student-card-avatar">
+                <div class="employee-card">
+                    <div class="employee-card-header">
+                        <div class="employee-card-avatar">
                             <?php echo strtoupper(substr($employee['first_name'], 0, 1)); ?>
                         </div>
-                        <div class="student-card-info">
+                        <div class="employee-card-info">
                             <h4><?php echo sanitizeOutput(trim($employee['first_name'] . ' ' . $employee['last_name'])); ?></h4>
                             <p><?php echo sanitizeOutput($employee['department']); ?></p>
                         </div>
                     </div>
-                    <div class="student-card-details">
-                        <div class="student-card-field">
-                            <span class="student-card-label"><?php echo $identifierLabel; ?></span>
-                            <span class="student-card-value"><?php echo sanitizeOutput($employee['employee_id']); ?></span>
+                    <div class="employee-card-details">
+                        <div class="employee-card-field">
+                            <span class="employee-card-label"><?php echo $identifierLabel; ?></span>
+                            <span class="employee-card-value"><?php echo sanitizeOutput($employee['employee_id']); ?></span>
                         </div>
-                        <div class="student-card-field">
-                            <span class="student-card-label">Gender</span>
-                            <span class="student-card-value">
+                        <div class="employee-card-field">
+                            <span class="employee-card-label">Gender</span>
+                            <span class="employee-card-value">
                                 <span class="badge badge-<?php echo $employee['gender'] === 'Male' ? 'primary' : 'error'; ?>">
                                     <i class="fa-solid fa-<?php echo $employee['gender'] === 'Male' ? 'mars' : 'venus'; ?>"></i>
                                     <?php echo sanitizeOutput($employee['gender']); ?>
                                 </span>
                             </span>
                         </div>
-                        <div class="student-card-field" style="grid-column: 1 / -1;">
-                            <span class="student-card-label">Email</span>
-                            <span class="student-card-value"><?php echo sanitizeOutput($employee['email']); ?></span>
+                        <div class="employee-card-field" style="grid-column: 1 / -1;">
+                            <span class="employee-card-label">Email</span>
+                            <span class="employee-card-value"><?php echo sanitizeOutput($employee['email']); ?></span>
                         </div>
                     </div>
-                    <div class="student-card-actions">
+                    <div class="employee-card-actions">
                         <button 
                             class="btn btn-sm btn-primary"
                             data-action="view"
@@ -1506,6 +1506,31 @@ function viewEmployeeDetails(employee) {
 let currentQREmployeeRecordId = null;
 let currentQREmployeeId = null;
 
+function resolveQrImageUrl(qrPathOrUrl) {
+    if (!qrPathOrUrl || typeof qrPathOrUrl !== 'string') {
+        return null;
+    }
+
+    const normalized = qrPathOrUrl.trim();
+    if (!normalized || normalized.includes('|')) {
+        return null;
+    }
+
+    if (normalized.startsWith('http://') || normalized.startsWith('https://') || normalized.startsWith('data:')) {
+        return normalized;
+    }
+
+    if (normalized.startsWith('../')) {
+        return `${normalized.split('?')[0]}?v=${Date.now()}`;
+    }
+
+    if (normalized.startsWith('uploads/')) {
+        return `../${normalized.split('?')[0]}?v=${Date.now()}`;
+    }
+
+    return `${normalized.split('?')[0]}?v=${Date.now()}`;
+}
+
 // Generate QR Code - Now displays the pre-generated image
 function generateQRCode(employeeRecordId, employeeId, name, qrCodePath) {
     currentQREmployeeRecordId = employeeRecordId;
@@ -1515,10 +1540,11 @@ function generateQRCode(employeeRecordId, employeeId, name, qrCodePath) {
     document.getElementById('qr-employee-id').textContent = employeeId;
     
     const qrImage = document.getElementById('qr-code-image');
+    const resolvedUrl = resolveQrImageUrl(qrCodePath);
     
-    if (qrCodePath) {
+    if (resolvedUrl) {
         // Display the pre-generated QR code
-        qrImage.src = '../' + qrCodePath + '?v=' + Date.now(); // Add timestamp to prevent caching
+        qrImage.src = resolvedUrl;
         qrImage.style.display = 'block';
         qrImage.alt = 'QR Code for ' + name;
     } else {
@@ -1548,7 +1574,7 @@ async function regenerateQRCode() {
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({ employee_id: currentQREmployeeRecordId, mode: 'employee' })
+            body: JSON.stringify({ record_id: currentQREmployeeRecordId, mode: 'employee' })
         });
         
         const data = await response.json();
@@ -1556,8 +1582,15 @@ async function regenerateQRCode() {
         if (data.success) {
             // Update the QR code image
             const qrImage = document.getElementById('qr-code-image');
-            qrImage.src = data.qr_code_path;
-            qrImage.style.display = 'block';
+            const nextUrl = resolveQrImageUrl(data.qr_code_url || data.qr_code_path || '');
+
+            if (nextUrl) {
+                qrImage.src = nextUrl;
+                qrImage.style.display = 'block';
+            } else {
+                qrImage.style.display = 'none';
+                showNotification('QR regenerated, but image path could not be resolved.', 'warning');
+            }
             
             showNotification(data.message, 'success');
         } else {

@@ -58,11 +58,6 @@ function validateEmployeeId(employeeId) {
     return pattern.test(employeeId);
 }
 
-// Backward-compatible alias for older callers.
-function validateLRN(lrn) {
-    return validateEmployeeId(lrn);
-}
-
 // Validate email format
 function validateEmail(email) {
     const pattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;

@@ -243,11 +243,22 @@ $attendanceMode = 'employee';
         updateTime();
         setInterval(updateTime, 1000);
 
+        async function waitForZXing(maxAttempts = 40, delayMs = 150) {
+            for (let attempt = 0; attempt < maxAttempts; attempt++) {
+                if (typeof ZXing !== 'undefined' && ZXing?.BrowserQRCodeReader && ZXing?.BarcodeFormat) {
+                    return true;
+                }
+                await new Promise(resolve => setTimeout(resolve, delayMs));
+            }
+            return false;
+        }
+
         // Initialize Scanner with ULTRA-FAST Configuration
         async function initializeScanner() {
             try {
-                if (typeof ZXing === 'undefined') {
-                    throw new Error('ZXing library not loaded. Please check your internet connection.');
+                const zxingReady = await waitForZXing();
+                if (!zxingReady) {
+                    throw new Error('ZXing library not loaded. Please refresh and check internet connection.');
                 }
                 
                 if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
@@ -262,10 +273,6 @@ $attendanceMode = 'employee';
                 
                 codeReader = new ZXing.BrowserQRCodeReader(hints);
                 document.getElementById('scanner-loading').style.display = 'none';
-                
-                setTimeout(() => {
-                    startScanning();
-                }, 500);
             } catch (error) {
                 document.getElementById('scanner-loading').style.display = 'none';
                 
@@ -282,7 +289,12 @@ $attendanceMode = 'employee';
 
         // Start ULTRA-FAST Scanning
         async function startScanning() {
+            if (isScanning) {
+                return;
+            }
+
             if (!codeReader) await initializeScanner();
+            if (!codeReader) return;
             
             try {
                 isScanning = true;
@@ -565,9 +577,10 @@ $attendanceMode = 'employee';
         document.getElementById('stop-scan-btn').addEventListener('click', stopScanning);
 
         // Initialize
-        window.addEventListener('load', () => {
+        window.addEventListener('load', async () => {
             applyModeLabels();
-            initializeScanner();
+            await initializeScanner();
+            await startScanning();
             document.getElementById('schedule-info').textContent = 'Ready to scan employees';
         });
     </script>
