@@ -1,54 +1,45 @@
 <?php
 /**
  * QR Code Helper Functions
- * Handles QR code generation for students using ZXing API
+ * Handles QR code generation for employees using ZXing API
  */
 
 /**
- * Generate QR code for a student using ZXing API
- * @param int $studentId Student ID
- * @param string $lrn Student LRN
- * @param string $name Student full name
+ * Generate QR code for an employee using ZXing API
+ * @param int $employeeId Employee record ID
+ * @param string $employeeIdentifier Employee ID/code
+ * @param string $name Employee full name
  * @return string|false Path to QR code file or false on failure
  */
-function generateStudentQRCode($studentId, $lrn, $name = '') {
+function generateEmployeeQRCode($employeeId, $employeeIdentifier, $name = '') {
     try {
-        // Define upload directory
         $uploadDir = __DIR__ . '/../uploads/qrcodes/';
-        
-        // Create directory if it doesn't exist
+
         if (!is_dir($uploadDir)) {
             if (!mkdir($uploadDir, 0777, true)) {
                 error_log("Failed to create QR code directory: " . $uploadDir);
                 return false;
             }
         }
-        
-        // Ensure directory is writable
+
         if (!is_writable($uploadDir)) {
             chmod($uploadDir, 0777);
         }
-        
-        // Generate filename
-        $filename = 'student_' . $studentId . '.png';
+
+        $filename = 'employee_' . $employeeId . '.png';
         $filepath = $uploadDir . $filename;
-        
-        // QR code data (using LRN as the primary identifier)
-        $qrData = $lrn;
-        
-        // Generate QR code using ZXing API
+        $qrData = $employeeIdentifier;
+
         $success = generateQRCodeWithZXing($qrData, $filepath);
-        
+
         if ($success && file_exists($filepath)) {
-            // Return relative path for database storage
             return 'uploads/qrcodes/' . $filename;
-        } else {
-            error_log("QR code file was not created: " . $filepath);
-            return false;
         }
-        
+
+        error_log("Employee QR code file was not created: " . $filepath);
+        return false;
     } catch (Exception $e) {
-        error_log("QR code generation error: " . $e->getMessage());
+        error_log("Employee QR code generation error: " . $e->getMessage());
         return false;
     }
 }
@@ -115,8 +106,8 @@ function generateQRCodeWithZXing($data, $filepath) {
 
 /**
  * Fallback: Generate QR code locally (only if GD extension available)
- * This creates a simple visual identifier with the LRN
- * @param string $data Data to encode (LRN)
+ * This creates a simple visual identifier with the employee ID
+ * @param string $data Data to encode (employee ID)
  * @param string $filepath Path to save file
  * @return bool Success status
  */
@@ -128,13 +119,13 @@ function generateQRCodeLocally($data, $filepath) {
             error_log("Please ensure internet connection for ZXing API or enable GD extension");
             
             // Create a simple text file as last resort
-            $textContent = "LRN: $data\nGenerated: " . date('Y-m-d H:i:s') . "\nNote: Enable GD extension or check internet for QR generation";
+            $textContent = "Employee ID: $data\nGenerated: " . date('Y-m-d H:i:s') . "\nNote: Enable GD extension or check internet for QR generation";
             file_put_contents(str_replace('.png', '.txt', $filepath), $textContent);
             
             return false;
         }
         
-        // GD is available - create a simple image with the LRN text
+        // GD is available - create a simple image with the employee ID text
         $img = imagecreatetruecolor(300, 300);
         
         if (!$img) {
@@ -158,9 +149,9 @@ function generateQRCodeLocally($data, $filepath) {
         $text1 = "QR CODE";
         imagestring($img, 5, 110, 50, $text1, $black);
         
-        // Add LRN in center (large)
-        $lrnText = substr($data, 0, 13); // Limit to 13 chars (LRN length)
-        imagestring($img, 5, 90, 140, $lrnText, $black);
+        // Add employee ID in center (large)
+        $idText = substr($data, 0, 20);
+        imagestring($img, 5, 80, 140, $idText, $black);
         
         // Add instruction text at bottom
         $text2 = "Scan to mark attendance";
@@ -197,60 +188,58 @@ function generateQRCodeLocally($data, $filepath) {
 }
 
 /**
- * Regenerate QR code for existing student
- * @param int $studentId Student ID
- * @param string $lrn Student LRN
- * @param string $name Student full name
+ * Regenerate QR code for existing employee
+ * @param int $employeeId Employee record ID
+ * @param string $employeeIdentifier Employee identifier
+ * @param string $name Employee full name
  * @return string|false Path to QR code file or false on failure
  */
-function regenerateStudentQRCode($studentId, $lrn, $name = '') {
-    // Delete old QR code if exists
-    $oldPath = __DIR__ . '/../uploads/qrcodes/student_' . $studentId . '.png';
+function regenerateEmployeeQRCode($employeeId, $employeeIdentifier, $name = '') {
+    $oldPath = __DIR__ . '/../uploads/qrcodes/employee_' . $employeeId . '.png';
     if (file_exists($oldPath)) {
         unlink($oldPath);
     }
-    
-    // Generate new QR code
-    return generateStudentQRCode($studentId, $lrn, $name);
+
+    return generateEmployeeQRCode($employeeId, $employeeIdentifier, $name);
 }
 
 /**
- * Get QR code path for a student
- * @param int $studentId Student ID
+ * Get QR code path for an employee
+ * @param int $employeeId Employee record ID
  * @return string|false Path to QR code or false if not exists
  */
-function getStudentQRCodePath($studentId) {
-    $filename = 'student_' . $studentId . '.png';
+function getEmployeeQRCodePath($employeeId) {
+    $filename = 'employee_' . $employeeId . '.png';
     $filepath = __DIR__ . '/../uploads/qrcodes/' . $filename;
-    
+
     if (file_exists($filepath)) {
         return 'uploads/qrcodes/' . $filename;
     }
-    
+
     return false;
 }
 
 /**
- * Delete QR code for a student
- * @param int $studentId Student ID
+ * Delete QR code for an employee
+ * @param int $employeeId Employee record ID
  * @return bool Success status
  */
-function deleteStudentQRCode($studentId) {
-    $filepath = __DIR__ . '/../uploads/qrcodes/student_' . $studentId . '.png';
-    
+function deleteEmployeeQRCode($employeeId) {
+    $filepath = __DIR__ . '/../uploads/qrcodes/employee_' . $employeeId . '.png';
+
     if (file_exists($filepath)) {
         return unlink($filepath);
     }
-    
-    return true; // Already deleted
+
+    return true;
 }
 
 /**
- * Check if QR code exists for a student
- * @param int $studentId Student ID
+ * Check if QR code exists for an employee
+ * @param int $employeeId Employee record ID
  * @return bool
  */
-function studentQRCodeExists($studentId) {
-    $filepath = __DIR__ . '/../uploads/qrcodes/student_' . $studentId . '.png';
+function employeeQRCodeExists($employeeId) {
+    $filepath = __DIR__ . '/../uploads/qrcodes/employee_' . $employeeId . '.png';
     return file_exists($filepath);
 }

@@ -1,4 +1,4 @@
-# San Francisco High School - Production Security Configuration
+# Employee Attendance Tracker - Production Security Configuration
 # Apache .htaccess file
 
 # Disable directory listing for security

@@ -1,4 +1,4 @@
-// Main JavaScript functionality for the Attendance Checker System
+// Main JavaScript functionality for the Employee Attendance System
 
 // Utility function to show messages
 function showMessage(message, type = 'info') {
@@ -22,7 +22,7 @@ async function loadDashboardStats() {
         const result = await response.json();
         
         if (result.success) {
-            document.getElementById('totalStudents').textContent = result.stats.total_students;
+            document.getElementById('totalStudents').textContent = result.stats.total_employees;
             document.getElementById('presentToday').textContent = result.stats.present_today;
             document.getElementById('attendanceRate').textContent = result.stats.attendance_rate + '%';
         }
@@ -52,10 +52,15 @@ function formatTime(timeString) {
     });
 }
 
-// Validate LRN format (11-13 digits, numeric only)
+// Validate employee identifier format (alphanumeric, underscore, hyphen)
+function validateEmployeeId(employeeId) {
+    const pattern = /^[A-Za-z0-9_-]{3,20}$/;
+    return pattern.test(employeeId);
+}
+
+// Backward-compatible alias for older callers.
 function validateLRN(lrn) {
-    const pattern = /^[0-9]{11,13}$/;
-    return pattern.test(lrn);
+    return validateEmployeeId(lrn);
 }
 
 // Validate email format

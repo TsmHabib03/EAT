@@ -3,25 +3,37 @@ require_once 'config.php';
 requireAdmin();
 
 $currentAdmin = getCurrentAdmin();
-$pageTitle = 'Attendance Reports';
+$attendanceMode = 'employee';
+$isEmployeeMode = true;
+
+$entitySingular = 'Employee';
+$entityPlural = 'Employees';
+$groupLabel = 'Department';
+$groupPlural = 'Departments';
+$identifierLabel = 'Employee ID';
+$searchLabel = 'Employee Name / ID';
+$searchPlaceholder = 'Search by employee name or ID...';
+$modeQuery = '';
+
+$pageTitle = 'Employee Attendance Reports';
 $pageIcon = 'chart-column';
 
 $breadcrumb = [
     ['label' => 'Dashboard', 'icon' => 'house', 'url' => 'dashboard.php'],
-    ['label' => 'Attendance Reports', 'icon' => 'chart-column', 'url' => 'attendance_reports_sections.php']
+    ['label' => $pageTitle, 'icon' => 'chart-column', 'url' => 'attendance_reports_departments.php' . $modeQuery]
 ];
-$pageDescription = 'Generate and analyze attendance data by section';
+$pageDescription = 'Generate and analyze attendance data by ' . strtolower($groupLabel);
 
 // Include the modern admin header
 include 'includes/header_modern.php';
 
-// Fetch sections for the filter
-$sectionOptions = [];
+// Fetch departments for the filter
+$departmentOptions = [];
 try {
-    $stmt = $pdo->query("SELECT section_name FROM sections WHERE is_active = 1 ORDER BY section_name");
-    $sectionOptions = $stmt->fetchAll(PDO::FETCH_COLUMN);
+    $stmt = $pdo->query("SELECT DISTINCT department_code FROM employees WHERE is_active = 1 AND department_code IS NOT NULL AND department_code <> '' ORDER BY department_code");
+    $departmentOptions = $stmt->fetchAll(PDO::FETCH_COLUMN);
 } catch (Exception $e) {
-    $sectionOptions = [];
+    $departmentOptions = [];
 }
 ?>
 
@@ -52,16 +64,19 @@ try {
         </div>
         <div class="card-body">
             <form id="reportFilters" autocomplete="off">
+                <?php if ($isEmployeeMode): ?>
+                    <input type="hidden" name="mode" value="employee">
+                <?php endif; ?>
                 <div class="filters-grid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:1rem;margin-bottom:1.5rem;">
-                    <!-- Section Filter -->
+                    <!-- Department Filter -->
                     <div class="form-group">
-                        <label for="section_filter" class="form-label">
-                            <i class="fa-solid fa-table-cells-large"></i> Section
+                        <label for="department_filter" class="form-label">
+                            <i class="fa-solid fa-table-cells-large"></i> <?php echo $groupLabel; ?>
                         </label>
-                        <select id="section_filter" name="section" class="form-input">
-                            <option value="">All Sections</option>
-                            <?php foreach ($sectionOptions as $sec): ?>
-                            <option value="<?php echo htmlspecialchars($sec); ?>"><?php echo htmlspecialchars($sec); ?></option>
+                        <select id="department_filter" name="department" class="form-input">
+                            <option value="">All <?php echo $groupPlural; ?></option>
+                            <?php foreach ($departmentOptions as $departmentCode): ?>
+                            <option value="<?php echo htmlspecialchars($departmentCode); ?>"><?php echo htmlspecialchars($departmentCode); ?></option>
                             <?php endforeach; ?>
                         </select>
                     </div>
@@ -82,12 +97,12 @@ try {
                         <input type="date" id="end_date" name="end_date" class="form-input" value="<?= date('Y-m-d') ?>">
                     </div>
 
-                    <!-- Student Search -->
+                    <!-- Employee Search -->
                     <div class="form-group">
-                        <label for="student_search" class="form-label">
-                            <i class="fa-solid fa-magnifying-glass"></i> Student Name / LRN
+                        <label for="employee_search" class="form-label">
+                            <i class="fa-solid fa-magnifying-glass"></i> <?php echo $searchLabel; ?>
                         </label>
-                        <input type="text" id="student_search" name="student_search" class="form-input" placeholder="Search by name or LRN…">
+                        <input type="text" id="employee_search" name="employee_search" class="form-input" placeholder="<?php echo htmlspecialchars($searchPlaceholder); ?>">
                     </div>
                 </div>
 
@@ -126,8 +141,8 @@ try {
             </div>
             <div class="kpi-chip">
                 <i class="fa-solid fa-table-cells-large"></i>
-                <span class="kpi-chip-value" id="sections_count">0</span>
-                <span class="kpi-chip-label">Sections</span>
+                <span class="kpi-chip-value" id="departments_count">0</span>
+                <span class="kpi-chip-label"><?php echo $groupPlural; ?></span>
             </div>
         </div>
     </div>
@@ -157,9 +172,9 @@ try {
                 <table class="table" id="reportTable">
                     <thead>
                         <tr>
-                            <th>LRN</th>
-                            <th>Student Name</th>
-                            <th>Section</th>
+                            <th><?php echo $identifierLabel; ?></th>
+                            <th><?php echo $entitySingular; ?> Name</th>
+                            <th><?php echo $groupLabel; ?></th>
                             <th>Date</th>
                             <th>Time In</th>
                             <th>Time Out</th>
@@ -176,7 +191,7 @@ try {
             <div id="noResults" class="empty-state" style="display:none;">
                 <i class="fa-solid fa-inbox"></i>
                 <h3>No Records Found</h3>
-                <p>No attendance records match your selected filters. Try adjusting your search criteria.</p>
+                <p>No attendance records match your selected filters. Try adjusting your <?php echo strtolower($groupLabel); ?> or search criteria.</p>
             </div>
 
             <!-- Pagination -->
@@ -219,7 +234,7 @@ try {
                 <div class="progress-bar">
                     <div class="progress-bar-fill" id="exportProgressFill" style="width:0%;"></div>
                 </div>
-                <p style="font-size:.875rem;color:var(--gray-500);margin-top:.5rem;" id="exportProgressText">Preparing export…</p>
+                <p style="font-size:.875rem;color:var(--gray-500);margin-top:.5rem;" id="exportProgressText">Preparing export</p>
             </div>
 
             <!-- Toast area -->
@@ -239,10 +254,12 @@ try {
 
 <script>
 /**
- * Attendance Reports — Stepper-based UI
+ * Attendance Reports  Stepper-based UI
  */
 (function() {
     'use strict';
+
+    const attendanceMode = '<?php echo $attendanceMode; ?>';
 
     let currentStep = 1;
     let currentPage = 1;
@@ -324,22 +341,26 @@ try {
         const params = new URLSearchParams(formData);
 
         currentFilters = {
-            section: formData.get('section'),
+            department: formData.get('department'),
             start_date: formData.get('start_date'),
             end_date: formData.get('end_date'),
-            student_search: formData.get('student_search')
+            employee_search: formData.get('employee_search'),
+            mode: attendanceMode
         };
 
         try {
-            showLoading('Generating report…');
+            showLoading('Generating report');
 
-            const response = await fetch('../api/get_attendance_report_sections.php?' + params.toString());
-            if (!response.ok) throw new Error('Network error');
-
-            const data = await response.json();
+            const response = await fetch('../api/get_attendance_report_departments.php?' + params.toString());
+            let data = null;
+            try {
+                data = await response.json();
+            } catch (parseError) {
+                data = null;
+            }
             hideLoading();
 
-            if (data.success) {
+            if (response.ok && data && data.success) {
                 allRecords = data.records || [];
                 displaySummary(data.summary || {});
                 currentPage = 1;
@@ -350,9 +371,10 @@ try {
 
                 // Move to step 2
                 goToStep(2);
-                showToast('Report generated — ' + allRecords.length + ' records found.', 'success');
+                showToast('Report generated  ' + allRecords.length + ' records found.', 'success');
             } else {
-                showToast(data.message || 'Error generating report.', 'error');
+                const errMsg = (data && data.message) ? data.message : 'Error generating report.';
+                showToast(errMsg, 'error');
             }
         } catch (err) {
             hideLoading();
@@ -366,7 +388,7 @@ try {
         document.getElementById('total_records').textContent = summary.total_records || 0;
         document.getElementById('completed_count').textContent = summary.completed_count || 0;
         document.getElementById('incomplete_count').textContent = summary.incomplete_count || 0;
-        document.getElementById('sections_count').textContent = summary.sections_count || 0;
+        document.getElementById('departments_count').textContent = summary.departments_count || 0;
     }
 
     // ---- Table ----
@@ -395,10 +417,12 @@ try {
         pageRecords.forEach((rec) => {
             const row = document.createElement('tr');
             const completed = !!rec.time_out;
+            const displayName = rec.employee_name || '-';
+            const displayDepartment = rec.department || '-';
             row.innerHTML = `
-                <td><strong>${esc(rec.lrn)}</strong></td>
-                <td>${esc(rec.student_name)}</td>
-                <td><span class="badge badge-green">${esc(rec.section)}</span></td>
+                <td><strong>${esc(rec.employee_id)}</strong></td>
+                <td>${esc(displayName)}</td>
+                <td><span class="badge badge-green">${esc(displayDepartment)}</span></td>
                 <td>${esc(rec.date_formatted)}</td>
                 <td>${esc(rec.time_in || '-')}</td>
                 <td>${esc(rec.time_out || '-')}</td>
@@ -424,21 +448,21 @@ try {
         if (totalPages <= 1) { container.style.display = 'none'; return; }
         container.style.display = 'flex';
 
-        addPageBtn(container, '‹', currentPage === 1, () => { currentPage--; displayRecords(); });
+        addPageBtn(container, '<', currentPage === 1, () => { currentPage--; displayRecords(); });
 
         const pages = genPages(currentPage, totalPages);
         pages.forEach(p => {
             if (p === '...') {
                 const dots = document.createElement('span');
                 dots.className = 'pagination-dots';
-                dots.textContent = '…';
+                dots.textContent = '';
                 container.appendChild(dots);
             } else {
                 addPageBtn(container, p, false, () => { currentPage = p; displayRecords(); }, p === currentPage);
             }
         });
 
-        addPageBtn(container, '›', currentPage === totalPages, () => { currentPage++; displayRecords(); });
+        addPageBtn(container, '>', currentPage === totalPages, () => { currentPage++; displayRecords(); });
     }
 
     function addPageBtn(parent, text, disabled, onClick, active) {
@@ -471,7 +495,7 @@ try {
         const text = document.getElementById('exportProgressText');
         prog.style.display = 'block';
         fill.style.width = '0%';
-        text.textContent = 'Preparing export…';
+        text.textContent = 'Preparing export';
 
         // Animate progress bar
         let pct = 0;
@@ -479,11 +503,11 @@ try {
             pct += 10 + Math.random() * 15;
             if (pct > 90) pct = 90;
             fill.style.width = pct + '%';
-            text.textContent = 'Exporting… ' + Math.round(pct) + '%';
+            text.textContent = 'Exporting ' + Math.round(pct) + '%';
         }, 200);
 
         const params = new URLSearchParams(currentFilters);
-        window.location.href = '../api/export_attendance_sections_csv.php?' + params.toString();
+        window.location.href = '../api/export_attendance_departments_csv.php?' + params.toString();
 
         setTimeout(() => {
             clearInterval(iv);
@@ -548,3 +572,4 @@ try {
 </script>
 
 <?php include 'includes/footer_modern.php'; ?>
+

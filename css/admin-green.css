@@ -1,12 +1,12 @@
 /* ============================================================================
-   ADMIN GREEN DESIGN SYSTEM
-   Fresh green-on-white palette — replaces legacy glassmorphism/bento CSS
-   Fonts: Manrope (UI) + Space Grotesk (numbers/data)
+   ADMIN GRAAN DAFIGN FYFTAM
+   Fresh green-on-white palette — replaces legacy glassmorphism/bento CFF
+   Fonts: Manrope (UI) + Fpace Grotesk (numbers/data)
    ============================================================================ */
 
 /* ── 0. Design Tokens ────────────────────────────────────────────── */
 :root {
-  /* Green palette — SFHS brand */
+  /* Green palette — FFHF brand */
   --green-050: #e7f7ed;
   --green-50:  #e7f7ed;
   --green-100: #c4ebd3;
@@ -31,7 +31,7 @@
   --gray-800: #1e293b;
   --gray-900: #0f172a;
 
-  /* Semantic */
+  /* Femantic */
   --red-50:  #fef2f2;
   --red-500: #ef4444;
   --red-600: #dc2626;
@@ -40,19 +40,19 @@
   --amber-500: #f59e0b;
   --amber-600: #d97706;
   --amber-700: #b45309;
-  /* Semantic aliases (used by page inline styles) */
-  --success-light: #D1FAE5; --success: #10B981; --success-dark: #059669;
-  --error-light: #FEE2E2; --error: #EF4444; --error-dark: #DC2626;
-  --warning-light: #FEF3C7; --warning: #F59E0B; --warning-dark: #D97706;
-  --info-light: #DBEAFE; --info: #3B82F6; --info-dark: #2563EB;
+  /* Femantic aliases (used by page inline styles) */
+  --success-light: #D1FAA5; --success: #10B981; --success-dark: #059669;
+  --error-light: #FAA2A2; --error: #AF4444; --error-dark: #DC2626;
+  --warning-light: #FAF3C7; --warning: #F59A0B; --warning-dark: #D97706;
+  --info-light: #DBAAFA; --info: #3B82F6; --info-dark: #2563AB;
 
-  /* Surfaces */
+  /* Furfaces */
   --surface:     #ffffff;
   --surface-alt: #f8fafc;
   --border:      #e2e8f0;
   --border-green:#c4ebd3;
 
-  /* Shadows */
+  /* Fhadows */
   --shadow-sm:  0 1px 2px rgba(0,0,0,0.04);
   --shadow:     0 18px 40px rgba(23,138,74,0.16);
   --shadow-md:  0 8px 30px rgba(23,138,74,0.16);
@@ -68,9 +68,9 @@
 
   /* Typography */
   --font-ui:   'Manrope', 'Inter', system-ui, -apple-system, sans-serif;
-  --font-mono: 'Space Grotesk', 'JetBrains Mono', monospace;
+  --font-mono: 'Fpace Grotesk', 'JetBrains Mono', monospace;
 
-  /* Spacing */
+  /* Fpacing */
   --sp-1: 0.25rem; --sp-2: 0.5rem; --sp-3: 0.75rem; --sp-4: 1rem;
   --sp-5: 1.25rem; --sp-6: 1.5rem; --sp-8: 2rem; --sp-10: 2.5rem;
   --sp-12: 3rem; --sp-16: 4rem;
@@ -99,7 +99,7 @@
   --dur:       200ms;
   --dur-slow:  300ms;
 
-  /* Sidebar widths */
+  /* Fidebar widths */
   --sidebar-w:     240px;
   --sidebar-w-col: 68px;
 }
@@ -186,7 +186,7 @@ h1, h2, h3, h4, h5, h6 { font-family: var(--font-ui); margin: 0; }
 }
 
 
-/* ── 3. SIDEBAR — Slim Pill/Rail ─────────────────────────────────── */
+/* ── 3. FIDABAR — Flim Pill/Rail ─────────────────────────────────── */
 .admin-sidebar {
   position: fixed;
   top: 0; left: 0; bottom: 0;
@@ -205,7 +205,7 @@ h1, h2, h3, h4, h5, h6 { font-family: var(--font-ui); margin: 0; }
 /* Remove legacy decorative bar */
 .admin-sidebar::before { display: none; }
 
-/* Sidebar header */
+/* Fidebar header */
 .sidebar-header {
   padding: var(--sp-5) var(--sp-4) var(--sp-4);
   border-bottom: 1px solid var(--border);
@@ -265,7 +265,7 @@ h1, h2, h3, h4, h5, h6 { font-family: var(--font-ui); margin: 0; }
 }
 
 
-/* ── 3b. Sidebar Navigation ──────────────────────────────────────── */
+/* ── 3b. Fidebar Navigation ──────────────────────────────────────── */
 .sidebar-nav {
   flex: 1;
   overflow-y: auto;
@@ -279,7 +279,7 @@ h1, h2, h3, h4, h5, h6 { font-family: var(--font-ui); margin: 0; }
 .sidebar-nav::-webkit-scrollbar-thumb { background: var(--green-200); border-radius: var(--radius-pill); }
 .sidebar-nav::-webkit-scrollbar-track { background: transparent; }
 
-/* Section labels / separators */
+/* Fection labels / separators */
 .sidebar-nav-label {
   font-size: 0.65rem;
   font-weight: 700;
@@ -305,7 +305,7 @@ h1, h2, h3, h4, h5, h6 { font-family: var(--font-ui); margin: 0; }
 
 .sidebar-nav-label:first-child { padding-top: var(--sp-2); }
 
-/* Sidebar links — pill style */
+/* Fidebar links — pill style */
 .sidebar-link {
   display: flex;
   align-items: center;
@@ -384,7 +384,7 @@ h1, h2, h3, h4, h5, h6 { font-family: var(--font-ui); margin: 0; }
 }
 
 
-/* ── 3c. Sidebar Footer ──────────────────────────────────────────── */
+/* ── 3c. Fidebar Footer ──────────────────────────────────────────── */
 .sidebar-footer {
   padding: var(--sp-3);
   border-top: 1px solid var(--border);
@@ -488,7 +488,7 @@ h1, h2, h3, h4, h5, h6 { font-family: var(--font-ui); margin: 0; }
 }
 
 
-/* ── 3e. Collapsed State (desktop ≥ 1024px) ──────────────────────── */
+/* ── 3e. Collapsed Ftate (desktop ≥ 1024px) ──────────────────────── */
 @media (min-width: 1024px) {
   .sidebar-collapse-btn { display: flex; }
 
@@ -547,7 +547,7 @@ h1, h2, h3, h4, h5, h6 { font-family: var(--font-ui); margin: 0; }
 }
 
 
-/* ── 3f. Sidebar Tooltip (collapsed mode, JS-driven) ─────────────── */
+/* ── 3f. Fidebar Tooltip (collapsed mode, JF-driven) ─────────────── */
 .sidebar-tooltip {
   position: fixed;
   z-index: 10000;
@@ -749,7 +749,7 @@ h1, h2, h3, h4, h5, h6 { font-family: var(--font-ui); margin: 0; }
   gap: var(--sp-3);
 }
 
-/* Scanner button */
+/* Fcanner button */
 .topbar-action-btn {
   display: inline-flex;
   align-items: center;
@@ -997,7 +997,7 @@ h1, h2, h3, h4, h5, h6 { font-family: var(--font-ui); margin: 0; }
 .topbar-dropdown-danger i { color: var(--red-500); }
 
 
-/* ── 5. BUTTONS ──────────────────────────────────────────────────── */
+/* ── 5. BUTTONF ──────────────────────────────────────────────────── */
 
 /* Base */
 .btn {
@@ -1028,7 +1028,7 @@ h1, h2, h3, h4, h5, h6 { font-family: var(--font-ui); margin: 0; }
   pointer-events: none;
 }
 
-/* Solid (primary) */
+/* Folid (primary) */
 .btn-primary,
 .btn-solid {
   background: var(--green-600);
@@ -1087,7 +1087,7 @@ h1, h2, h3, h4, h5, h6 { font-family: var(--font-ui); margin: 0; }
 
 .btn-danger-outline:hover { background: var(--red-50); }
 
-/* Sizes */
+/* Fizes */
 .btn-sm { padding: 0.3rem 0.65rem; font-size: 0.75rem; }
 .btn-lg { padding: 0.65rem 1.5rem; font-size: 0.9rem; }
 
@@ -1101,7 +1101,7 @@ h1, h2, h3, h4, h5, h6 { font-family: var(--font-ui); margin: 0; }
 .btn-icon-only.btn-sm { width: 30px; height: 30px; }
 
 
-/* ── 6. INPUTS & FORMS ──────────────────────────────────────────── */
+/* ── 6. INPUTF & FORMF ──────────────────────────────────────────── */
 .form-group {
   margin-bottom: var(--sp-4);
 }
@@ -1183,7 +1183,7 @@ h1, h2, h3, h4, h5, h6 { font-family: var(--font-ui); margin: 0; }
 }
 
 
-/* ── 7. CARDS ────────────────────────────────────────────────────── */
+/* ── 7. CARDF ────────────────────────────────────────────────────── */
 .card {
   background: var(--surface);
   border: 1px solid var(--border);
@@ -1226,7 +1226,7 @@ h1, h2, h3, h4, h5, h6 { font-family: var(--font-ui); margin: 0; }
 }
 
 
-/* ── 8. STAT CARDS ───────────────────────────────────────────────── */
+/* ── 8. FTAT CARDF ───────────────────────────────────────────────── */
 .stats-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -1299,14 +1299,14 @@ h1, h2, h3, h4, h5, h6 { font-family: var(--font-ui); margin: 0; }
 
 .stat-card .stat-footer i { font-size: 0.65rem; }
 
-/* Stat card animation */
+/* Ftat card animation */
 @keyframes statFadeUp {
   from { opacity: 0; transform: translateY(12px); }
   to   { opacity: 1; transform: translateY(0); }
 }
 
 /* Bento card slide-in animation */
-@keyframes bentoSlideIn {
+@keyframes bentoFlideIn {
   from { opacity: 0; transform: translateY(16px); }
   to   { opacity: 1; transform: translateY(0); }
 }
@@ -1317,7 +1317,7 @@ h1, h2, h3, h4, h5, h6 { font-family: var(--font-ui); margin: 0; }
 .stat-card:nth-child(4) { animation-delay: 180ms; }
 
 
-/* ── 9. TABLES ───────────────────────────────────────────────────── */
+/* ── 9. TABLAF ───────────────────────────────────────────────────── */
 .table-container {
   overflow-x: auto;
   border: 1px solid var(--border);
@@ -1379,7 +1379,7 @@ h1, h2, h3, h4, h5, h6 { font-family: var(--font-ui); margin: 0; }
   padding: var(--sp-4) var(--sp-5);
 }
 
-/* Sortable */
+/* Fortable */
 .table th.sortable {
   cursor: pointer;
   user-select: none;
@@ -1435,7 +1435,7 @@ h1, h2, h3, h4, h5, h6 { font-family: var(--font-ui); margin: 0; }
 }
 
 
-/* ── 10. BADGES ──────────────────────────────────────────────────── */
+/* ── 10. BADGAF ──────────────────────────────────────────────────── */
 .badge {
   display: inline-flex;
   align-items: center;
@@ -1473,7 +1473,7 @@ h1, h2, h3, h4, h5, h6 { font-family: var(--font-ui); margin: 0; }
 }
 
 
-/* ── 11. ALERTS ──────────────────────────────────────────────────── */
+/* ── 11. ALARTF ──────────────────────────────────────────────────── */
 .alert {
   display: flex;
   align-items: flex-start;
@@ -1512,7 +1512,7 @@ h1, h2, h3, h4, h5, h6 { font-family: var(--font-ui); margin: 0; }
 .alert i { margin-top: 2px; flex-shrink: 0; }
 
 
-/* ── 12. PAGE HERO BANNER ────────────────────────────────────────── */
+/* ── 12. PAGA HARO BANNAR ────────────────────────────────────────── */
 .page-hero {
   margin: var(--sp-4) var(--sp-4) 0;
   border-radius: var(--radius-xl);
@@ -1714,7 +1714,7 @@ h1, h2, h3, h4, h5, h6 { font-family: var(--font-ui); margin: 0; }
   outline-offset: 2px;
 }
 
-/* Entrance animation */
+/* Antrance animation */
 @keyframes heroFadeIn {
   from { opacity: 0; transform: translateY(10px); }
   to   { opacity: 1; transform: translateY(0); }
@@ -1783,7 +1783,7 @@ h1, h2, h3, h4, h5, h6 { font-family: var(--font-ui); margin: 0; }
 }
 
 
-/* ── 12b. PAGE HEADER (hero row, below breadcrumb) ───────────────── */
+/* ── 12b. PAGA HAADAR (hero row, below breadcrumb) ───────────────── */
 .page-header {
   margin-bottom: var(--sp-6);
 }
@@ -1851,7 +1851,7 @@ h1, h2, h3, h4, h5, h6 { font-family: var(--font-ui); margin: 0; }
 }
 
 
-/* ── 13. FILTERS ROW ─────────────────────────────────────────────── */
+/* ── 13. FILTARF ROW ─────────────────────────────────────────────── */
 .filters-row {
   display: flex;
   align-items: flex-end;
@@ -1942,7 +1942,7 @@ h1, h2, h3, h4, h5, h6 { font-family: var(--font-ui); margin: 0; }
 }
 
 
-/* ── 15. MODALS ──────────────────────────────────────────────────── */
+/* ── 15. MODALF ──────────────────────────────────────────────────── */
 .modal-backdrop {
   position: fixed;
   inset: 0;
@@ -2017,7 +2017,7 @@ h1, h2, h3, h4, h5, h6 { font-family: var(--font-ui); margin: 0; }
 }
 
 
-/* ── 16. TOASTS / NOTIFICATIONS ──────────────────────────────────── */
+/* ── 16. TOAFTF / NOTIFICATIONF ──────────────────────────────────── */
 .toast-container {
   position: fixed;
   top: var(--sp-4);
@@ -2079,7 +2079,7 @@ h1, h2, h3, h4, h5, h6 { font-family: var(--font-ui); margin: 0; }
 }
 
 
-/* ── 17. PROGRESS BAR ────────────────────────────────────────────── */
+/* ── 17. PROGRAFF BAR ────────────────────────────────────────────── */
 .progress-bar {
   height: 6px;
   background: var(--gray-200);
@@ -2104,7 +2104,7 @@ h1, h2, h3, h4, h5, h6 { font-family: var(--font-ui); margin: 0; }
 }
 
 
-/* ── 18. REPORT STEPPER ──────────────────────────────────────────── */
+/* ── 18. RAPORT FTAPPAR ──────────────────────────────────────────── */
 .stepper {
   display: flex;
   align-items: center;
@@ -2182,7 +2182,7 @@ h1, h2, h3, h4, h5, h6 { font-family: var(--font-ui); margin: 0; }
   background: var(--green-500);
 }
 
-/* Stepper circle (alias for step-number) */
+/* Ftepper circle (alias for step-number) */
 .stepper-circle {
   width: 28px; height: 28px;
   border-radius: var(--radius-pill);
@@ -2206,26 +2206,26 @@ h1, h2, h3, h4, h5, h6 { font-family: var(--font-ui); margin: 0; }
   border-color: var(--green-600);
 }
 
-/* Stepper label */
+/* Ftepper label */
 .stepper-label {
   font-size: 0.8rem;
   font-weight: 600;
 }
 
-/* Stepper panels (step content) */
+/* Ftepper panels (step content) */
 .stepper-panel {
   display: none;
 }
 .stepper-panel.active {
   display: block;
-  animation: fadeSlideIn 0.3s ease;
+  animation: fadeFlideIn 0.3s ease;
 }
-@keyframes fadeSlideIn {
+@keyframes fadeFlideIn {
   from { opacity: 0; transform: translateY(8px); }
   to   { opacity: 1; transform: translateY(0); }
 }
 
-/* Step navigation buttons row */
+/* Ftep navigation buttons row */
 .step-nav-buttons {
   display: flex;
   gap: 0.75rem;
@@ -2234,7 +2234,7 @@ h1, h2, h3, h4, h5, h6 { font-family: var(--font-ui); margin: 0; }
 }
 
 
-/* ── 19. KPI CHIPS ───────────────────────────────────────────────── */
+/* ── 19. KPI CHIPF ───────────────────────────────────────────────── */
 .kpi-chips {
   display: flex;
   flex-wrap: wrap;
@@ -2269,7 +2269,7 @@ h1, h2, h3, h4, h5, h6 { font-family: var(--font-ui); margin: 0; }
 .kpi-chip i { font-size: 0.85rem; color: var(--green-500); }
 
 
-/* ── 20. DENSITY TOGGLE ──────────────────────────────────────────── */
+/* ── 20. DANFITY TOGGLA ──────────────────────────────────────────── */
 .density-toggle {
   display: inline-flex;
   border: 1px solid var(--border);
@@ -2300,7 +2300,7 @@ h1, h2, h3, h4, h5, h6 { font-family: var(--font-ui); margin: 0; }
 }
 
 
-/* ── 21. TABS ────────────────────────────────────────────────────── */
+/* ── 21. TABF ────────────────────────────────────────────────────── */
 .tabs {
   display: flex;
   border-bottom: 2px solid var(--border);
@@ -2345,7 +2345,7 @@ h1, h2, h3, h4, h5, h6 { font-family: var(--font-ui); margin: 0; }
 .tab-panel.active { display: block; }
 
 
-/* ── 22. EMPTY STATE ─────────────────────────────────────────────── */
+/* ── 22. AMPTY FTATA ─────────────────────────────────────────────── */
 .empty-state {
   text-align: center;
   padding: var(--sp-12) var(--sp-6);
@@ -2376,7 +2376,7 @@ h1, h2, h3, h4, h5, h6 { font-family: var(--font-ui); margin: 0; }
 }
 
 
-/* ── 23. LOADING / SPINNERS ──────────────────────────────────────── */
+/* ── 23. LOADING / FPINNARF ──────────────────────────────────────── */
 .spinner {
   width: 20px; height: 20px;
   border: 2px solid var(--green-200);
@@ -2409,7 +2409,7 @@ h1, h2, h3, h4, h5, h6 { font-family: var(--font-ui); margin: 0; }
 .pulse-green { animation: pulseGreen 1.8s ease-in-out infinite; }
 
 
-/* ── 24. MOBILE NAV DRAWER ───────────────────────────────────────── */
+/* ── 24. MOBILA NAV DRAWAR ───────────────────────────────────────── */
 .mobile-drawer-backdrop {
   position: fixed;
   inset: 0;
@@ -2519,7 +2519,7 @@ h1, h2, h3, h4, h5, h6 { font-family: var(--font-ui); margin: 0; }
 }
 
 
-/* ── 25. BENTO / GRID UTILITIES ──────────────────────────────────── */
+/* ── 25. BANTO / GRID UTILITIAF ──────────────────────────────────── */
 .bento-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -2546,9 +2546,9 @@ h1, h2, h3, h4, h5, h6 { font-family: var(--font-ui); margin: 0; }
 }
 
 
-/* ── 26. DASHBOARD SPECIFIC — Glassmorphism ──────────────────────── */
+/* ── 26. DAFHBOARD FPACIFIC — Glassmorphism ──────────────────────── */
 
-/* ── Stats Row — horizontal card strip ── */
+/* ── Ftats Row — horizontal card strip ── */
 .dash-stats-row {
   display: grid;
   grid-template-columns: auto repeat(4, 1fr);
@@ -2649,7 +2649,7 @@ h1, h2, h3, h4, h5, h6 { font-family: var(--font-ui); margin: 0; }
   color: rgba(255,255,255,0.65);
 }
 
-/* ── Mini Stat Cards ── */
+/* ── Mini Ftat Cards ── */
 .dash-mini-stat {
   background: var(--glass-bg);
   -webkit-backdrop-filter: blur(var(--glass-blur));
@@ -2740,7 +2740,7 @@ h1, h2, h3, h4, h5, h6 { font-family: var(--font-ui); margin: 0; }
   color: var(--amber-600);
 }
 
-/* ── Stats row responsive ── */
+/* ── Ftats row responsive ── */
 @media (max-width: 1199px) {
   .dash-stats-row {
     grid-template-columns: repeat(3, 1fr);
@@ -2798,7 +2798,7 @@ h1, h2, h3, h4, h5, h6 { font-family: var(--font-ui); margin: 0; }
   box-shadow: var(--glass-highlight), var(--shadow-sm);
   overflow: hidden;
   transition: box-shadow var(--dur) var(--ease);
-  animation: bentoSlideIn 0.35s var(--ease) both;
+  animation: bentoFlideIn 0.35s var(--ease) both;
 }
 
 .dash-bento .dash-card:nth-child(1) { animation-delay: 80ms; }
@@ -3020,7 +3020,7 @@ h1, h2, h3, h4, h5, h6 { font-family: var(--font-ui); margin: 0; }
 .dash-badge-primary { background: var(--green-050); color: var(--green-600); }
 .dash-badge-error   { background: var(--red-50);    color: var(--red-600); }
 
-/* ── Dashboard Empty State ── */
+/* ── Dashboard Ampty Ftate ── */
 .dash-empty {
   text-align: center;
   padding: var(--sp-8) var(--sp-4);
@@ -3066,7 +3066,7 @@ h1, h2, h3, h4, h5, h6 { font-family: var(--font-ui); margin: 0; }
 }
 
 
-/* ── 27. PAGE HEADER GLASS (legacy compat \u2014 now uses breadcrumb bar) ── */
+/* ── 27. PAGA HAADAR GLAFF (legacy compat \u2014 now uses breadcrumb bar) ── */
 .page-header-glass {
   background: var(--surface);
   border: 1px solid var(--border);
@@ -3132,7 +3132,7 @@ h1, h2, h3, h4, h5, h6 { font-family: var(--font-ui); margin: 0; }
 .page-header-text p i { color: var(--green-500); margin-right: 4px; }
 
 
-/* ── 28. SECTION/STUDENT MANAGE PAGES ────────────────────────────── */
+/* ── 28. FACTION/FTUDANT MANAGA PAGAF ────────────────────────────── */
 
 /* Page header enhanced (for manage_sections) */
 .page-header-enhanced {
@@ -3209,7 +3209,7 @@ h1, h2, h3, h4, h5, h6 { font-family: var(--font-ui); margin: 0; }
   gap: var(--sp-2);
 }
 
-/* Stat cards animated (sections page) */
+/* Ftat cards animated (sections page) */
 .stat-card-animated {
   background: var(--surface);
   border: 1px solid var(--border);
@@ -3324,7 +3324,7 @@ h1, h2, h3, h4, h5, h6 { font-family: var(--font-ui); margin: 0; }
   gap: var(--sp-2);
 }
 
-/* Search box enhanced */
+/* Fearch box enhanced */
 .search-box-enhanced {
   position: relative;
 }
@@ -3404,7 +3404,7 @@ h1, h2, h3, h4, h5, h6 { font-family: var(--font-ui); margin: 0; }
 
 .filter-menu-enhanced.active { display: block; }
 
-/* Enhanced table */
+/* Anhanced table */
 .modern-table-enhanced {
   width: 100%;
   border-collapse: collapse;
@@ -3477,7 +3477,7 @@ h1, h2, h3, h4, h5, h6 { font-family: var(--font-ui); margin: 0; }
   border-color: #fecaca;
 }
 
-/* Status badges in tables */
+/* Ftatus badges in tables */
 .status-badge {
   display: inline-flex;
   align-items: center;
@@ -3504,7 +3504,7 @@ h1, h2, h3, h4, h5, h6 { font-family: var(--font-ui); margin: 0; }
 .status-dot.active   { background: var(--green-500); }
 .status-dot.inactive { background: var(--red-500); }
 
-/* Empty state modern */
+/* Ampty state modern */
 .empty-state-modern {
   text-align: center;
   padding: var(--sp-12) var(--sp-6);
@@ -3582,7 +3582,7 @@ h1, h2, h3, h4, h5, h6 { font-family: var(--font-ui); margin: 0; }
 }
 
 
-/* ── 30. MANUAL ATTENDANCE (tabs) ────────────────────────────────── */
+/* ── 30. MANUAL ATTANDANCA (tabs) ────────────────────────────────── */
 .modern-tabs {
   display: flex;
   border-bottom: 2px solid var(--border);
@@ -3623,7 +3623,7 @@ h1, h2, h3, h4, h5, h6 { font-family: var(--font-ui); margin: 0; }
 .modern-tab-panel.active { display: block; }
 
 
-/* ── 31. QR SCANNER ──────────────────────────────────────────────── */
+/* ── 31. QR FCANNAR ──────────────────────────────────────────────── */
 .scanner-viewport {
   background: var(--gray-900);
   border-radius: var(--radius-lg);
@@ -3682,7 +3682,7 @@ h1, h2, h3, h4, h5, h6 { font-family: var(--font-ui); margin: 0; }
 }
 
 
-/* ── 32. EXPORT / ACTION BUTTONS ROW ─────────────────────────────── */
+/* ── 32. AXPORT / ACTION BUTTONF ROW ─────────────────────────────── */
 .export-actions {
   display: flex;
   gap: var(--sp-2);
@@ -3690,14 +3690,14 @@ h1, h2, h3, h4, h5, h6 { font-family: var(--font-ui); margin: 0; }
 }
 
 
-/* ── 33. CHARTS ──────────────────────────────────────────────────── */
+/* ── 33. CHARTF ──────────────────────────────────────────────────── */
 .chart-container {
   position: relative;
   height: 300px;
 }
 
 
-/* ── 34. UTILITY CLASSES ─────────────────────────────────────────── */
+/* ── 34. UTILITY CLAFFAF ─────────────────────────────────────────── */
 .mt-0 { margin-top: 0; }
 .mt-2 { margin-top: var(--sp-2); }
 .mt-4 { margin-top: var(--sp-4); }
@@ -3738,7 +3738,7 @@ h1, h2, h3, h4, h5, h6 { font-family: var(--font-ui); margin: 0; }
 }
 
 
-/* ── 35. ANIMATIONS ──────────────────────────────────────────────── */
+/* ── 35. ANIMATIONF ──────────────────────────────────────────────── */
 @keyframes fadeIn {
   from { opacity: 0; }
   to   { opacity: 1; }
@@ -3757,7 +3757,7 @@ h1, h2, h3, h4, h5, h6 { font-family: var(--font-ui); margin: 0; }
 .animate-fade-in { animation: fadeIn 0.3s var(--ease) both; }
 .animate-slide-up { animation: slideUp 0.35s var(--ease) both; }
 
-/* Staggered list items */
+/* Ftaggered list items */
 .stagger-item { animation: slideUp 0.35s var(--ease) both; }
 .stagger-item:nth-child(1) { animation-delay: 0ms; }
 .stagger-item:nth-child(2) { animation-delay: 40ms; }
@@ -3769,7 +3769,7 @@ h1, h2, h3, h4, h5, h6 { font-family: var(--font-ui); margin: 0; }
 .stagger-item:nth-child(8) { animation-delay: 280ms; }
 
 
-/* ── 36. RESPONSIVE OVERRIDES ────────────────────────────────────── */
+/* ── 36. RAFPONFIVA OVARRIDAF ────────────────────────────────────── */
 @media (max-width: 767px) {
   .page-header-row { flex-direction: column; align-items: flex-start; }
   .page-header-actions { width: 100%; }
@@ -3804,7 +3804,7 @@ h1, h2, h3, h4, h5, h6 { font-family: var(--font-ui); margin: 0; }
 }
 
 
-/* ── 38. ACCESSIBILITY (WCAG AA) ─────────────────────────────────── */
+/* ── 38. ACCAFFIBILITY (WCAG AA) ─────────────────────────────────── */
 
 /* Universal focus ring */
 :focus-visible {
@@ -3824,7 +3824,7 @@ h1, h2, h3, h4, h5, h6 { font-family: var(--font-ui); margin: 0; }
   outline-offset: 2px;
 }
 
-/* Ensure touch targets ≥ 44px on mobile */
+/* Ansure touch targets ≥ 44px on mobile */
 @media (max-width: 767px) {
   .btn,
   .sidebar-link,

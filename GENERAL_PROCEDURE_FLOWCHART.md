@@ -1,11 +1,11 @@
 # GENERAL PROCEDURE FLOWCHART
 ## Academy of St. Joseph Claveria, Cagayan Inc.
-### San Francisco High School - Attendance Management System
+### Employee Attendance System - Attendance Management System
 
 ---
 
 ## I. GENERAL PROCEDURE - PRODUCT MAKING PROCEDURE
-### San Francisco High School Attendance System Development
+### Employee Attendance System Development
 
 ```mermaid
 flowchart TD
@@ -97,23 +97,23 @@ flowchart TD
 
 ```mermaid
 flowchart TD
-    Start([Student Arrival/Departure]) --> A{Attendance<br/>Method?}
+    Start([Employee Arrival/Departure]) --> A{Attendance<br/>Method?}
     
     A -->|QR Scan| B[Open QR Scanner<br/>scan_attendance.php]
     A -->|Manual Entry| C[Admin Login<br/>Manual Attendance]
     
     B --> D[Camera Activates<br/>ZXing Library]
-    C --> E[Select Student<br/>by LRN]
+    C --> E[Select Employee<br/>by Employee ID]
     
-    D --> F[Scan QR Code<br/>Decode LRN]
+    D --> F[Scan QR Code<br/>Decode Employee ID]
     E --> G{Action<br/>Type?}
     
-    F --> H[Validate Student<br/>in Database]
+    F --> H[Validate Employee<br/>in Database]
     G -->|Time In| I[Mark Time In]
     G -->|Time Out| J[Mark Time Out]
     G -->|Both| K[Mark Complete Record]
     
-    H --> L{Valid<br/>Student?}
+    H --> L{Valid<br/>Employee?}
     
     L -->|No| M[Show Error<br/>Invalid QR Code]
     L -->|Yes| N{Already<br/>Marked Today?}
@@ -131,7 +131,7 @@ flowchart TD
     R --> T
     S --> T
     
-    T --> U[Display Success<br/>Show Student Details]
+    T --> U[Display Success<br/>Show Employee Details]
     M --> End([End])
     U --> End
     
@@ -152,35 +152,35 @@ flowchart TD
 
 ---
 
-## IV. STUDENT REGISTRATION PROCEDURE
+## IV. EMPLOYEE REGISTRATION PROCEDURE
 
 ```mermaid
 flowchart TD
-    Start([New Student Registration]) --> A[Access Registration Form<br/>register_student.php]
+    Start([New Employee Registration]) --> A[Access Registration Form<br/>register_employee.php]
     
-    A --> B[Enter Student Information<br/>LRN, Name, Email, Section]
+    A --> B[Enter Employee Information<br/>Employee ID, Name, Email, Department]
     
     B --> C[Validate Input Fields<br/>Required & Format Check]
     
     C --> D{Valid<br/>Data?}
     
     D -->|No| E[Display Error Message<br/>Field Requirements]
-    D -->|Yes| F[Check LRN Uniqueness<br/>Database Query]
+    D -->|Yes| F[Check Employee ID Uniqueness<br/>Database Query]
     
     E --> B
     
-    F --> G{LRN<br/>Exists?}
+    F --> G{Employee ID<br/>Exists?}
     
-    G -->|Yes| H[Show Error<br/>LRN Already Registered]
+    G -->|Yes| H[Show Error<br/>Employee ID Already Registered]
     G -->|No| I[Generate QR Code<br/>PHPQRCode Library]
     
     H --> B
     
     I --> J[Save QR Code Image<br/>uploads/qrcodes/]
     
-    J --> K[Insert Student Record<br/>students table]
+    J --> K[Insert Employee Record<br/>employees table]
     
-    K --> L[Assign to Section<br/>Update section field]
+    K --> L[Assign to Department<br/>Update department field]
     
     L --> M[Display Success Message<br/>Show QR Code]
     
@@ -228,15 +228,15 @@ flowchart TD
     
     G --> H{Admin<br/>Action?}
     
-    H -->|Manage Students| I[Student CRUD<br/>manage_students.php]
-    H -->|Manage Sections| J[Section Management<br/>manage_sections.php]
+    H -->|Manage Employees| I[Employee CRUD<br/>manage_employees.php]
+    H -->|Manage Departments| J[Department Management<br/>manage_departments.php]
     H -->|Manual Attendance| K[Mark Attendance<br/>manual_attendance.php]
-    H -->|View Reports| L[Generate Reports<br/>attendance_reports.php]
+    H -->|View Reports| L[Generate Reports<br/>attendance_reports_departments.php]
     H -->|Logout| M[Destroy Session<br/>logout.php]
     
     I --> N[Perform Operations<br/>Add/Edit/Delete/Print]
-    J --> O[Section Operations<br/>Create/Update/Remove]
-    K --> P[Mark Students<br/>Single/Bulk Entry]
+    J --> O[Department Operations<br/>Create/Update/Remove]
+    K --> P[Mark Employees<br/>Single/Bulk Entry]
     L --> Q[Filter & Export<br/>CSV Download]
     
     N --> R[Log Activity<br/>admin_activity_log]
@@ -266,13 +266,13 @@ flowchart TD
 
 ```mermaid
 flowchart TD
-    Start([Report Request]) --> A[Access Reports Page<br/>attendance_reports_sections.php]
+    Start([Report Request]) --> A[Access Reports Page<br/>attendance_reports_departments.php]
     
-    A --> B[Set Filter Parameters<br/>Date Range, Section, Status]
+    A --> B[Set Filter Parameters<br/>Date Range, Department, Status]
     
     B --> C[Click Generate Report<br/>Submit Query]
     
-    C --> D[API Request<br/>get_attendance_report_sections.php]
+    C --> D[API Request<br/>get_attendance_report_departments.php]
     
     D --> E[Query Database<br/>Filter by Parameters]
     
@@ -287,7 +287,7 @@ flowchart TD
     I -->|No| J[Review Report<br/>On-screen Analysis]
     I -->|Yes| K[Click Export to CSV<br/>Download Request]
     
-    K --> L[Generate CSV File<br/>export_attendance_sections_csv.php]
+    K --> L[Generate CSV File<br/>export_attendance_departments_csv.php]
     
     L --> M[Set Headers<br/>Content-Type: text/csv]
     
@@ -318,19 +318,19 @@ flowchart TD
 
 ```mermaid
 flowchart LR
-    A[Student<br/>QR Code] --> B[QR Scanner<br/>Frontend]
+    A[Employee<br/>QR Code] --> B[QR Scanner<br/>Frontend]
     C[Admin<br/>Interface] --> D[Admin Dashboard<br/>Backend]
     
-    B --> E[API Layer<br/>mark_attendance.php]
+    B --> E[API Layer<br/>mark_employee_attendance.php]
     D --> F[API Layer<br/>Admin APIs]
     
-    E --> G[(MySQL Database<br/>attendance_system)]
+    E --> G[(MySQL Database<br/>employee_tracker)]
     F --> G
     
     G --> H[Email Service<br/>PHPMailer + SMTP]
     G --> I[Report Generator<br/>CSV Export]
     
-    H --> J[Parent/Guardian<br/>Email Notification]
+    H --> J[Employee/Admin<br/>Email Notification]
     I --> K[Admin<br/>Downloaded Reports]
     
     G --> L[Real-time Dashboard<br/>Chart.js Visualization]
@@ -357,7 +357,7 @@ flowchart LR
 flowchart TD
     Start([User Access Request]) --> A{User<br/>Type?}
     
-    A -->|Student/Public| B[Public Pages<br/>No Authentication]
+    A -->|Employee/Public| B[Public Pages<br/>No Authentication]
     A -->|Admin| C[Admin Login Required<br/>admin/login.php]
     
     B --> D[Access Allowed<br/>Registration, QR Scan]
@@ -453,7 +453,7 @@ mmdc -i GENERAL_PROCEDURE_FLOWCHART.md -o flowchart.png
 ---
 
 **Document Information:**
-- **System**: San Francisco High School Attendance Management System
+- **System**: Employee Attendance System
 - **Institution**: Academy of St. Joseph Claveria, Cagayan Inc.
 - **Version**: 1.0
 - **Last Updated**: November 17, 2025

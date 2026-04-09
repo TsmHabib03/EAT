@@ -3,7 +3,7 @@
  * Database Configuration File
  * 
  * INSTRUCTIONS:
- * Change the DB_NAME below to match your actual database name.
+ * Ensure DB_NAME points to the employee tracker database.
  * This will be used by includes/database.php for all connections.
  */
 
@@ -11,7 +11,7 @@
 define('DB_HOST', 'localhost');
 define('DB_USER', 'root');
 define('DB_PASS', 'muning0328');
-define('DB_NAME', 'attendeasev2'); // ← NEW DATABASE NAME
+define('DB_NAME', 'employee_tracker');
 define('DB_CHARSET', 'utf8mb4');
 
 // Set timezone

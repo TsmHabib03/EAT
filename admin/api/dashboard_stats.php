@@ -14,37 +14,37 @@ try {
     
     // Get basic dashboard statistics
     $stats = [
-        'total_students' => 0,
+        'total_employees' => 0,
         'present_today' => 0,
         'attendance_rate' => 0,
         'total_records' => 0,
-        'active_classes' => 0,
+        'active_departments' => 0,
         'late_today' => 0
     ];
     
-    // Total students
-    $stmt = $pdo->query("SELECT COUNT(*) as total FROM students");
-    $stats['total_students'] = (int) $stmt->fetch()['total'];
+    // Total employees
+    $stmt = $pdo->query("SELECT COUNT(*) as total FROM employees WHERE is_active = 1");
+    $stats['total_employees'] = (int) $stmt->fetch()['total'];
     
     // Today's attendance
-    $stmt = $pdo->prepare("SELECT COUNT(DISTINCT lrn) as present FROM attendance WHERE date = CURDATE()");
+    $stmt = $pdo->prepare("SELECT COUNT(DISTINCT employee_id) as present FROM employee_attendance WHERE date = CURDATE() AND time_in IS NOT NULL");
     $stmt->execute();
     $stats['present_today'] = (int) $stmt->fetch()['present'];
     
     // Today's attendance rate
-    $stats['attendance_rate'] = $stats['total_students'] > 0 ? 
-        round(($stats['present_today'] / $stats['total_students']) * 100, 1) : 0;
+    $stats['attendance_rate'] = $stats['total_employees'] > 0 ? 
+        round(($stats['present_today'] / $stats['total_employees']) * 100, 1) : 0;
     
     // Total attendance records
-    $stmt = $pdo->query("SELECT COUNT(*) as total FROM attendance");
+    $stmt = $pdo->query("SELECT COUNT(*) as total FROM employee_attendance");
     $stats['total_records'] = (int) $stmt->fetch()['total'];
     
-    // Active classes
-    $stmt = $pdo->query("SELECT COUNT(DISTINCT class) as total FROM students");
-    $stats['active_classes'] = (int) $stmt->fetch()['total'];
+    // Active departments
+    $stmt = $pdo->query("SELECT COUNT(DISTINCT department_code) as total FROM employees WHERE is_active = 1 AND department_code IS NOT NULL AND department_code != ''");
+    $stats['active_departments'] = (int) $stmt->fetch()['total'];
     
-    // Late students today
-    $stmt = $pdo->prepare("SELECT COUNT(*) as late_count FROM attendance WHERE date = CURDATE() AND status = 'late'");
+    // Late employees today
+    $stmt = $pdo->prepare("SELECT COUNT(*) as late_count FROM employee_attendance WHERE date = CURDATE() AND late_minutes > 0");
     $stmt->execute();
     $stats['late_today'] = (int) $stmt->fetch()['late_count'];
     
@@ -52,10 +52,10 @@ try {
     $recent_attendance = [];
     if ($isAdmin) {
         $stmt = $pdo->prepare("
-            SELECT a.lrn, s.first_name, s.last_name, a.subject, a.status, a.time, a.date
-            FROM attendance a 
-            JOIN students s ON a.lrn = s.lrn 
-            ORDER BY a.created_at DESC 
+            SELECT ea.employee_id, e.first_name, e.last_name, ea.status, ea.time_in, ea.time_out, ea.date
+            FROM employee_attendance ea 
+            JOIN employees e ON ea.employee_id = e.employee_id 
+            ORDER BY ea.updated_at DESC 
             LIMIT 5
         ");
         $stmt->execute();

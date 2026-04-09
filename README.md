@@ -1,74 +1,65 @@
-# SFHS San Francisco High School Attendance Checker
+# EAT Employee Attendance System
 
-This system was developed as part of a research project to modernize and streamline the attendance tracking process at SFHS San Francisco High School, providing an efficient and accurate solution for monitoring student attendance through QR code technology.
-**Project Name**: SFHS San Francisco High School Attendance Checker
-**Institution**: SFHS San Francisco High School
-**Repository**: SFHS-Attendance-Checker
-**📚 SFHS San Francisco High School - Attendance Management System**
+A comprehensive web-based attendance management system using QR code scanning and employee ID identification. Built with HTML5, CSS3, JavaScript, PHP 8+, and MySQL 8.
 
-For questions, issues, or contributions related to this research project, please visit the GitHub repository or contact support.
-# Academy of St. Joseph Claveria, Cagayan Inc. Attendance Checker
-
-A comprehensive web-based attendance management system using QR code scanning technology and LRN (Learner Reference Number) identification. Built with modern web technologies including HTML5, CSS3, JavaScript, PHP 8+, and MySQL 8.
-
-This system was developed as part of a research project to modernize and streamline the attendance tracking process at Academy of St. Joseph Claveria, Cagayan Inc., providing an efficient and accurate solution for monitoring student attendance through QR code technology.
+This repository has been migrated to a strict employee-domain model (employees, departments, employee attendance) with no legacy student/section runtime contracts.
 
 ## 🌟 Features
 
 ### Core Functionality
-- **LRN-based Student Management**: Uses official 11-13 digit Learner Reference Numbers as unique identifiers
+- **Employee ID-based Employee Management**: Uses employee IDs as unique identifiers
 - **Dual QR Code Scanning Systems**: 
   - Full-screen instant scanner for quick attendance marking
   - Manual attendance page with integrated QR scanner option
 - **Time In/Time Out Tracking**: Precise attendance recording with entry and exit times
-- **Section-based Organization**: Manage students by grade level and section names
+- **Department-based Organization**: Manage employees by department codes and assignments
 - **Real-time Dashboard**: Interactive admin dashboard with live statistics and charts
 - **Philippine Timezone Support**: Accurate time recording in Asia/Manila timezone
 
 ### Attendance Management
-- **Time In Recording**: Capture student arrival time with QR scan or manual entry
-- **Time Out Recording**: Log student departure time to complete attendance record
+- **Time In Recording**: Capture employee arrival time with QR scan or manual entry
+- **Time Out Recording**: Log employee departure time to complete attendance record
 - **Automatic Status Detection**: System determines if attendance record is complete or needs attention
-- **Duplicate Prevention**: Smart detection prevents multiple scans per day per student
+- **Duplicate Prevention**: Smart detection prevents multiple scans per day per employee
 - **Email Notifications**: Configurable email alerts for attendance events
 
 ### Admin Dashboard
 - **Real-time Statistics**: 
   - Today's total attendance count
-  - Active sections count
+  - Active departments count
   - Time In records
   - Total attendance records
 - **Weekly Attendance Trends**: Interactive bar chart showing 7-day Present vs Absent comparison
-- **Section-wise Analysis**: Donut chart displaying today's attendance distribution by section
-- **Recent Activity Feed**: Live list of latest Time In/Time Out records with student details
+- **Department-wise Analysis**: Donut chart displaying today's attendance distribution by department
+- **Recent Activity Feed**: Live list of latest Time In/Time Out records with employee details
 - **Needs Attention List**: Quick view of incomplete attendance records (missing Time Out)
 - **Responsive Charts**: Built with Chart.js 4.4.0 for smooth data visualization
 
-### Section Management
-- **Dynamic Section Creation**: Add, edit, and delete sections with grade levels
-- **Section Metadata**: Track adviser names, school year, and active/inactive status
-- **Student Assignment**: Assign students to specific sections during registration
-- **Section Reports**: Generate attendance reports filtered by section
+### Department Management
+- **Dynamic Department Creation**: Add, edit, and delete departments
+- **Department Metadata**: Track active/inactive department status and employee counts
+- **Employee Assignment**: Assign employees to specific departments during registration
+- **Department Reports**: Generate attendance reports filtered by department
 
-### Student Management
-- **Comprehensive Registration**: Capture first name, middle name, last name, gender, email, class, and section
-- **QR Code Generation**: Automatic unique QR code creation for each student
-- **Bulk Operations**: View, edit, search, and delete students with admin activity logging
-- **Student Details API**: Quick lookup by LRN for real-time information display
-- **Data Validation**: LRN format validation, unique email enforcement, required field checks
+### Employee Management
+- **Comprehensive Registration**: Capture first name, middle name, last name, gender, work email, department, and shift
+- **QR Code Generation**: Automatic unique QR code creation for each employee
+- **Bulk Operations**: View, edit, search, and delete employees with admin activity logging
+- **Employee Details API**: Quick lookup by Employee ID for real-time information display
+- **Data Validation**: Employee ID format validation, unique email enforcement, required field checks
 
 ### Manual Attendance Interface
 - **Dual Entry Modes**: 
-  - Single Entry: Mark one student at a time with Time In/Time Out
-  - Bulk Entry: Mark multiple students simultaneously
+  - Single Entry: Mark one employee at a time with Time In/Time Out
+  - Bulk Entry: Mark multiple employees simultaneously
 - **Integrated QR Scanner**: Built-in camera scanner using ZXing library with continuous autofocus
 - **Today's Attendance View**: Real-time table showing all attendance records for current date
-- **Student Auto-complete**: Quick LRN lookup with automatic name and section population
+- **Employee Auto-complete**: Quick Employee ID lookup with automatic name and department population
 - **Action Selection**: Choose between Time In, Time Out, or both for flexible marking
 
 ### Reporting & Analytics
 - **Date Range Filtering**: Generate reports for specific date periods
-- **Section-based Reports**: Filter attendance by specific sections or grade levels
+- **Department-based Reports**: Filter attendance by specific departments
 - **CSV Export**: Download attendance data in CSV format for external analysis
 - **Activity Logging**: Complete audit trail of all admin actions (login, logout, add, edit, delete)
 - **Status Tracking**: Monitor Present, Absent, Time In, and Time Out records
@@ -90,7 +81,7 @@ This system was developed as part of a research project to modernize and streaml
 
 ## Employee Tracker Migration (Phase 1)
 
-Phase 1 implementation is now included as a non-breaking, additive backend foundation. The existing student flows continue to work while employee endpoints and schema are available for parallel testing.
+Phase 1 implementation is now included as a non-breaking, additive backend foundation. The existing employee flows continue to work while employee endpoints and schema are available for parallel testing.
 
 ### What Was Added
 - New migration script: `database/migrations/2026_04_08_employee_tracker_phase1.sql`
@@ -112,7 +103,7 @@ Phase 1 implementation is now included as a non-breaking, additive backend found
    ```bash
    mysql -u your_username -p your_database_name < database/migrations/2026_04_08_employee_tracker_phase1.sql
    ```
-2. Keep current student pages and endpoints unchanged.
+2. Keep current employee pages and endpoints unchanged.
 3. Test employee endpoints with Postman or your admin AJAX layer before frontend cutover.
 
 ### Employee Mode in Existing Pages (No Redesign)
@@ -122,12 +113,12 @@ Phase 1 implementation is now included as a non-breaking, additive backend found
    - `admin/manual_attendance.php?mode=employee`
 - Optional global default mode:
    - Set environment variable `ATTENDANCE_MODE=employee`
-   - Supported values: `student` (default), `employee`
+   - Supported values: `employee` (default), `employee`
 
 ### Notes
 - This phase intentionally does not redesign frontend pages.
-- Existing `students` and `attendance` tables are not removed.
-- The migration includes optional seed/backfill from `students` to `employees` for pilot validation.
+- Existing `employees` and `attendance` tables are not removed.
+- The migration includes optional seed/backfill from `employees` to `employees` for pilot validation.
 
 ## 📋 Requirements
 
@@ -158,8 +149,8 @@ Phase 1 implementation is now included as a non-breaking, additive backend found
    ```
    
    This will create all necessary tables:
-   - `students` - Student records with LRN, names, email, section
-   - `sections` - Section management with grade levels and advisers
+   - `employees` - Employee records with Employee ID, names, email, department
+   - `departments` - Department management with grade levels and managers
    - `attendance` - Time In/Time Out records with date tracking
    - `admin_users` - Admin authentication and roles
    - `admin_activity_log` - Complete audit trail of admin actions
@@ -198,9 +189,9 @@ chmod 644 logs/
 ### 4. Web Server Setup
 
 #### For XAMPP (Windows/Mac/Linux):
-1. Copy the `ACSCCI-Attendance-Checker` folder to `C:\xampp\htdocs\`
+1. Copy the `EAT` folder to `C:\xampp\htdocs\`
 2. Start Apache and MySQL from XAMPP Control Panel
-3. Access via `http://localhost/ACSCCI-Attendance-Checker/`
+3. Access via `http://localhost/EAT/`
 
 #### For Production (Linux):
 1. Copy files to `/var/www/html/acscci-attendance-checker/`
@@ -217,174 +208,99 @@ After database import, log in with:
 
 ## 🏫 System Logic
 
-### LRN (Learner Reference Number)
-- **Primary Identifier**: All students are identified by their official 11-13 digit LRN (Philippines DepEd standard)
+### Employee ID (Learner Reference Number)
+- **Primary Identifier**: All employees are identified by their official 11-13 digit Employee ID (Philippines DepEd standard)
 - **Format**: Numeric only (e.g., `136514240419`)
 - **Validation**: System enforces 11-13 digit format during registration
-- **Unique**: Each LRN must be unique in the system (database constraint)
-- **QR Codes**: Generated automatically using the student's LRN as the primary data
+- **Unique**: Each Employee ID must be unique in the system (database constraint)
+- **QR Codes**: Generated automatically using the employee's Employee ID as the primary data
 
 ### Time In/Time Out System
-San Francisco High School uses a simple, flexible attendance tracking model:
+Employee Attendance System uses a simple, flexible attendance tracking model:
 
-1. **Time In**: Records when a student arrives
+1. **Time In**: Records when a employee arrives
    - Captured via QR scan or manual entry
    - Stores exact time in `HH:MM:SS` format
    - Creates attendance record for current date
-   - Prevents duplicate Time In for same student on same day
+   - Prevents duplicate Time In for same employee on same day
 
-2. **Time Out**: Records when a student leaves
+2. **Time Out**: Records when a employee leaves
    - Captured via QR scan or manual entry
    - Updates existing attendance record with departure time
    - Status changes from `time_in` to `time_out` (complete)
    - Cannot Time Out without existing Time In record
 
 3. **Status Logic**:
-   - `time_in` - Student has arrived but not yet departed
-   - `time_out` - Student has both arrival and departure recorded (complete)
+   - `time_in` - Employee has arrived but not yet departed
+   - `time_out` - Employee has both arrival and departure recorded (complete)
    - `present` - Legacy status for completed attendance records
-   - `absent` - Manual marking for absent students
+   - `absent` - Manual marking for absent employees
 
-### Section-Based Organization
-- **Grade Levels**: Students organized by grade (e.g., Grade 1, Grade 11, Grade 12)
-- **Section Names**: Named sections within grade levels (e.g., BARBERRA, ONGPIN, KALACHUCHI)
-- **Section Metadata**: Each section tracks adviser name, school year, and active/inactive status
-- **Student Assignment**: Every student belongs to one section via the `section` field
+### Department-Based Organization
+- **Department Codes**: Employees are grouped by `department_code`.
+- **Active/Inactive States**: Departments can be toggled without deleting historical attendance.
+- **Employee Assignment**: Each employee record is linked to a department and optional shift.
 
 ### Attendance Record Uniqueness
-- **One Record Per Day**: Database constraint ensures only one attendance record per student per date
-- **Composite Unique Key**: `(lrn, date)` prevents duplicates
-- **Update on Duplicate**: If Time In already exists, Time Out updates the same record
-- **Cascade Delete**: Deleting a student automatically removes all their attendance records
+- **One Record Per Day**: One row per employee per date in `employee_attendance`.
+- **Composite Unique Key**: `(employee_id, date)` prevents duplicates.
+- **Clock In/Clock Out Model**: First mark creates/updates `time_in`; second mark sets `time_out`.
+- **Cascade Delete**: Removing an employee removes related attendance rows.
 
 ## 📁 File Structure
 
 ```
-ACSCCI-Attendance-Checker/
-├── index.php                        # Public landing page
-├── register_student.php             # Student self-registration form
-├── scan_attendance.php              # Full-screen QR code scanner (instant attendance)
-├── view_students.php                # Public student directory
-│
-├── admin/                           # Admin-only area (requires login)
-│   ├── dashboard.php                # Real-time admin dashboard with charts
-│   ├── login.php                    # Admin authentication
-│   ├── logout.php                   # Session termination
-│   ├── forgot_password.php          # Password reset request
-│   ├── reset_password.php           # Password reset form with token
-│   ├── manage_students.php          # Full student CRUD operations
-│   ├── manage_sections.php          # Section management interface
-│   ├── manual_attendance.php        # Manual attendance entry (single/bulk + QR scanner)
-│   ├── attendance_reports_sections.php  # Generate reports by section/date
-│   ├── view_students.php            # Admin student list view
-│   │
-│   ├── includes/                    # Admin UI components
-│   │   ├── header_modern.php        # Admin header with navigation
-│   │   └── footer_modern.php        # Admin footer scripts
-│   │
-│   └── api/                         # Admin-specific APIs
-│       └── dashboard_stats.php      # Dashboard data endpoint
-│
-├── api/                             # Public/shared API endpoints
-│   ├── register_student.php         # Student registration handler
-│   ├── mark_attendance.php          # QR scan attendance marker
-│   ├── get_students.php             # Fetch all students (datatables)
-│   ├── list_students.php            # Student list for dropdowns
-│   ├── get_student_details.php      # Single student lookup by LRN
-│   ├── get_today_attendance.php     # Today's attendance records
-│   ├── delete_student.php           # Student deletion with logging
-│   ├── regenerate_qrcode.php        # QR code regeneration
-│   ├── get_classes.php              # Available classes/sections
-│   ├── get_attendance_report_sections.php  # Report data generator
-│   ├── export_attendance_sections_csv.php  # CSV export handler
-│   ├── request_password_reset.php   # Password reset email sender
-│   └── update_password.php          # Password update handler
-│
-├── config/                          # Configuration files
-│   ├── db_config.php                # Database credentials & timezone
-│   └── email_config.php             # SMTP settings (PHPMailer)
-│
-├── includes/                        # Shared includes
-│   ├── database.php                 # PDO database class
-│   ├── navigation.php               # Public navigation menu
-│   └── qrcode_helper.php            # QR code generation utilities
-│
-├── css/                             # Stylesheets
-│   ├── style.css                    # Legacy/public styles
-│   ├── modern-design.css            # Main admin theme (gradients, variables)
-│   ├── admin-login.css              # Login page styling
-│   ├── manage-students.css          # Student management styles
-│   ├── manage-sections-modern.css   # Section management styles
-│   ├── manual-attendance-modern.css # Manual attendance styles
-│   └── admin-students-mobile.css    # Mobile responsive styles
-│
-├── js/                              # JavaScript files
-│   ├── main.js                      # General utilities
-│   ├── admin-login.js               # Login form handler
-│   ├── admin-students.js            # Student management logic
-│   ├── view_students.js             # Student view interactions
-│   └── qrcode.min.js                # QR code generation library
-│
-├── libs/                            # Third-party libraries
-│   ├── phpqrcode.php                # PHP QR Code generator
-│   └── PHPMailer/                   # Email sending library
-│       ├── PHPMailer.php
-│       ├── SMTP.php
-│       ├── Exception.php
-│       └── ... (other PHPMailer files)
-│
-├── database/                        # Database scripts
-│   ├── attendance_system.sql        # CURRENT DATABASE EXPORT (Nov 1, 2025)
-│   ├── add_section_column_to_students.sql   # Migration: Add section field
-│   ├── add_school_year_column.sql           # Migration: Add school_year to sections
-│   └── fix_sections_table.sql               # Maintenance: Fix sections metadata
-│
-├── uploads/                         # User-generated content
-│   └── qrcodes/                     # Generated QR code images
-│       ├── student_20.png
-│       ├── student_26.png
-│       └── ... (auto-generated)
-│
-├── logs/                            # Application logs
-│
-└── README.md                        # This documentation file
+EAT/
+├── index.php
+├── scan_attendance.php
+├── view_employees.php
+├── admin/
+│   ├── dashboard.php
+│   ├── manage_employees.php
+│   ├── manage_departments.php
+│   ├── manual_attendance.php
+│   ├── attendance_reports_departments.php
+│   └── view_employees.php
+├── api/
+│   ├── register_employee.php
+│   ├── mark_employee_attendance.php
+│   ├── get_today_employee_attendance.php
+│   ├── get_attendance_report_departments.php
+│   ├── export_attendance_departments_csv.php
+│   ├── get_employees.php
+│   ├── get_employee_details.php
+│   ├── delete_employee.php
+│   └── regenerate_qrcode.php
+├── config/
+├── includes/
+├── css/
+│   ├── manage-employees.css
+│   ├── manage-sections-modern.css
+│   ├── manual-attendance-modern.css
+│   └── admin-employees-mobile.css
+├── js/
+│   ├── main.js
+│   ├── admin-login.js
+│   ├── auth-carousel.js
+│   └── qrcode.min.js
+└── database/
+   └── employee_tracker.sql
 ```
 
-## � Database Schema
+## Database Schema
 
 ### Core Tables
 
-**students**
-- `id` - Auto-increment primary key
-- `lrn` - Unique 11-13 digit Learner Reference Number
-- `first_name`, `middle_name`, `last_name` - Student full name
-- `gender` - ENUM: Male, Female, M, F
-- `email` - Unique email address
-- `class` - Grade level (e.g., "Grade 11")
-- `section` - Section name (e.g., "BARBERRA")
-- `qr_code` - Path to QR code image
-- `created_at` - Registration timestamp
+**employees**
+- `employee_id` unique identifier for attendance scanning.
+- `work_email`, `department_code`, `shift_code`, `work_mode`, and profile fields.
 
-**sections**
-- `id` - Auto-increment primary key
-- `section_name` - Unique section identifier
-- `grade_level` - Grade level (e.g., "11")
-- `adviser` - Class adviser name
-- `school_year` - Academic year (e.g., "2025-2026")
-- `status` - ENUM: active, inactive
-- `created_at`, `updated_at` - Timestamps
+**departments**
+- `department_code` and `department_name` with active status flags.
 
-**attendance**
-- `id` - Auto-increment primary key
-- `lrn` - Foreign key to students.lrn (CASCADE DELETE)
-- `date` - Attendance date
-- `time_in` - Arrival time (TIME format)
-- `time_out` - Departure time (TIME format)
-- `section` - Student's section
-- `status` - ENUM: present, absent, time_in, time_out
-- `email_sent` - Boolean flag for notifications
-- `created_at`, `updated_at` - Timestamps
-- **UNIQUE KEY**: `(lrn, date)` - One record per student per day
+**employee_attendance**
+- Daily `time_in` / `time_out` records, shift linkage, status, and source metadata.
+- **UNIQUE KEY**: `(employee_id, date)`.
 
 **admin_users**
 - `id` - Auto-increment primary key
@@ -407,84 +323,82 @@ ACSCCI-Attendance-Checker/
 
 ### Stored Procedures
 
-**RegisterStudent** - Validates and registers new students with LRN format checking
+**RegisterEmployee** - Validates and registers new employees with Employee ID format checking
 
-**MarkTimeIn** - Records student arrival with automatic section lookup and duplicate prevention
+**MarkEmployeeClockIn** - Records employee clock in with duplicate-day protection
 
-**MarkTimeOut** - Records student departure and updates attendance status
+**MarkEmployeeClockOut** - Records employee clock out for the same attendance day
 
 ## 🔧 Usage Guide
 
-### For Students
+### For Attendance Users
 
-#### 1. Self-Registration
-1. Visit `http://localhost/ACSCCI-Attendance-Checker/register_student.php`
-2. Enter your 11-13 digit LRN
-3. Fill in your full name (first, middle, last)
-4. Select gender and enter email address
-5. Choose your grade level and section
-6. Click "Register" - QR code is automatically generated
-7. Download or print your QR code for attendance scanning
+#### 1. Employee Registration (Admin)
+1. Login to `http://localhost/EAT/admin/login.php`
+2. Open **Admin → Manage Employees**
+3. Enter employee profile details (Employee ID, name, work email, department, optional shift)
+4. Save the record to generate the employee QR code
+5. Download or print the generated QR code for attendance scanning
 
 #### 2. Marking Attendance via QR Scan
-1. Visit `http://localhost/ACSCCI-Attendance-Checker/scan_attendance.php`
+1. Visit `http://localhost/EAT/scan_attendance.php`
 2. Allow camera access when prompted
 3. Hold your QR code in front of the camera
 4. System instantly records your Time In or Time Out
 5. View confirmation message with your details and timestamp
 
-### For Teachers/Admins
+### For Admins
 
 #### 1. Admin Login
-1. Navigate to `http://localhost/ACSCCI-Attendance-Checker/admin/login.php`
+1. Navigate to `http://localhost/EAT/admin/login.php`
 2. Enter username and password (default: `admin` / `admin123456`)
 3. Access admin dashboard with all management features
 
 #### 2. Dashboard Overview
-- View real-time statistics: Today's attendance, active sections, Time In count
+- View real-time statistics: Today's attendance, active departments, Time In count
 - Monitor weekly attendance trends with interactive bar chart
-- Check section-wise attendance distribution with donut chart
+- Check department-wise attendance distribution with donut chart
 - See recent Time In/Time Out activity feed
 - Identify incomplete records needing Time Out
 
-#### 3. Managing Sections
-1. Go to **Admin → Manage Sections**
-2. **Add Section**: Click "Add New Section", enter section name, grade level, adviser, school year
-3. **Edit Section**: Click edit icon, update details, save changes
-4. **Delete Section**: Click delete icon (warns if students assigned)
-5. View student count per section in real-time table
+#### 3. Managing Departments
+1. Go to **Admin → Manage Departments**
+2. **Add Department**: Click "Add New Department", enter department code/name and status
+3. **Edit Department**: Click edit icon, update details, save changes
+4. **Delete Department**: Click delete icon (warns if employees assigned)
+5. View employee count per department in real-time table
 
-#### 4. Managing Students
-1. Go to **Admin → Manage Students**
-2. **Add Student**: Click "Add New Student", fill registration form with LRN, names, email, section
-3. **View Students**: Search, filter, sort using DataTables interface
-4. **Edit Student**: Click edit icon, update information, regenerate QR code if needed
-5. **Delete Student**: Click delete icon (removes all attendance records)
+#### 4. Managing Employees
+1. Go to **Admin → Manage Employees**
+2. **Add Employee**: Click "Add New Employee", fill registration form with Employee ID, names, email, department
+3. **View Employees**: Search, filter, sort using DataTables interface
+4. **Edit Employee**: Click edit icon, update information, regenerate QR code if needed
+5. **Delete Employee**: Click delete icon (removes all attendance records)
 6. **Print QR Codes**: Click print icon to generate printable QR code card
 
 #### 5. Manual Attendance Entry
 1. Go to **Admin → Manual Attendance**
 2. **Single Entry Mode**:
-   - Enter student LRN (auto-fills name and section)
+   - Enter employee ID (auto-fills name and department)
    - Select date and action (Time In, Time Out, or Both)
    - Enter specific time or use current time
    - Click "Mark Attendance"
 3. **Bulk Entry Mode**:
-   - Select multiple students from list
+   - Select multiple employees from list
    - Choose date and action
-   - Enter time for all selected students
+   - Enter time for all selected employees
    - Click "Mark Bulk Attendance"
 4. **QR Scanner Mode**:
    - Click "QR Scanner" tab
    - Click "Start Scanner" button
-   - Scan student QR codes directly in the interface
-   - System populates LRN field automatically
+   - Scan employee QR codes directly in the interface
+   - System populates Employee ID field automatically
 
 #### 6. Generating Reports
 1. Go to **Admin → Attendance Reports**
 2. **Filter Options**:
    - Select date range (From Date - To Date)
-   - Choose specific section or "All Sections"
+   - Choose specific department or "All Departments"
    - Filter by status (All, Present, Time In, Time Out, Absent)
 3. **View Report**: Click "Generate Report" to see results table
 4. **Export CSV**: Click "Export to CSV" to download data
@@ -501,24 +415,24 @@ ACSCCI-Attendance-Checker/
 
 ## 🛠️ Customization & Extension
 
-### Adding New Sections
+### Adding New Departments
 ```sql
-INSERT INTO sections (section_name, grade_level, adviser, school_year, status) 
-VALUES ('SAMPAGUITA', '10', 'Ms. Maria Santos', '2025-2026', 'active');
+INSERT INTO departments (department_code, department_name, is_active) 
+VALUES ('HR', 'Human Resources', 1);
 ```
 
-### Bulk Student Import
+### Bulk Employee Import
 Create a PHP script to import from CSV:
 ```php
-// Import students from CSV file
-$csv = array_map('str_getcsv', file('students.csv'));
+// Import employees from CSV file
+$csv = array_map('str_getcsv', file('employees.csv'));
 foreach ($csv as $row) {
-    // Insert into students table with QR generation
+    // Insert into employees table with QR generation
 }
 ```
 
 ### Custom Attendance Rules
-Edit `api/mark_attendance.php` to add custom logic:
+Edit `api/mark_employee_attendance.php` to add custom logic:
 ```php
 // Example: Block attendance outside school hours
 $current_hour = (int)date('H');
@@ -532,14 +446,14 @@ if ($current_hour < 6 || $current_hour > 18) {
 Modify `config/email_config.php` and attendance marking logic:
 - Send email on Time In
 - Send email on missing Time Out after school hours
-- Daily attendance summary emails to advisers
-- Weekly reports to parents
+- Daily attendance summary emails to managers
+- Weekly reports to employees
 
 ### Dashboard Widgets
 Add custom widgets to `admin/dashboard.php`:
 ```javascript
-// Example: Add "Late Students" widget
-const lateStudents = data.todayAttendance.filter(record => {
+// Example: Add "Late Employees" widget
+const lateEmployees = data.todayAttendance.filter(record => {
     const timeIn = new Date(`2000-01-01 ${record.time_in}`);
     return timeIn.getHours() > 8; // After 8 AM = Late
 });
@@ -547,24 +461,24 @@ const lateStudents = data.todayAttendance.filter(record => {
 
 ### Custom Report Types
 Create new report pages in `admin/` folder:
-- Monthly attendance summary by section
-- Student attendance percentage rankings
-- Absent students daily report
-- Section comparison analytics
+- Monthly attendance summary by department
+- Employee attendance percentage rankings
+- Absent employees daily report
+- Department comparison analytics
 
 ## 🔍 Testing & Verification
 
 ### Quick System Test
 
-1. **Test Student Registration**:
+1. **Test Employee Registration**:
    ```
-   LRN: 136514240419
-   Name: Test Student
+   Employee ID: 136514240419
+   Name: Test Employee
    Email: test@example.com
-   Section: KALACHUCHI
+   Department: KALACHUCHI
    ```
    - Verify QR code is generated in `uploads/qrcodes/`
-   - Check student appears in Manage Students table
+   - Check employee appears in Manage Employees table
 
 2. **Test QR Scanner**:
    - Visit `scan_attendance.php`
@@ -576,7 +490,7 @@ Create new report pages in `admin/` folder:
 3. **Test Manual Attendance**:
    - Login as admin
    - Go to Manual Attendance
-   - Enter test LRN → auto-fills student details
+   - Enter test Employee ID → auto-fills employee details
    - Mark Time In → check Today's Attendance table updates
    - Mark Time Out → verify record is complete
 
@@ -588,7 +502,7 @@ Create new report pages in `admin/` folder:
 
 5. **Test Reports**:
    - Generate report for today's date
-   - Filter by specific section
+   - Filter by specific department
    - Export to CSV and verify data format
    - Check summary statistics accuracy
 
@@ -619,15 +533,15 @@ Create new report pages in `admin/` folder:
 - **XSS protection** via htmlspecialchars() on user outputs
 - **CSRF protection** recommended (add tokens to forms)
 - **Input validation**:
-  - LRN format: 11-13 digits numeric only
+  - Employee ID format: 11-13 digits numeric only
   - Email format: RFC 5322 validation
   - Date format: YYYY-MM-DD validation
   - Required field enforcement
 
 ### Database Security
 - **Foreign key constraints** with CASCADE DELETE for data integrity
-- **UNIQUE constraints** on LRN and email to prevent duplicates
-- **Stored procedures** for complex operations (RegisterStudent, MarkTimeIn, MarkTimeOut)
+- **UNIQUE constraints** on Employee ID and email to prevent duplicates
+- **Stored procedures** for complex operations (RegisterEmployee, MarkEmployeeClockIn, MarkEmployeeClockOut)
 - **Indexed queries** for performance and security
 - **Connection encryption** (configure SSL for MySQL in production)
 
@@ -642,7 +556,7 @@ Create new report pages in `admin/` folder:
   - LOGIN, LOGOUT events with IP address
   - ADD_SECTION, EDIT_SECTION, DELETE_SECTION
   - DELETE_STUDENT with cascade delete count
-  - MANUAL_ATTENDANCE with LRN and timestamp
+  - MANUAL_ATTENDANCE with Employee ID and timestamp
 - **IP address logging** for accountability
 - **Timestamp tracking** on all database records (created_at, updated_at)
 
@@ -742,9 +656,9 @@ define('DB_PASS', '');               // Correct password?
   # Windows: Right-click folder → Properties → Security → Full Control
   ```
 - **Verify GD Extension**: Check `extension=gd` in php.ini is enabled
-- **Check File Path**: QR codes saved to `uploads/qrcodes/student_{ID}.png`
+- **Check File Path**: QR codes saved to `uploads/qrcodes/employee_{ID}.png`
 - **Library Present**: Ensure `libs/phpqrcode.php` exists
-- **Regenerate**: Use "Regenerate QR Code" button in Manage Students
+- **Regenerate**: Use "Regenerate QR Code" button in Manage Employees
 
 #### 6. Charts Not Displaying on Dashboard
 **Symptoms**: Empty chart areas, "Chart is not defined" error
@@ -794,30 +708,30 @@ define('DB_PASS', '');               // Correct password?
 - **Server Time**: Verify server timezone matches application
 
 #### 9. Duplicate Attendance Records
-**Symptoms**: Multiple Time In records for same student same day
+**Symptoms**: Multiple Time In records for same employee same day
 
 **Solutions**:
 - **Database Constraint**: Verify UNIQUE constraint exists
-  ```sql
-  ALTER TABLE attendance ADD UNIQUE KEY unique_daily_attendance (lrn, date);
-  ```
-- **Check API Logic**: `api/mark_attendance.php` should use INSERT...ON DUPLICATE KEY UPDATE
+   ```sql
+   ALTER TABLE employee_attendance ADD UNIQUE KEY uniq_daily_employee_attendance (employee_id, date);
+   ```
+- **Check API Logic**: `api/mark_employee_attendance.php` should use INSERT...ON DUPLICATE KEY UPDATE
 - **Clear Duplicates**: 
-  ```sql
-  DELETE a1 FROM attendance a1
-  INNER JOIN attendance a2 
-  WHERE a1.id > a2.id AND a1.lrn = a2.lrn AND a1.date = a2.date;
-  ```
+   ```sql
+   DELETE a1 FROM employee_attendance a1
+   INNER JOIN employee_attendance a2
+   WHERE a1.id > a2.id AND a1.employee_id = a2.employee_id AND a1.date = a2.date;
+   ```
 
 #### 10. Slow Performance
 **Symptoms**: Pages load slowly, database queries timeout
 
 **Solutions**:
 - **Add Indexes**: Ensure indexes exist on frequently queried columns
-  ```sql
-  CREATE INDEX idx_lrn_date ON attendance(lrn, date);
-  CREATE INDEX idx_date_section ON attendance(date, section);
-  ```
+   ```sql
+   CREATE INDEX idx_employee_date ON employee_attendance(employee_id, date);
+   CREATE INDEX idx_attendance_shift ON employee_attendance(shift_code);
+   ```
 - **Optimize Queries**: Use EXPLAIN to analyze slow queries
 - **Limit Results**: Add pagination to large result sets
 - **Cache Results**: Implement caching for dashboard statistics
@@ -829,16 +743,16 @@ define('DB_PASS', '');               // Correct password?
 - [ ] **Password Security Upgrade**: Replace MD5 with bcrypt/Argon2
 - [ ] **CSRF Protection**: Add tokens to all forms
 - [ ] **Rate Limiting**: Prevent brute force attacks on login
-- [ ] **Advanced Search**: Full-text search for students with autocomplete
+- [ ] **Advanced Search**: Full-text search for employees with autocomplete
 - [ ] **Bulk QR Print**: Generate PDF with multiple QR codes per page
 - [ ] **Data Validation**: Enhanced client-side and server-side validation
 
 ### Phase 2: Feature Extensions (Mid-term)
-- [ ] **Parent Portal**: Parents can view their child's attendance history
+- [ ] **Parent Portal**: Employees can view their child's attendance history
 - [ ] **SMS Notifications**: Send SMS alerts for attendance events
-- [ ] **Attendance Scheduling**: Set required attendance days/times per section
+- [ ] **Attendance Scheduling**: Set required attendance days/times per department
 - [ ] **Holiday Management**: Mark holidays and exclude from reports
-- [ ] **Late Threshold**: Configurable late time per section
+- [ ] **Late Threshold**: Configurable late time per department
 - [ ] **Excuse Management**: Track excused absences with reason codes
 - [ ] **Multi-school Support**: Tenant isolation for multiple schools
 
@@ -862,7 +776,7 @@ define('DB_PASS', '');               // Correct password?
 ### Analytics & Reporting Enhancements
 - **Attendance Percentage Rankings**: Leaderboard of best attendance
 - **Trend Analysis**: Identify patterns (Monday absences, etc.)
-- **Cohort Analysis**: Compare attendance across sections/grades
+- **Cohort Analysis**: Compare attendance across departments/grades
 - **Export Formats**: Excel, PDF, JSON, XML options
 - **Automated Reports**: Schedule daily/weekly email reports
 - **Visualization**: Heat maps, trend lines, pie charts
@@ -876,7 +790,7 @@ define('DB_PASS', '');               // Correct password?
 
 ## 🤝 Contributing
 
-We welcome contributions to improve San Francisco High School! Here's how you can help:
+We welcome contributions to improve the Employee Attendance System! Here's how you can help:
 
 ### Bug Reports
 - Check existing issues before creating new ones
@@ -906,7 +820,7 @@ We welcome contributions to improve San Francisco High School! Here's how you ca
 ## 📞 Support & Contact
 
 ### Documentation
-- **README**: You're reading it! Check troubleshooting section first
+- **README**: You're reading it! Check troubleshooting department first
 - **Code Comments**: Inline documentation in all major files
 - **Database Schema**: See `database/attendance_system.sql` for structure
 
@@ -950,7 +864,7 @@ This project is developed for educational purposes and is open-source.
 
 ### Inspiration & Credits
 - Built for educational institutions in the Philippines
-- Designed to comply with DepEd (Department of Education) LRN standards
+- Designed to comply with DepEd (Department of Education) Employee ID standards
 - Inspired by modern attendance management systems
 - Special thanks to the open-source community
 
@@ -979,7 +893,7 @@ nano config/db_config.php  # Update credentials
 chmod 755 uploads/qrcodes/
 
 # 4. Access application
-http://localhost/ACSCCI-Attendance-Checker/
+http://localhost/EAT/
 
 # 5. Admin login
 Username: admin
@@ -996,7 +910,7 @@ This attendance management system was developed as a research project for the Ac
 - **Improve Accuracy**: Eliminate human error in attendance recording and reporting
 - **Save Time**: Reduce time spent on attendance marking and report generation
 - **Enhance Data Analysis**: Provide comprehensive analytics and insights into attendance patterns
-- **Increase Security**: Ensure accurate identification through unique LRN-based QR codes
+- **Increase Security**: Ensure accurate identification through unique Employee ID-based QR codes
 - **Support Decision Making**: Provide administrators with real-time data for informed decisions
 
 ### Technology Stack Overview
@@ -1022,7 +936,7 @@ This attendance management system was developed as a research project for the Ac
 **Key Features for Research:**
 - Real-time attendance monitoring
 - Comprehensive reporting and analytics
-- Section-based organization
+- Department-based organization
 - Time In/Time Out tracking
 - Automated notifications
 - Data export capabilities (CSV)
@@ -1055,10 +969,10 @@ For questions, issues, or contributions related to this research project, please
 
 ### Database Architecture
 - **MySQL 8.0**: Relational database management system with InnoDB storage engine
-- **Stored Procedures**: MarkTimeIn, MarkTimeOut, RegisterStudent for business logic encapsulation
+- **Stored Procedures**: MarkEmployeeClockIn, MarkEmployeeClockOut, RegisterEmployee for business logic encapsulation
 - **Foreign Keys**: CASCADE DELETE relationships for maintaining data integrity
-- **Database Indexes**: Optimized queries on lrn, date, and section columns for fast retrieval
-- **UNIQUE Constraints**: Prevent duplicate attendance records using composite keys (lrn, date)
+- **Database Indexes**: Optimized queries on employee_id, date, and department columns for fast retrieval
+- **UNIQUE Constraints**: Prevent duplicate attendance records using composite keys (employee_id, date)
 - **ENUM Data Types**: Status fields with predefined values for data consistency
 - **Triggers**: Automatic timestamp updates for data auditing
 
@@ -1091,7 +1005,7 @@ For questions, issues, or contributions related to this research project, please
 
 ### Academic Learning Objectives
 
-This attendance management system serves as a comprehensive case study for understanding modern web application development and its application in educational technology. Researchers and students can gain insights into:
+This attendance management system serves as a comprehensive case study for understanding modern web application development and its application in educational technology. Researchers and employees can gain insights into:
 
 **Database Design & Management**:
 - Relational database schema design and entity-relationship modeling
@@ -1153,14 +1067,14 @@ This attendance management system serves as a comprehensive case study for under
 
 **Data Analytics Research**:
 - Attendance pattern analysis and trend identification
-- Predictive modeling for student attendance behavior
+- Predictive modeling for employee attendance behavior
 - Correlation studies between attendance and academic performance
 - Visualization techniques for educational data
 - Report generation and data export methodologies
 
 **System Performance Studies**:
 - Database query optimization and response time analysis
-- Scalability testing for large student populations
+- Scalability testing for large employee populations
 - Network latency and QR code scanning speed evaluation
 - Cross-browser and cross-device compatibility assessment
 - Security vulnerability testing and penetration analysis

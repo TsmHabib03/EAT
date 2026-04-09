@@ -1,9 +1,21 @@
-<?php
+﻿<?php
 // Check if user is logged in
 if (!isset($_SESSION['admin_logged_in']) || !$_SESSION['admin_logged_in']) {
     header('Location: login.php');
     exit();
 }
+
+
+$entityPluralNav = 'Employees';
+$reportsLabelNav = 'Employee Reports';
+
+$dashboardUrlNav = 'dashboard.php';
+$employeesUrlNav = 'view_employees.php';
+$departmentsUrlNav = 'manage_departments.php';
+$manualUrlNav = 'manual_attendance.php';
+$reportsUrlNav = 'attendance_reports_departments.php';
+$scannerUrlNav = '../scan_attendance.php';
+$manageEmployeesUrlNav = 'manage_employees.php';
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -11,7 +23,7 @@ if (!isset($_SESSION['admin_logged_in']) || !$_SESSION['admin_logged_in']) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="theme-color" content="#178a4a">
-    <title><?php echo isset($pageTitle) ? $pageTitle . ' - ' : ''; ?>Admin - San Francisco High School</title>
+    <title><?php echo isset($pageTitle) ? $pageTitle . ' - ' : ''; ?>Admin - Employee Attendance System</title>
     
     <!-- Fonts: Manrope (UI) + Space Grotesk (numbers) -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -36,7 +48,7 @@ if (!isset($_SESSION['admin_logged_in']) || !$_SESSION['admin_logged_in']) {
 <body class="admin-body">
 
     <div class="admin-layout">
-        <!-- Desktop Sidebar — Slim pill/rail -->
+        <!-- Desktop Sidebar  Slim pill/rail -->
         <aside class="admin-sidebar" id="adminSidebar">
             <button class="sidebar-collapse-btn" onclick="toggleSidebarCollapse()" aria-label="Collapse sidebar" title="Collapse sidebar">
                 <i class="fa-solid fa-chevron-left"></i>
@@ -45,10 +57,10 @@ if (!isset($_SESSION['admin_logged_in']) || !$_SESSION['admin_logged_in']) {
             <div class="sidebar-header">
                 <div class="sidebar-logo">
                     <div class="sidebar-logo-icon" aria-hidden="true">
-                        <img src="../assets/image/logo.png" alt="San Francisco High School logo" class="sidebar-logo-img">
+                        <img src="../assets/image/logo.png" alt="Employee Attendance logo" class="sidebar-logo-img">
                     </div>
                     <div class="sidebar-logo-text">
-                        <span class="sidebar-logo-title">SFHS</span>
+                        <span class="sidebar-logo-title">EAT</span>
                         <span class="sidebar-logo-sub">Admin Panel</span>
                     </div>
                 </div>
@@ -56,33 +68,33 @@ if (!isset($_SESSION['admin_logged_in']) || !$_SESSION['admin_logged_in']) {
             
             <nav class="sidebar-nav" aria-label="Admin navigation">
                 <div class="sidebar-nav-label">Main</div>
-                <a href="dashboard.php" class="sidebar-link <?php echo (basename($_SERVER['PHP_SELF']) == 'dashboard.php') ? 'active' : ''; ?>" aria-label="Dashboard">
+                <a href="<?php echo $dashboardUrlNav; ?>" class="sidebar-link <?php echo (basename($_SERVER['PHP_SELF']) == 'dashboard.php') ? 'active' : ''; ?>" aria-label="Dashboard">
                     <div class="sidebar-link-icon"><i class="fa-solid fa-house"></i></div>
                     <span>Dashboard</span>
                 </a>
                 
                 <div class="sidebar-nav-label">Management</div>
-                <a href="view_students.php" class="sidebar-link <?php echo (in_array(basename($_SERVER['PHP_SELF']), ['view_students.php', 'manage_students.php'])) ? 'active' : ''; ?>" aria-label="Students">
+                <a href="<?php echo $employeesUrlNav; ?>" class="sidebar-link <?php echo (in_array(basename($_SERVER['PHP_SELF']), ['view_employees.php', 'manage_employees.php'])) ? 'active' : ''; ?>" aria-label="<?php echo $entityPluralNav; ?>">
                     <div class="sidebar-link-icon"><i class="fa-solid fa-user-group"></i></div>
-                    <span>Students</span>
+                    <span><?php echo $entityPluralNav; ?></span>
                 </a>
-                <a href="manage_sections.php" class="sidebar-link <?php echo (basename($_SERVER['PHP_SELF']) == 'manage_sections.php') ? 'active' : ''; ?>" aria-label="Sections">
+                <a href="<?php echo $departmentsUrlNav; ?>" class="sidebar-link <?php echo (basename($_SERVER['PHP_SELF']) == 'manage_departments.php') ? 'active' : ''; ?>" aria-label="Departments and Shifts">
                     <div class="sidebar-link-icon"><i class="fa-solid fa-table-cells-large"></i></div>
-                    <span>Sections</span>
+                    <span>Departments and Shifts</span>
                 </a>
                 
                 <div class="sidebar-nav-label">Attendance</div>
-                <a href="manual_attendance.php" class="sidebar-link <?php echo (basename($_SERVER['PHP_SELF']) == 'manual_attendance.php') ? 'active' : ''; ?>" aria-label="Manual Entry">
+                <a href="<?php echo $manualUrlNav; ?>" class="sidebar-link <?php echo (basename($_SERVER['PHP_SELF']) == 'manual_attendance.php') ? 'active' : ''; ?>" aria-label="Manual Entry">
                     <div class="sidebar-link-icon"><i class="fa-solid fa-pen-to-square"></i></div>
                     <span>Manual Entry</span>
                 </a>
-                <a href="attendance_reports_sections.php" class="sidebar-link <?php echo (basename($_SERVER['PHP_SELF']) == 'attendance_reports_sections.php') ? 'active' : ''; ?>" aria-label="Reports">
+                <a href="<?php echo $reportsUrlNav; ?>" class="sidebar-link <?php echo (in_array(basename($_SERVER['PHP_SELF']), ['attendance_reports_departments.php', 'attendance_reports_departments.php'])) ? 'active' : ''; ?>" aria-label="<?php echo $reportsLabelNav; ?>">
                     <div class="sidebar-link-icon"><i class="fa-solid fa-chart-column"></i></div>
-                    <span>Reports</span>
+                    <span><?php echo $reportsLabelNav; ?></span>
                 </a>
                 
                 <div class="sidebar-nav-label">Quick Actions</div>
-                <a href="../scan_attendance.php" class="sidebar-link" target="_blank" aria-label="QR Scanner">
+                <a href="<?php echo $scannerUrlNav; ?>" class="sidebar-link" target="_blank" aria-label="QR Scanner">
                     <div class="sidebar-link-icon"><i class="fa-solid fa-qrcode"></i></div>
                     <span>QR Scanner</span>
                 </a>
@@ -128,7 +140,7 @@ if (!isset($_SESSION['admin_logged_in']) || !$_SESSION['admin_logged_in']) {
                     </div>
                 </div>
                 <div class="topbar-right">
-                    <a href="../scan_attendance.php" class="topbar-action-btn" target="_blank" title="Open QR Scanner">
+                    <a href="<?php echo $scannerUrlNav; ?>" class="topbar-action-btn" target="_blank" title="Open QR Scanner">
                         <i class="fa-solid fa-qrcode"></i>
                         <span>Scanner</span>
                     </a>
@@ -172,7 +184,7 @@ if (!isset($_SESSION['admin_logged_in']) || !$_SESSION['admin_logged_in']) {
                                 </div>
                             </div>
                             <div class="topbar-dropdown-divider"></div>
-                            <a href="dashboard.php" class="topbar-dropdown-item" role="menuitem">
+                            <a href="<?php echo $dashboardUrlNav; ?>" class="topbar-dropdown-item" role="menuitem">
                                 <i class="fa-solid fa-gauge"></i> Dashboard
                             </a>
                             <div class="topbar-dropdown-divider"></div>
@@ -236,3 +248,5 @@ if (!isset($_SESSION['admin_logged_in']) || !$_SESSION['admin_logged_in']) {
 
             <!-- Content Wrapper -->
             <div class="content-wrapper">
+
+

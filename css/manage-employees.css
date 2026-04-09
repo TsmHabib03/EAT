@@ -1,7 +1,7 @@
 /**
- * Manage Students - Form Styling
+ * Manage Employees - Form Styling
  * Academy of St. Joseph Claveria, Cagayan Inc. Attendance Checker
- * Matches view_students.php design system
+ * Matches view_employees.php design system
  */
 
 /* ===== ASJ MODERN CSS VARIABLES ===== */
@@ -256,7 +256,7 @@
     border-top: 2px solid var(--gray-100);
 }
 
-/* Buttons - Matching view_students.php */
+/* Buttons - Matching view_employees.php */
 .btn {
     padding: var(--space-3) var(--space-5);
     border: none;
@@ -403,7 +403,7 @@
     gap: var(--space-3);
 }
 
-/* Alerts - Matching view_students.php */
+/* Alerts - Matching view_employees.php */
 .alert {
     padding: var(--space-4) var(--space-5);
     border-radius: var(--radius-lg);
@@ -495,7 +495,7 @@
     box-shadow: var(--shadow-2xl);
 }
 
-/* Responsive Design - Matching view_students.php breakpoints */
+/* Responsive Design - Matching view_employees.php breakpoints */
 @media (max-width: 992px) {
     .form-card-header {
         flex-direction: column;
@@ -569,7 +569,7 @@
     }
 }
 
-/* Animation - Matching view_students.php */
+/* Animation - Matching view_employees.php */
 @keyframes slideDown {
     from {
         opacity: 0;

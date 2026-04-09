@@ -96,7 +96,7 @@ try {
         ]);
 
         // Create reset link with plain (unhashed) token
-        $resetLink = "http://localhost/AttendEase/admin/reset_password.php?token=" . urlencode($token);
+        $resetLink = "http://localhost/EAT/admin/reset_password.php?token=" . urlencode($token);
 
         // Send email using PHPMailer
         $mail = new PHPMailer(true);
@@ -117,7 +117,7 @@ try {
 
             // Content
             $mail->isHTML(true);
-            $mail->Subject = 'Password Reset Request - San Francisco High School Admin';
+            $mail->Subject = 'Password Reset Request - Employee Attendance Admin';
             
             // HTML email body
             $mail->Body = '
@@ -143,7 +143,7 @@ try {
         <div class="content">
             <p>Hello <strong>' . htmlspecialchars($admin['username']) . '</strong>,</p>
             
-            <p>We received a request to reset your password for your San Francisco High School Admin account.</p>
+            <p>We received a request to reset your password for your Employee Attendance Admin account.</p>
             
             <p>Click the button below to reset your password:</p>
             
@@ -164,12 +164,12 @@ try {
                 </ul>
             </div>
             
-            <p><strong>Security Tip:</strong> Never share this link with anyone. San Francisco High School staff will never ask for your password or reset link.</p>
+            <p><strong>Security Tip:</strong> Never share this link with anyone. System staff will never ask for your password or reset link.</p>
         </div>
         <div class="footer">
-            <p>This email was sent from <strong>San Francisco High School Admin Portal</strong></p>
+            <p>This email was sent from <strong>Employee Attendance Admin Portal</strong></p>
             <p>If you have any questions, please contact your system administrator.</p>
-            <p style="font-size: 12px; color: #9ca3af;">© ' . date('Y') . ' San Francisco High School. All rights reserved.</p>
+            <p style="font-size: 12px; color: #9ca3af;">© ' . date('Y') . ' Employee Attendance System. All rights reserved.</p>
         </div>
     </div>
 </body>
@@ -177,13 +177,13 @@ try {
 
             // Plain text alternative
             $mail->AltBody = "Hello {$admin['username']},\n\n"
-                . "We received a request to reset your password for your San Francisco High School Admin account.\n\n"
+                . "We received a request to reset your password for your Employee Attendance Admin account.\n\n"
                 . "Click the link below to reset your password:\n"
                 . $resetLink . "\n\n"
                 . "This link will expire in 1 hour and can only be used once.\n\n"
                 . "If you didn't request this reset, please ignore this email. Your password will remain unchanged.\n\n"
                 . "Best regards,\n"
-                . "San Francisco High School Team";
+                . "Employee Attendance Team";
 
             $mail->send();
             

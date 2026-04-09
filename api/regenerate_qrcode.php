@@ -1,7 +1,7 @@
 <?php
 /**
- * API Endpoint: Regenerate QR Code for Student
- * Allows admin to manually regenerate QR code for existing student
+ * API Endpoint: Regenerate QR Code for Employee
+ * Allows admin to manually regenerate QR code for an existing employee
  */
 
 session_start();
@@ -30,55 +30,50 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     exit;
 }
 
-// Get student ID from request
+// Get employee ID from request
 $input = json_decode(file_get_contents('php://input'), true);
-$studentId = isset($input['student_id']) ? intval($input['student_id']) : 0;
+$employeeId = isset($input['employee_id']) ? intval($input['employee_id']) : 0;
 
-if ($studentId <= 0) {
+if ($employeeId <= 0) {
     http_response_code(400);
     echo json_encode([
         'success' => false,
-        'message' => 'Invalid student ID'
+        'message' => 'Invalid employee ID'
     ]);
     exit;
 }
 
 try {
-    // Get student details
-    $stmt = $pdo->prepare("SELECT id, lrn, first_name, middle_name, last_name FROM students WHERE id = ?");
-    $stmt->execute([$studentId]);
-    $student = $stmt->fetch(PDO::FETCH_ASSOC);
-    
-    if (!$student) {
+    $stmt = $pdo->prepare("SELECT id, employee_id, first_name, middle_name, last_name FROM employees WHERE id = ? AND is_active = 1");
+    $stmt->execute([$employeeId]);
+    $employee = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    if (!$employee) {
         http_response_code(404);
         echo json_encode([
             'success' => false,
-            'message' => 'Student not found'
+            'message' => 'Employee not found'
         ]);
         exit;
     }
-    
-    // Generate full name
-    $fullName = trim($student['first_name'] . ' ' . $student['middle_name'] . ' ' . $student['last_name']);
-    
-    // Regenerate QR code
-    $qrCodePath = regenerateStudentQRCode($student['id'], $student['lrn'], $fullName);
-    
+
+    $fullName = trim($employee['first_name'] . ' ' . $employee['middle_name'] . ' ' . $employee['last_name']);
+    $qrCodePath = regenerateEmployeeQRCode($employee['id'], $employee['employee_id'], $fullName);
+
     if ($qrCodePath) {
-        // Update database with new QR code path
-        $updateStmt = $pdo->prepare("UPDATE students SET qr_code = ?, updated_at = NOW() WHERE id = ?");
-        $updateStmt->execute([$qrCodePath, $student['id']]);
-        
+        $updateStmt = $pdo->prepare("UPDATE employees SET qr_code = ?, updated_at = NOW() WHERE id = ?");
+        $updateStmt->execute([$qrCodePath, $employee['id']]);
+
         echo json_encode([
             'success' => true,
-            'message' => 'QR code regenerated successfully',
-            'qr_code_path' => '../' . $qrCodePath . '?v=' . time() // Add timestamp to force refresh
+            'message' => 'Employee QR code regenerated successfully',
+            'qr_code_path' => '../' . $qrCodePath . '?v=' . time()
         ]);
     } else {
         http_response_code(500);
         echo json_encode([
             'success' => false,
-            'message' => 'Failed to regenerate QR code. Please check server permissions.'
+            'message' => 'Failed to regenerate employee QR code. Please check server permissions.'
         ]);
     }
     

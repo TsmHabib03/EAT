@@ -3,75 +3,97 @@ require_once 'config.php';
 requireAdmin();
 
 $currentAdmin = getCurrentAdmin();
-$pageTitle = 'Student List';
+$attendanceMode = 'employee';
+$isEmployeeMode = true;
+
+$entitySingular = 'Employee';
+$entityPlural = 'Employees';
+$identifierLabel = 'Employee ID';
+$primaryGroupLabel = 'Department';
+$secondaryGroupLabel = 'Shift';
+$modeQuery = '';
+
+$pageTitle = $entitySingular . ' List';
 $pageIcon = 'user-group';
 
-// Get all students with attendance stats
+// Get all entities with attendance stats
 try {
     $search = isset($_GET['search']) ? trim($_GET['search']) : '';
-    $classFilter = isset($_GET['class']) ? trim($_GET['class']) : '';
-    $sectionFilter = isset($_GET['section']) ? trim($_GET['section']) : '';
-    
-    $sql = "SELECT s.*, 
-            COUNT(DISTINCT a.date) as attendance_days,
-            MAX(a.date) as last_attendance
-            FROM students s
-            LEFT JOIN attendance a ON s.lrn = a.lrn
+    $departmentFilter = isset($_GET['department']) ? trim($_GET['department']) : '';
+    $shiftFilter = isset($_GET['shift']) ? trim($_GET['shift']) : '';
+
+        $sql = "SELECT e.id,
+            e.employee_id,
+            e.first_name,
+            e.last_name,
+            e.middle_name,
+            e.gender,
+            e.work_email AS email,
+            e.department_code AS department,
+            e.shift_code AS shift,
+            e.qr_code,
+            e.created_at,
+            e.updated_at,
+            COUNT(DISTINCT a.date) AS attendance_days,
+            MAX(a.date) AS last_attendance
+            FROM employees e
+            LEFT JOIN employee_attendance a ON e.employee_id = a.employee_id
             WHERE 1=1";
+
     $params = [];
-    
+
     if (!empty($search)) {
-        $sql .= " AND (s.lrn LIKE ? OR s.first_name LIKE ? OR s.last_name LIKE ? OR s.email LIKE ? OR s.section LIKE ?)";
+        $sql .= " AND (e.employee_id LIKE ? OR e.first_name LIKE ? OR e.last_name LIKE ? OR e.work_email LIKE ? OR e.shift_code LIKE ?)";
         $searchTerm = "%$search%";
         $params = array_fill(0, 5, $searchTerm);
     }
-    
-    if (!empty($classFilter)) {
-        $sql .= " AND s.class = ?";
-        $params[] = $classFilter;
+
+    if (!empty($departmentFilter)) {
+        $sql .= " AND e.department_code = ?";
+        $params[] = $departmentFilter;
     }
-    
-    if (!empty($sectionFilter)) {
-        $sql .= " AND s.section = ?";
-        $params[] = $sectionFilter;
+
+    if (!empty($shiftFilter)) {
+        $sql .= " AND e.shift_code = ?";
+        $params[] = $shiftFilter;
     }
-    
-    $sql .= " GROUP BY s.id ORDER BY s.last_name, s.first_name";
+
+    $sql .= " GROUP BY e.id ORDER BY e.last_name, e.first_name";
     
     $stmt = $pdo->prepare($sql);
     $stmt->execute($params);
-    $students = $stmt->fetchAll(PDO::FETCH_ASSOC);
-    
-    // Get unique classes and sections for filters
-    $stmt = $pdo->query("SELECT DISTINCT class FROM students WHERE class IS NOT NULL AND class != '' ORDER BY class");
-    $classes = $stmt->fetchAll(PDO::FETCH_COLUMN);
-    
-    $stmt = $pdo->query("SELECT DISTINCT section FROM students WHERE section IS NOT NULL AND section != '' ORDER BY section");
-    $sections = $stmt->fetchAll(PDO::FETCH_COLUMN);
-    
-    // Get total students count
-    $totalStudents = count($students);
-    
+    $employees = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    // Get unique departments and shifts for filters
+    $stmt = $pdo->query("SELECT DISTINCT department_code FROM employees WHERE department_code IS NOT NULL AND department_code != '' ORDER BY department_code");
+    $departments = $stmt->fetchAll(PDO::FETCH_COLUMN);
+
+    $stmt = $pdo->query("SELECT DISTINCT shift_code FROM employees WHERE shift_code IS NOT NULL AND shift_code != '' ORDER BY shift_code");
+    $shifts = $stmt->fetchAll(PDO::FETCH_COLUMN);
+
+    // Get total entity count
+    $totalEmployees = count($employees);
+
 } catch (Exception $e) {
-    error_log("View students error: " . $e->getMessage());
-    $students = [];
-    $classes = [];
-    $sections = [];
-    $totalStudents = 0;
+    error_log("View " . strtolower($entityPlural) . " error: " . $e->getMessage());
+    $employees = [];
+    $departments = [];
+    $shifts = [];
+    $totalEmployees = 0;
 }
 
 $breadcrumb = [
     ['label' => 'Dashboard', 'icon' => 'house', 'url' => 'dashboard.php'],
-    ['label' => 'Students', 'icon' => 'user-group', 'url' => 'view_students.php']
+    ['label' => $entityPlural, 'icon' => 'user-group', 'url' => 'view_employees.php']
 ];
-$breadcrumbAction = ['label' => 'Add Student', 'icon' => 'user-plus', 'url' => 'manage_students.php'];
-$pageDescription = 'View and manage all registered students';
+$breadcrumbAction = ['label' => 'Add ' . $entitySingular, 'icon' => 'user-plus', 'url' => 'manage_employees.php'];
+$pageDescription = 'View and manage all registered ' . strtolower($entityPlural);
 
 include 'includes/header_modern.php';
 ?>
 
 <style>
-    /* ===== VIEW STUDENTS PAGE-SPECIFIC STYLES ===== */
+    /* ===== VIEW EMPLOYEES PAGE-SPECIFIC STYLES ===== */
     :root {
         /* Page-specific color aliases (mapped to new palette) */
         --asj-green-50: var(--green-050);
@@ -996,8 +1018,8 @@ include 'includes/header_modern.php';
             <i class="fa-solid fa-user-group"></i>
         </div>
         <div class="stat-details">
-            <h3><?php echo $totalStudents; ?></h3>
-            <p>Total Students</p>
+            <h3><?php echo $totalEmployees; ?></h3>
+            <p>Total <?php echo $entityPlural; ?></p>
         </div>
     </div>
     <div class="stat-item">
@@ -1005,17 +1027,17 @@ include 'includes/header_modern.php';
             <i class="fa-solid fa-chalkboard"></i>
         </div>
         <div class="stat-details">
-            <h3><?php echo count($classes); ?></h3>
-            <p>Active Classes</p>
+            <h3><?php echo count($departments); ?></h3>
+            <p>Active Departments</p>
         </div>
     </div>
-    <?php if (!empty($_GET['search']) || !empty($_GET['class'])): ?>
+    <?php if (!empty($_GET['search']) || !empty($_GET['department'])): ?>
     <div class="stat-item">
         <div class="stat-icon">
             <i class="fa-solid fa-filter"></i>
         </div>
         <div class="stat-details">
-            <h3><?php echo count($students); ?></h3>
+            <h3><?php echo count($employees); ?></h3>
             <p>Filtered Results</p>
         </div>
     </div>
@@ -1025,6 +1047,9 @@ include 'includes/header_modern.php';
 <!-- Filter Bar -->
 <div class="filter-bar">
     <form method="GET" action="" id="filterForm">
+        <?php if ($isEmployeeMode): ?>
+            <input type="hidden" name="mode" value="employee">
+        <?php endif; ?>
         <div class="filter-row">
             <div class="filter-search">
                 <i class="fa-solid fa-search filter-search-icon"></i>
@@ -1032,26 +1057,26 @@ include 'includes/header_modern.php';
                     type="text" 
                     name="search" 
                     class="form-control" 
-                    placeholder="Search by LRN, name, email, or section..."
+                    placeholder="Search by <?php echo $identifierLabel; ?>, name, email, or <?php echo strtolower($secondaryGroupLabel); ?>..."
                     value="<?php echo isset($_GET['search']) ? htmlspecialchars($_GET['search']) : ''; ?>"
                 >
             </div>
             <div class="filter-select">
-                <select name="class" class="form-control">
-                    <option value="">All Grade Levels</option>
-                    <?php foreach ($classes as $class): ?>
-                        <option value="<?php echo htmlspecialchars($class); ?>" <?php echo (isset($_GET['class']) && $_GET['class'] === $class) ? 'selected' : ''; ?>>
-                            <?php echo htmlspecialchars($class); ?>
+                <select name="department" class="form-control">
+                    <option value="">All <?php echo $primaryGroupLabel; ?></option>
+                    <?php foreach ($departments as $department): ?>
+                        <option value="<?php echo htmlspecialchars($department); ?>" <?php echo (isset($_GET['department']) && $_GET['department'] === $department) ? 'selected' : ''; ?>>
+                            <?php echo htmlspecialchars($department); ?>
                         </option>
                     <?php endforeach; ?>
                 </select>
             </div>
             <div class="filter-select">
-                <select name="section" class="form-control">
-                    <option value="">All Sections</option>
-                    <?php foreach ($sections as $section): ?>
-                        <option value="<?php echo htmlspecialchars($section); ?>" <?php echo (isset($_GET['section']) && $_GET['section'] === $section) ? 'selected' : ''; ?>>
-                            <?php echo htmlspecialchars($section); ?>
+                <select name="shift" class="form-control">
+                    <option value="">All <?php echo $secondaryGroupLabel; ?></option>
+                    <?php foreach ($shifts as $shift): ?>
+                        <option value="<?php echo htmlspecialchars($shift); ?>" <?php echo (isset($_GET['shift']) && $_GET['shift'] === $shift) ? 'selected' : ''; ?>>
+                            <?php echo htmlspecialchars($shift); ?>
                         </option>
                     <?php endforeach; ?>
                 </select>
@@ -1060,15 +1085,15 @@ include 'includes/header_modern.php';
                 <i class="fa-solid fa-search"></i>
                 <span>Search</span>
             </button>
-            <?php if (!empty($_GET['search']) || !empty($_GET['class']) || !empty($_GET['section'])): ?>
-                <a href="view_students.php" class="btn btn-secondary">
+            <?php if (!empty($_GET['search']) || !empty($_GET['department']) || !empty($_GET['shift'])): ?>
+                <a href="view_employees.php" class="btn btn-secondary">
                     <i class="fa-solid fa-times"></i>
                     <span>Clear</span>
                 </a>
             <?php endif; ?>
-            <a href="manage_students.php" class="btn btn-success">
+            <a href="manage_employees.php" class="btn btn-success">
                 <i class="fa-solid fa-plus"></i>
-                <span>Add New</span>
+                <span>Add New <?php echo $entitySingular; ?></span>
             </a>
         </div>
     </form>
@@ -1078,8 +1103,8 @@ include 'includes/header_modern.php';
 <div class="responsive-table-wrapper">
     <div class="table-header">
         <h3 class="table-title">
-            <i class="fa-solid fa-graduation-cap"></i>
-            Students Directory
+            <i class="fa-solid fa-briefcase"></i>
+            <?php echo $entityPlural; ?> Directory
         </h3>
         <div style="display: flex; gap: var(--space-2);">
             <button onclick="exportToCSV()" class="btn btn-outline">
@@ -1089,14 +1114,14 @@ include 'includes/header_modern.php';
         </div>
     </div>
 
-    <?php if (empty($students)): ?>
+    <?php if (empty($employees)): ?>
         <div class="empty-state">
             <i class="fa-solid fa-user-slash"></i>
-            <h3>No Students Found</h3>
-            <p>Try adjusting your search criteria or add a new student.</p>
-            <a href="manage_students.php" class="btn btn-primary" style="margin-top: var(--space-4);">
+            <h3>No <?php echo $entityPlural; ?> Found</h3>
+            <p>Try adjusting your search criteria or add a new <?php echo strtolower($entitySingular); ?>.</p>
+            <a href="manage_employees.php" class="btn btn-primary" style="margin-top: var(--space-4);">
                 <i class="fa-solid fa-plus"></i>
-                <span>Add Your First Student</span>
+                <span>Add Your First <?php echo $entitySingular; ?></span>
             </a>
         </div>
     <?php else: ?>
@@ -1105,68 +1130,68 @@ include 'includes/header_modern.php';
             <table class="desktop-table">
                 <thead>
                     <tr>
-                        <th>LRN</th>
+                        <th><?php echo $identifierLabel; ?></th>
                         <th>Full Name</th>
                         <th>Gender</th>
                         <th>Email</th>
-                        <th>Grade Level</th>
-                        <th>Section</th>
+                        <th><?php echo $primaryGroupLabel; ?></th>
+                        <th><?php echo $secondaryGroupLabel; ?></th>
                         <th>Actions</th>
                     </tr>
                 </thead>
                 <tbody>
-                <?php foreach ($students as $student): ?>
+                <?php foreach ($employees as $employee): ?>
                     <tr>
                         <td>
-                            <span class="student-lrn"><?php echo sanitizeOutput($student['lrn']); ?></span>
+                            <span class="student-lrn"><?php echo sanitizeOutput($employee['employee_id']); ?></span>
                         </td>
                         <td>
-                            <span class="student-name"><?php echo sanitizeOutput(trim($student['first_name'] . ' ' . $student['middle_name'] . ' ' . $student['last_name'])); ?></span>
+                            <span class="student-name"><?php echo sanitizeOutput(trim($employee['first_name'] . ' ' . $employee['middle_name'] . ' ' . $employee['last_name'])); ?></span>
                         </td>
                         <td>
-                            <span class="badge badge-<?php echo $student['gender'] === 'Male' ? 'primary' : 'error'; ?>">
-                                <i class="fa-solid fa-<?php echo $student['gender'] === 'Male' ? 'mars' : 'venus'; ?>"></i>
-                                <?php echo sanitizeOutput($student['gender']); ?>
+                            <span class="badge badge-<?php echo $employee['gender'] === 'Male' ? 'primary' : 'error'; ?>">
+                                <i class="fa-solid fa-<?php echo $employee['gender'] === 'Male' ? 'mars' : 'venus'; ?>"></i>
+                                <?php echo sanitizeOutput($employee['gender']); ?>
                             </span>
                         </td>
-                        <td><?php echo sanitizeOutput($student['email']); ?></td>
+                        <td><?php echo sanitizeOutput($employee['email']); ?></td>
                         <td>
-                            <span class="badge badge-primary"><?php echo sanitizeOutput($student['class'] ?? 'N/A'); ?></span>
+                            <span class="badge badge-primary"><?php echo sanitizeOutput($employee['department'] ?? 'N/A'); ?></span>
                         </td>
                         <td>
-                            <span class="badge badge-info"><?php echo sanitizeOutput($student['section'] ?? 'N/A'); ?></span>
+                            <span class="badge badge-info"><?php echo sanitizeOutput($employee['shift'] ?? 'N/A'); ?></span>
                         </td>
                         <td>
                             <div class="table-actions">
                                 <button 
                                     class="btn btn-sm btn-primary" 
                                     data-action="view"
-                                    data-student='<?php echo json_encode($student); ?>'
+                                    data-employee='<?php echo json_encode($employee); ?>'
                                     title="View Details">
                                     <i class="fa-solid fa-eye"></i>
                                 </button>
                                 <a 
-                                    href="manage_students.php?id=<?php echo $student['id']; ?>" 
+                                    href="manage_employees.php?id=<?php echo $employee['id']; ?>" 
                                     class="btn btn-sm btn-success" 
-                                    title="Edit Student">
+                                    title="Edit <?php echo $entitySingular; ?>">
                                     <i class="fa-solid fa-pen-to-square"></i>
                                 </a>
                                 <button 
                                     class="btn btn-sm btn-warning"
                                     data-action="qr"
-                                    data-id="<?php echo $student['id']; ?>"
-                                    data-lrn="<?php echo htmlspecialchars($student['lrn']); ?>"
-                                    data-name="<?php echo htmlspecialchars(trim($student['first_name'] . ' ' . $student['last_name'])); ?>"
-                                    data-qrcode="<?php echo htmlspecialchars($student['qr_code'] ?? ''); ?>"
+                                    data-id="<?php echo $employee['id']; ?>"
+                                    data-employee-id="<?php echo htmlspecialchars($employee['employee_id']); ?>"
+                                    data-name="<?php echo htmlspecialchars(trim($employee['first_name'] . ' ' . $employee['last_name'])); ?>"
+                                    data-qrcode="<?php echo htmlspecialchars($employee['qr_code'] ?? ''); ?>"
                                     title="View QR Code">
                                     <i class="fa-solid fa-qrcode"></i>
                                 </button>
                                 <button 
                                     class="btn btn-sm btn-danger"
                                     data-action="delete"
-                                    data-id="<?php echo $student['id']; ?>"
-                                    data-name="<?php echo htmlspecialchars(trim($student['first_name'] . ' ' . $student['last_name'])); ?>"
-                                    title="Delete Student">
+                                    data-id="<?php echo $employee['id']; ?>"
+                                    data-name="<?php echo htmlspecialchars(trim($employee['first_name'] . ' ' . $employee['last_name'])); ?>"
+                                    title="Delete <?php echo $entitySingular; ?>">
                                     <i class="fa-solid fa-trash"></i>
                                 </button>
                             </div>
@@ -1179,66 +1204,66 @@ include 'includes/header_modern.php';
 
         <!-- Mobile Cards -->
         <div class="mobile-cards">
-            <?php foreach ($students as $student): ?>
+            <?php foreach ($employees as $employee): ?>
                 <div class="student-card">
                     <div class="student-card-header">
                         <div class="student-card-avatar">
-                            <?php echo strtoupper(substr($student['first_name'], 0, 1)); ?>
+                            <?php echo strtoupper(substr($employee['first_name'], 0, 1)); ?>
                         </div>
                         <div class="student-card-info">
-                            <h4><?php echo sanitizeOutput(trim($student['first_name'] . ' ' . $student['last_name'])); ?></h4>
-                            <p><?php echo sanitizeOutput($student['class']); ?></p>
+                            <h4><?php echo sanitizeOutput(trim($employee['first_name'] . ' ' . $employee['last_name'])); ?></h4>
+                            <p><?php echo sanitizeOutput($employee['department']); ?></p>
                         </div>
                     </div>
                     <div class="student-card-details">
                         <div class="student-card-field">
-                            <span class="student-card-label">LRN</span>
-                            <span class="student-card-value"><?php echo sanitizeOutput($student['lrn']); ?></span>
+                            <span class="student-card-label"><?php echo $identifierLabel; ?></span>
+                            <span class="student-card-value"><?php echo sanitizeOutput($employee['employee_id']); ?></span>
                         </div>
                         <div class="student-card-field">
                             <span class="student-card-label">Gender</span>
                             <span class="student-card-value">
-                                <span class="badge badge-<?php echo $student['gender'] === 'Male' ? 'primary' : 'error'; ?>">
-                                    <i class="fa-solid fa-<?php echo $student['gender'] === 'Male' ? 'mars' : 'venus'; ?>"></i>
-                                    <?php echo sanitizeOutput($student['gender']); ?>
+                                <span class="badge badge-<?php echo $employee['gender'] === 'Male' ? 'primary' : 'error'; ?>">
+                                    <i class="fa-solid fa-<?php echo $employee['gender'] === 'Male' ? 'mars' : 'venus'; ?>"></i>
+                                    <?php echo sanitizeOutput($employee['gender']); ?>
                                 </span>
                             </span>
                         </div>
                         <div class="student-card-field" style="grid-column: 1 / -1;">
                             <span class="student-card-label">Email</span>
-                            <span class="student-card-value"><?php echo sanitizeOutput($student['email']); ?></span>
+                            <span class="student-card-value"><?php echo sanitizeOutput($employee['email']); ?></span>
                         </div>
                     </div>
                     <div class="student-card-actions">
                         <button 
                             class="btn btn-sm btn-primary"
                             data-action="view"
-                            data-student='<?php echo json_encode($student); ?>'
+                            data-employee='<?php echo json_encode($employee); ?>'
                             title="View Details">
                             <i class="fa-solid fa-eye"></i>
                         </button>
                         <a 
-                            href="manage_students.php?id=<?php echo $student['id']; ?>" 
+                            href="manage_employees.php?id=<?php echo $employee['id']; ?>" 
                             class="btn btn-sm btn-success"
-                            title="Edit Student">
+                            title="Edit <?php echo $entitySingular; ?>">
                             <i class="fa-solid fa-pen-to-square"></i>
                         </a>
                         <button 
                             class="btn btn-sm btn-warning"
                             data-action="qr"
-                            data-id="<?php echo $student['id']; ?>"
-                            data-lrn="<?php echo htmlspecialchars($student['lrn']); ?>"
-                            data-name="<?php echo htmlspecialchars(trim($student['first_name'] . ' ' . $student['last_name'])); ?>"
-                            data-qrcode="<?php echo htmlspecialchars($student['qr_code'] ?? ''); ?>"
+                            data-id="<?php echo $employee['id']; ?>"
+                            data-employee-id="<?php echo htmlspecialchars($employee['employee_id']); ?>"
+                            data-name="<?php echo htmlspecialchars(trim($employee['first_name'] . ' ' . $employee['last_name'])); ?>"
+                            data-qrcode="<?php echo htmlspecialchars($employee['qr_code'] ?? ''); ?>"
                             title="View QR Code">
                             <i class="fa-solid fa-qrcode"></i>
                         </button>
                         <button 
                             class="btn btn-sm btn-danger"
                             data-action="delete"
-                            data-id="<?php echo $student['id']; ?>"
-                            data-name="<?php echo htmlspecialchars(trim($student['first_name'] . ' ' . $student['last_name'])); ?>"
-                            title="Delete Student">
+                            data-id="<?php echo $employee['id']; ?>"
+                            data-name="<?php echo htmlspecialchars(trim($employee['first_name'] . ' ' . $employee['last_name'])); ?>"
+                            title="Delete <?php echo $entitySingular; ?>">
                             <i class="fa-solid fa-trash"></i>
                         </button>
                     </div>
@@ -1248,14 +1273,14 @@ include 'includes/header_modern.php';
     <?php endif; ?>
 </div>
 
-<!-- View Student Details Modal -->
+<!-- View Entity Details Modal -->
 <div class="modal-overlay" id="viewModal">
     <div class="modal-container">
         <div class="modal-content">
             <div class="modal-header">
                 <h3 class="modal-title">
                     <i class="fa-solid fa-user-graduate"></i>
-                    Student Details
+                    <?php echo $entitySingular; ?> Details
                 </h3>
                 <button class="modal-close" data-action="close-modal" data-modal="viewModal">
                     <i class="fa-solid fa-times"></i>
@@ -1264,12 +1289,12 @@ include 'includes/header_modern.php';
             <div class="modal-body">
                 <div class="detail-grid">
                     <div class="detail-item">
-                        <span class="detail-label">Student ID</span>
+                        <span class="detail-label"><?php echo $entitySingular; ?> Record ID</span>
                         <span class="detail-value" id="view-id">-</span>
                     </div>
                     <div class="detail-item">
-                        <span class="detail-label">LRN</span>
-                        <span class="detail-value" id="view-lrn">-</span>
+                        <span class="detail-label"><?php echo $identifierLabel; ?></span>
+                        <span class="detail-value" id="view-employee-id">-</span>
                     </div>
                     <div class="detail-item">
                         <span class="detail-label">First Name</span>
@@ -1292,8 +1317,8 @@ include 'includes/header_modern.php';
                         <span class="detail-value" id="view-email">-</span>
                     </div>
                     <div class="detail-item">
-                        <span class="detail-label">Class/Section</span>
-                        <span class="detail-value" id="view-class">-</span>
+                        <span class="detail-label">Department / Shift</span>
+                        <span class="detail-value" id="view-department-shift">-</span>
                     </div>
                     <div class="detail-item">
                         <span class="detail-label">Attendance Days</span>
@@ -1309,9 +1334,9 @@ include 'includes/header_modern.php';
                     </div>
                 </div>
                 <div class="modal-actions">
-                    <a href="#" id="editStudentLink" class="btn btn-primary">
+                    <a href="#" id="editEmployeeLink" class="btn btn-primary">
                         <i class="fa-solid fa-pen-to-square"></i>
-                        <span>Edit Student</span>
+                        <span>Edit <?php echo $entitySingular; ?></span>
                     </a>
                     <button class="btn btn-secondary" data-action="close-modal" data-modal="viewModal">
                         <i class="fa-solid fa-times"></i>
@@ -1330,7 +1355,7 @@ include 'includes/header_modern.php';
             <div class="modal-header">
                 <h3 class="modal-title">
                     <i class="fa-solid fa-qrcode"></i>
-                    Student QR Code
+                    <?php echo $entitySingular; ?> QR Code
                 </h3>
                 <button class="modal-close" data-action="close-modal" data-modal="qrModal">
                     <i class="fa-solid fa-times"></i>
@@ -1338,7 +1363,7 @@ include 'includes/header_modern.php';
             </div>
             <div class="modal-body">
                 <div class="qr-code-section">
-                    <h4 id="qr-student-name" style="margin-bottom: var(--space-3); color: var(--gray-900); text-align: center;">-</h4>
+                    <h4 id="qr-employee-name" style="margin-bottom: var(--space-3); color: var(--gray-900); text-align: center;">-</h4>
                     <div class="qr-code-container" style="text-align: center; padding: var(--space-6); background: var(--gray-50); border-radius: var(--radius-xl);">
                         <img id="qr-code-image" src="" alt="QR Code" style="max-width: 300px; width: 100%; height: auto; border: 4px solid white; border-radius: var(--radius-lg); box-shadow: var(--shadow-lg);">
                         <p style="color: var(--gray-600); margin-top: var(--space-4); font-size: var(--text-sm); font-style: italic;">
@@ -1346,7 +1371,7 @@ include 'includes/header_modern.php';
                         </p>
                     </div>
                     <p style="color: var(--gray-600); margin-top: var(--space-4); text-align: center;">
-                        LRN: <strong id="qr-lrn" style="color: var(--primary-600); font-family: 'Courier New', monospace;">-</strong>
+                        <?php echo $identifierLabel; ?>: <strong id="qr-employee-id" style="color: var(--primary-600); font-family: 'Courier New', monospace;">-</strong>
                     </p>
                 </div>
                 <div class="modal-actions">
@@ -1380,12 +1405,12 @@ include 'includes/header_modern.php';
                 <div style="width: 80px; height: 80px; background: linear-gradient(135deg, rgba(239, 68, 68, 0.1), rgba(220, 38, 38, 0.1)); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto var(--space-5);">
                     <i class="fa-solid fa-triangle-exclamation" style="font-size: 32px; color: var(--red-500);"></i>
                 </div>
-                <h3 style="font-size: var(--text-2xl); font-weight: 700; color: var(--gray-900); margin-bottom: var(--space-3);">Delete Student</h3>
+                <h3 style="font-size: var(--text-2xl); font-weight: 700; color: var(--gray-900); margin-bottom: var(--space-3);">Delete <?php echo $entitySingular; ?></h3>
                 <p style="color: var(--gray-600); margin-bottom: var(--space-2);">
-                    Are you sure you want to delete <strong id="delete-student-name">this student</strong>?
+                    Are you sure you want to delete <strong id="delete-employee-name">this <?php echo strtolower($entitySingular); ?></strong>?
                 </p>
                 <p style="color: var(--red-600); font-weight: 600; font-size: var(--text-sm); margin-bottom: var(--space-6);">
-                    ⚠️ This will permanently delete the student and all attendance records.
+                     This will permanently delete the <?php echo strtolower($entitySingular); ?> and all attendance records.
                 </p>
                 <div class="modal-actions" style="justify-content: center;">
                     <button class="btn btn-secondary" data-action="close-modal" data-modal="deleteModal" style="min-width: 140px;">
@@ -1404,10 +1429,17 @@ include 'includes/header_modern.php';
 
 <script>
 /**
- * View Students - Modal and Button Functionality
+ * View Employees - Modal and Button Functionality
  */
 
 // State management
+const attendanceMode = '<?php echo $attendanceMode; ?>';
+const isEmployeeMode = attendanceMode === 'employee';
+const entitySingular = '<?php echo $entitySingular; ?>';
+const entityPlural = '<?php echo $entityPlural; ?>';
+const entityLower = entitySingular.toLowerCase();
+const identifierLabel = '<?php echo $identifierLabel; ?>';
+
 let currentDeleteId = null;
 let currentDeleteName = '';
 
@@ -1428,22 +1460,22 @@ function closeModal(modalId) {
     }
 }
 
-// View Student Details
-function viewStudentDetails(student) {
+// View Employee Details
+function viewEmployeeDetails(employee) {
     // Populate modal fields
-    document.getElementById('view-id').textContent = '#' + String(student.id).padStart(5, '0');
-    document.getElementById('view-lrn').textContent = student.lrn || '-';
-    document.getElementById('view-firstname').textContent = student.first_name || '-';
-    document.getElementById('view-middlename').textContent = student.middle_name || '-';
-    document.getElementById('view-lastname').textContent = student.last_name || '-';
-    document.getElementById('view-gender').textContent = student.gender || '-';
-    document.getElementById('view-email').textContent = student.email || '-';
-    document.getElementById('view-class').textContent = student.class || '-';
-    document.getElementById('view-attendance').textContent = student.attendance_days || '0';
+    document.getElementById('view-id').textContent = '#' + String(employee.id).padStart(5, '0');
+    document.getElementById('view-employee-id').textContent = employee.employee_id || '-';
+    document.getElementById('view-firstname').textContent = employee.first_name || '-';
+    document.getElementById('view-middlename').textContent = employee.middle_name || '-';
+    document.getElementById('view-lastname').textContent = employee.last_name || '-';
+    document.getElementById('view-gender').textContent = employee.gender || '-';
+    document.getElementById('view-email').textContent = employee.email || '-';
+    document.getElementById('view-department-shift').textContent = `${employee.department || '-'} / ${employee.shift || '-'}`;
+    document.getElementById('view-attendance').textContent = employee.attendance_days || '0';
     
     // Format dates
-    if (student.created_at) {
-        const createdDate = new Date(student.created_at);
+    if (employee.created_at) {
+        const createdDate = new Date(employee.created_at);
         document.getElementById('view-created').textContent = createdDate.toLocaleDateString('en-US', { 
             year: 'numeric', 
             month: 'long', 
@@ -1453,8 +1485,8 @@ function viewStudentDetails(student) {
         document.getElementById('view-created').textContent = '-';
     }
     
-    if (student.last_attendance) {
-        const lastDate = new Date(student.last_attendance);
+    if (employee.last_attendance) {
+        const lastDate = new Date(employee.last_attendance);
         document.getElementById('view-last-attendance').textContent = lastDate.toLocaleDateString('en-US', { 
             year: 'numeric', 
             month: 'long', 
@@ -1465,22 +1497,22 @@ function viewStudentDetails(student) {
     }
     
     // Update edit link
-    document.getElementById('editStudentLink').href = 'manage_students.php?id=' + student.id;
+    document.getElementById('editEmployeeLink').href = 'manage_employees.php?id=' + employee.id;
     
     openModal('viewModal');
 }
 
 // State for QR operations
-let currentQRStudentId = null;
-let currentQRStudentLRN = null;
+let currentQREmployeeRecordId = null;
+let currentQREmployeeId = null;
 
 // Generate QR Code - Now displays the pre-generated image
-function generateQRCode(studentId, lrn, name, qrCodePath) {
-    currentQRStudentId = studentId;
-    currentQRStudentLRN = lrn;
+function generateQRCode(employeeRecordId, employeeId, name, qrCodePath) {
+    currentQREmployeeRecordId = employeeRecordId;
+    currentQREmployeeId = employeeId;
     
-    document.getElementById('qr-student-name').textContent = name;
-    document.getElementById('qr-lrn').textContent = lrn;
+    document.getElementById('qr-employee-name').textContent = name;
+    document.getElementById('qr-employee-id').textContent = employeeId;
     
     const qrImage = document.getElementById('qr-code-image');
     
@@ -1492,7 +1524,7 @@ function generateQRCode(studentId, lrn, name, qrCodePath) {
     } else {
         // No QR code available
         qrImage.style.display = 'none';
-        showNotification('QR code not available for this student. Please regenerate.', 'warning');
+        showNotification('QR code not available for this ' + entityLower + '. Please regenerate.', 'warning');
     }
     
     openModal('qrModal');
@@ -1500,8 +1532,8 @@ function generateQRCode(studentId, lrn, name, qrCodePath) {
 
 // Regenerate QR Code
 async function regenerateQRCode() {
-    if (!currentQRStudentId) {
-        showNotification('No student selected', 'error');
+    if (!currentQREmployeeRecordId) {
+        showNotification('No ' + entityLower + ' selected', 'error');
         return;
     }
     
@@ -1516,9 +1548,7 @@ async function regenerateQRCode() {
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({
-                student_id: currentQRStudentId
-            })
+            body: JSON.stringify({ employee_id: currentQREmployeeRecordId, mode: 'employee' })
         });
         
         const data = await response.json();
@@ -1546,13 +1576,13 @@ async function regenerateQRCode() {
 function downloadQRCode() {
     const qrImage = document.getElementById('qr-code-image');
     if (qrImage && qrImage.src) {
-        const lrn = document.getElementById('qr-lrn').textContent;
-        const name = document.getElementById('qr-student-name').textContent;
+        const employeeId = document.getElementById('qr-employee-id').textContent;
+        const name = document.getElementById('qr-employee-name').textContent;
         
         // Create a temporary link to download the image
         const link = document.createElement('a');
         link.href = qrImage.src;
-        link.download = `QR_${lrn}_${name.replace(/\s+/g, '_')}.png`;
+        link.download = `QR_${employeeId}_${name.replace(/\s+/g, '_')}.png`;
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
@@ -1567,15 +1597,15 @@ function downloadQRCode() {
 function printQRCode() {
     const qrImage = document.getElementById('qr-code-image');
     if (qrImage && qrImage.src) {
-        const lrn = document.getElementById('qr-lrn').textContent;
-        const name = document.getElementById('qr-student-name').textContent;
+        const employeeId = document.getElementById('qr-employee-id').textContent;
+        const name = document.getElementById('qr-employee-name').textContent;
         
         const printWindow = window.open('', '_blank');
         printWindow.document.write(`
             <!DOCTYPE html>
             <html>
             <head>
-                <title>Student QR Code - ${name}</title>
+                <title>${entitySingular} QR Code - ${name}</title>
                 <style>
                     body {
                         font-family: Arial, sans-serif;
@@ -1615,7 +1645,7 @@ function printQRCode() {
             </head>
             <body>
                 <h1>${name}</h1>
-                <p><strong>LRN:</strong> ${lrn}</p>
+                <p><strong>${identifierLabel}:</strong> ${employeeId}</p>
                 <div class="qr-container">
                     <img src="${qrImage.src}" alt="QR Code" />
                 </div>
@@ -1638,7 +1668,7 @@ function printQRCode() {
 function showDeleteModal(id, name) {
     currentDeleteId = id;
     currentDeleteName = name;
-    document.getElementById('delete-student-name').textContent = name;
+    document.getElementById('delete-employee-name').textContent = name;
     openModal('deleteModal');
 }
 
@@ -1652,9 +1682,10 @@ async function confirmDelete() {
     
     try {
         const formData = new FormData();
-        formData.append('student_id', currentDeleteId);
+        formData.append('employee_id', currentDeleteId);
+        formData.append('mode', 'employee');
         
-        const response = await fetch('../api/delete_student.php', {
+        const response = await fetch('../api/delete_employee.php', {
             method: 'POST',
             body: formData
         });
@@ -1662,11 +1693,11 @@ async function confirmDelete() {
         const data = await response.json();
         
         if (data.success) {
-            showNotification('Student deleted successfully!', 'success');
+            showNotification(entitySingular + ' deleted successfully!', 'success');
             closeModal('deleteModal');
             setTimeout(() => window.location.reload(), 1000);
         } else {
-            showNotification(data.message || 'Failed to delete student', 'error');
+            showNotification(data.message || ('Failed to delete ' + entityLower), 'error');
             confirmBtn.classList.remove('btn-loading');
             confirmBtn.disabled = false;
         }
@@ -1748,13 +1779,13 @@ function exportToCSV() {
     
     const date = new Date().toISOString().split('T')[0];
     link.setAttribute('href', url);
-    link.setAttribute('download', `students_list_${date}.csv`);
+    link.setAttribute('download', `employees_list_${date}.csv`);
     link.style.visibility = 'hidden';
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
     
-    showNotification('Student list exported successfully!', 'success');
+    showNotification(entitySingular + ' list exported successfully!', 'success');
 }
 
 // Event Delegation
@@ -1768,18 +1799,18 @@ document.addEventListener('DOMContentLoaded', function() {
         
         if (action === 'view') {
             try {
-                const student = JSON.parse(target.dataset.student);
-                viewStudentDetails(student);
+                const employee = JSON.parse(target.dataset.employee);
+                viewEmployeeDetails(employee);
             } catch (error) {
-                console.error('Error parsing student data:', error);
-                showNotification('Error loading student details', 'error');
+                console.error('Error parsing employee data:', error);
+                showNotification('Error loading ' + entityLower + ' details', 'error');
             }
         } else if (action === 'qr') {
-            const studentId = target.dataset.id;
-            const lrn = target.dataset.lrn;
+            const employeeRecordId = target.dataset.id;
+            const employeeId = target.dataset.employeeId;
             const name = target.dataset.name;
             const qrCodePath = target.dataset.qrcode;
-            generateQRCode(studentId, lrn, name, qrCodePath);
+            generateQRCode(employeeRecordId, employeeId, name, qrCodePath);
         } else if (action === 'regenerate-qr') {
             regenerateQRCode();
         } else if (action === 'delete') {
@@ -1816,8 +1847,9 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
     
-    console.log('✅ View Students functionality initialized');
+    console.log(' View ' + entityPlural + ' functionality initialized');
 });
 </script>
 
 <?php include 'includes/footer_modern.php'; ?>
+

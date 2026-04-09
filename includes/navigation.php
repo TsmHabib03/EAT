@@ -39,8 +39,8 @@ function isActive($page, $currentPage, $currentDir = '') {
                 <li><a href="dashboard.php" class="<?= isActive('dashboard.php', $currentPage) ?>">
                     <i class="fas fa-tachometer-alt"></i> Dashboard
                 </a></li>
-                <li><a href="manage_students.php" class="<?= isActive('manage_students.php', $currentPage) ?>">
-                    <i class="fas fa-users"></i> Manage Students
+                <li><a href="manage_employees.php" class="<?= isActive('manage_employees.php', $currentPage) ?>">
+                    <i class="fas fa-users"></i> Manage Employees
                 </a></li>
                 <li><a href="manage_schedules.php" class="<?= isActive('manage_schedules.php', $currentPage) ?>">
                     <i class="fas fa-calendar-alt"></i> Manage Schedules
@@ -48,10 +48,10 @@ function isActive($page, $currentPage, $currentDir = '') {
                 <li><a href="manual_attendance.php" class="<?= isActive('manual_attendance.php', $currentPage) ?>">
                     <i class="fas fa-clipboard-check"></i> Manual Attendance
                 </a></li>
-                <li><a href="../view_students.php" target="_blank">
-                    <i class="fas fa-eye"></i> View Students
+                <li><a href="view_employees.php" target="_blank">
+                    <i class="fas fa-eye"></i> View Employees
                 </a></li>
-                <li><a href="admin/attendance_reports.php" target="_blank">
+                <li><a href="attendance_reports_departments.php" target="_blank">
                     <i class="fas fa-chart-bar"></i> Attendance Reports
                 </a></li>
                 <li><a href="../index.php" class="public-link">
@@ -64,3 +64,4 @@ function isActive($page, $currentPage, $currentDir = '') {
         <?php endif; ?>
     </ul>
 </nav>
+

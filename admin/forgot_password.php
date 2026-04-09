@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 session_start();
 
 // If already logged in, redirect to dashboard
@@ -12,9 +12,9 @@ if (isset($_SESSION['admin_logged_in']) && $_SESSION['admin_logged_in'] === true
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Reset Your Admin Password - San Francisco High School">
+    <meta name="description" content="Reset Your Admin Password - Employee Attendance System">
     <meta name="theme-color" content="#059669">
-    <title>Forgot Password - San Francisco High School</title>
+    <title>Forgot Password - Employee Attendance System</title>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -22,7 +22,7 @@ if (isset($_SESSION['admin_logged_in']) && $_SESSION['admin_logged_in'] === true
 
     <link rel="stylesheet" href="../css/auth-glassmorphism.css?v=<?php echo time(); ?>">
 
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔑</text></svg>">
+    <link rel="icon" type="image/png" href="../assets/images/Logo.png">
 </head>
 <body class="auth-page">
     <div class="auth-wrapper">
@@ -32,7 +32,7 @@ if (isset($_SESSION['admin_logged_in']) && $_SESSION['admin_logged_in'] === true
                 <div class="carousel-slide"><img src="../assets/image/building1.jpg" alt="Campus Building 1"></div>
                 <div class="carousel-slide"><img src="../assets/image/building2.jpg" alt="Campus Building 2"></div>
                 <div class="carousel-slide"><img src="../assets/image/building3.jpg" alt="Campus Building 3"></div>
-                <div class="carousel-slide"><img src="../assets/images/SFHSbuildingHB.jpg" alt="SFHS Heritage Building"></div>
+                <div class="carousel-slide"><img src="../assets/images/main-campus-heritage.jpg" alt="Main Campus Heritage Building"></div>
                 <div class="carousel-slide"><img src="../assets/images/HB Building.jpg" alt="HB Building"></div>
             </div>
             <div class="carousel-indicators" id="carouselIndicators">
@@ -43,8 +43,8 @@ if (isset($_SESSION['admin_logged_in']) && $_SESSION['admin_logged_in'] === true
                 <button class="carousel-dot" data-index="4" aria-label="Slide 5"></button>
             </div>
             <div class="auth-hero-content">
-                <h2>San Francisco High School</h2>
-                <p>Password Recovery — We&rsquo;ll help you get back in</p>
+                <h2>Employee Attendance System</h2>
+                <p>Password Recovery - We&rsquo;ll help you get back in</p>
             </div>
         </div>
 
@@ -67,10 +67,10 @@ if (isset($_SESSION['admin_logged_in']) && $_SESSION['admin_logged_in'] === true
                 <!-- Logo & Header -->
                 <div class="auth-header">
                     <div class="auth-logo">
-                        <img src="../assets/images/Logo.png" alt="SFHS Logo" onerror="this.style.display='none'">
+                        <img src="../assets/images/Logo.png" alt="EAT Logo" onerror="this.style.display='none'">
                     </div>
                     <h1 class="auth-title">Forgot Password?</h1>
-                    <p class="auth-school-name">San Francisco High School</p>
+                    <p class="auth-school-name">Employee Attendance System</p>
                     <p class="auth-subtitle">Enter your email and we&rsquo;ll send you a link to reset your password</p>
                 </div>
 
@@ -145,7 +145,7 @@ if (isset($_SESSION['admin_logged_in']) && $_SESSION['admin_logged_in'] === true
 
                 <!-- Footer -->
                 <div class="auth-footer">
-                    <p>&copy; <?php echo date('Y'); ?> San Francisco High School.</p>
+                    <p>&copy; <?php echo date('Y'); ?> Employee Attendance System.</p>
                     <p class="footer-motto">Integrity, Service, Excellence, Empowerment</p>
                 </div>
 
@@ -303,3 +303,4 @@ if (isset($_SESSION['admin_logged_in']) && $_SESSION['admin_logged_in'] === true
     <script src="../js/auth-carousel.js?v=<?php echo time(); ?>"></script>
 </body>
 </html>
+

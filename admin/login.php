@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 session_start();
 require_once '../config/db_config.php';
 
@@ -12,8 +12,24 @@ if (isset($_SESSION['admin_logged_in']) && $_SESSION['admin_logged_in'] === true
 $error_message = '';
 $login_attempts = isset($_SESSION['login_attempts']) ? $_SESSION['login_attempts'] : 0;
 $lockout_time = isset($_SESSION['lockout_time']) ? $_SESSION['lockout_time'] : 0;
+$needsInitialAdminSetup = false;
+
+try {
+    $tableExists = $pdo->query("SHOW TABLES LIKE 'admin_users'")->rowCount() > 0;
+    if (!$tableExists) {
+        $needsInitialAdminSetup = true;
+    } else {
+        $adminCount = (int) $pdo->query("SELECT COUNT(*) FROM admin_users")->fetchColumn();
+        $needsInitialAdminSetup = $adminCount === 0;
+    }
+} catch (Exception $e) {
+    $needsInitialAdminSetup = true;
+}
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    if ($needsInitialAdminSetup) {
+        $error_message = 'No admin account exists yet. Please run initial admin setup first.';
+    } else {
     // Check if account is locked
     if ($lockout_time > time()) {
         $remaining_minutes = ceil(($lockout_time - time()) / 60);
@@ -137,6 +153,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             exit();
         }
     }
+    }
 }
 
 // Check for remembered user
@@ -150,9 +167,9 @@ if (isset($_COOKIE['remember_admin'])) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Secure Admin Portal - San Francisco High School Attendance Management">
+    <meta name="description" content="Secure Admin Portal - Employee Attendance Management">
     <meta name="theme-color" content="#059669">
-    <title>Admin Portal - San Francisco High School</title>
+    <title>Admin Portal - Employee Attendance System</title>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -160,7 +177,7 @@ if (isset($_COOKIE['remember_admin'])) {
 
     <link rel="stylesheet" href="../css/auth-glassmorphism.css?v=<?php echo time(); ?>">
 
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔐</text></svg>">
+    <link rel="icon" type="image/png" href="../assets/images/Logo.png">
 </head>
 <body class="auth-page">
     <!-- Hero Carousel Background -->
@@ -170,7 +187,7 @@ if (isset($_COOKIE['remember_admin'])) {
                 <div class="carousel-slide"><img src="../assets/image/building1.jpg" alt="Campus Building 1"></div>
                 <div class="carousel-slide"><img src="../assets/image/building2.jpg" alt="Campus Building 2"></div>
                 <div class="carousel-slide"><img src="../assets/image/building3.jpg" alt="Campus Building 3"></div>
-                <div class="carousel-slide"><img src="../assets/images/SFHSbuildingHB.jpg" alt="SFHS Heritage Building"></div>
+                <div class="carousel-slide"><img src="../assets/images/main-campus-heritage.jpg" alt="Main Campus Heritage Building"></div>
                 <div class="carousel-slide"><img src="../assets/images/HB Building.jpg" alt="HB Building"></div>
             </div>
             <div class="carousel-indicators" id="carouselIndicators">
@@ -181,8 +198,8 @@ if (isset($_COOKIE['remember_admin'])) {
                 <button class="carousel-dot" data-index="4" aria-label="Slide 5"></button>
             </div>
             <div class="auth-hero-content">
-                <h2>San Francisco High School</h2>
-                <p>Digital Attendance Management Portal — Integrity, Service, Excellence, Empowerment</p>
+                <h2>Employee Attendance System</h2>
+                <p>Digital Attendance Management Portal - Integrity, Service, Excellence, Empowerment</p>
             </div>
         </div>
 
@@ -196,10 +213,10 @@ if (isset($_COOKIE['remember_admin'])) {
                 <!-- Logo & Header -->
                 <div class="auth-header">
                     <div class="auth-logo">
-                        <img src="../assets/images/Logo.png" alt="San Francisco High School Logo" onerror="this.style.display='none'">
+                        <img src="../assets/images/Logo.png" alt="Employee Attendance System Logo" onerror="this.style.display='none'">
                     </div>
                     <h1 class="auth-title">Admin Portal</h1>
-                    <p class="auth-school-name">San Francisco High School</p>
+                    <p class="auth-school-name">Employee Attendance System</p>
                     <p class="auth-subtitle">Sign in to manage attendance</p>
                 </div>
 
@@ -233,6 +250,15 @@ if (isset($_COOKIE['remember_admin'])) {
                         <p><?php echo htmlspecialchars($error_message); ?></p>
                     </div>
                     <button class="auth-alert-close" onclick="this.parentElement.remove()">&times;</button>
+                </div>
+                <?php endif; ?>
+
+                <?php if ($needsInitialAdminSetup): ?>
+                <div class="auth-alert" style="background: rgba(5, 150, 105, 0.12); border: 1px solid rgba(5, 150, 105, 0.35); color: #065f46;">
+                    <div class="auth-alert-body">
+                        <strong>Initial Setup Required</strong>
+                        <p>No admin account exists yet. <a href="setup_admin.php" style="color:#065f46; font-weight:700; text-decoration:underline;">Create first admin account</a>.</p>
+                    </div>
                 </div>
                 <?php endif; ?>
 
@@ -335,7 +361,7 @@ if (isset($_COOKIE['remember_admin'])) {
 
                 <!-- Footer -->
                 <div class="auth-footer">
-                    <p>&copy; <?php echo date('Y'); ?> San Francisco High School.</p>
+                    <p>&copy; <?php echo date('Y'); ?> Employee Attendance System.</p>
                     <p class="footer-motto">Integrity, Service, Excellence, Empowerment</p>
                 </div>
 
@@ -372,3 +398,4 @@ if (isset($_COOKIE['remember_admin'])) {
     <script src="../js/auth-carousel.js?v=<?php echo time(); ?>"></script>
 </body>
 </html>
+

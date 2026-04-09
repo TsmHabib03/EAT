@@ -1,10 +1,13 @@
+<?php
+$attendanceMode = 'employee';
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="theme-color" content="#059669">
-    <title>QR Scanner - San Francisco High School</title>
+    <title>QR Scanner - Employee Attendance System</title>
 
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -34,7 +37,7 @@
             <a href="index.php" class="scan-topbar-brand">
                 <img src="assets/asj-logo.png" alt="Logo" class="scan-topbar-logo" onerror="this.style.display='none'">
                 <div class="scan-topbar-text">
-                    <span class="scan-topbar-title">San Francisco High School</span>
+                    <span class="scan-topbar-title">Employee Attendance System</span>
                     <span class="scan-topbar-sub">QR Scanner</span>
                 </div>
             </a>
@@ -104,7 +107,7 @@
             </div>
             <div class="scan-result-text">
                 <h2 id="success-title">Success!</h2>
-                <p id="success-student">John Doe</p>
+                <p id="success-employee">John Doe</p>
                 <p id="success-time">Time In: 08:15 AM</p>
             </div>
             <button class="scan-result-btn" onclick="closeResultOverlay()">
@@ -119,7 +122,7 @@
             </div>
             <div class="scan-result-text">
                 <h2>Oops!</h2>
-                <p id="error-message">Student not found</p>
+                <p id="error-message">Record not found</p>
             </div>
             <button class="scan-result-btn" onclick="closeResultOverlay()">
                 Try Again
@@ -139,25 +142,25 @@
             </div>
             <div class="scan-modal-help">
                 <i class="fas fa-info-circle"></i>
-                <span>If the camera isn't working, you can manually enter the student's LRN (12-digit number).</span>
+                <span id="manual-help-text">If the camera isn't working, you can manually enter the employee ID.</span>
             </div>
             <form id="manual-form">
                 <div class="scan-form-group">
-                    <label class="scan-form-label" for="manual-lrn">
-                        <i class="fas fa-id-card"></i> LRN (Learner Reference Number)
+                    <label class="scan-form-label" for="manual-employee-id">
+                        <i class="fas fa-id-card"></i> <span id="manual-id-label">Employee ID</span>
                     </label>
                     <input 
                         type="text" 
-                        id="manual-lrn" 
-                        name="lrn" 
+                        id="manual-employee-id" 
+                        name="employee_id" 
                         class="scan-form-input" 
-                        placeholder="Enter 12-digit LRN"
-                        pattern="[0-9]{11,13}"
-                        maxlength="13"
-                        inputmode="numeric"
+                        placeholder="Enter Employee ID (e.g., EMP-001)"
+                        pattern="[A-Za-z0-9_-]{3,20}"
+                        maxlength="20"
+                        inputmode="text"
                         required
                     >
-                    <div class="scan-form-error" id="lrn-error"></div>
+                    <div class="scan-form-error" id="employee-id-error"></div>
                 </div>
                 <button type="submit" class="btn btn-primary btn-lg" style="width:100%;">
                     <i class="fas fa-check-circle"></i> Mark Attendance
@@ -172,7 +175,7 @@
         <div class="scan-sidemenu-header">
             <img src="assets/asj-logo.png" alt="Logo" class="scan-sidemenu-logo" onerror="this.style.display='none'">
             <div class="scan-sidemenu-info">
-                <h3>San Francisco High School</h3>
+                <h3>Employee Attendance System</h3>
                 <p>Attendance System</p>
             </div>
         </div>
@@ -194,8 +197,37 @@
     <script src="https://unpkg.com/@zxing/library@latest/umd/index.min.js"></script>
 
     <script>
+        const attendanceMode = 'employee';
+        const isEmployeeMode = true;
+        const attendanceEndpoint = 'api/mark_employee_attendance.php';
+        const identityFieldName = 'employee_id';
+        const identityPattern = /^[A-Za-z0-9_-]{3,20}$/;
+        const identityLabel = 'Employee ID';
+        const defaultManualPlaceholder = 'Enter Employee ID (e.g., EMP-001)';
+
         let codeReader = null;
         let isScanning = false;
+
+        function applyModeLabels() {
+            const helpText = document.getElementById('manual-help-text');
+            const idLabel = document.getElementById('manual-id-label');
+            const employeeIdInput = document.getElementById('manual-employee-id');
+
+            if (helpText) {
+                helpText.textContent = "If the camera isn't working, you can manually enter the employee ID.";
+            }
+
+            if (idLabel) {
+                idLabel.textContent = identityLabel;
+            }
+
+            if (employeeIdInput) {
+                employeeIdInput.placeholder = defaultManualPlaceholder;
+                employeeIdInput.pattern = '[A-Za-z0-9_-]{3,20}';
+                employeeIdInput.maxLength = 20;
+                employeeIdInput.inputMode = 'text';
+            }
+        }
 
         // Time Display
         function updateTime() {
@@ -366,16 +398,16 @@
             document.getElementById('scanner-loading').querySelector('p').textContent = 'Processing attendance...';
             
             try {
-                let lrn = qrCode.trim();
+                let identifier = qrCode.trim();
                 
-                if (lrn.includes('|')) {
-                    lrn = lrn.split('|')[0].trim();
+                if (identifier.includes('|')) {
+                    identifier = identifier.split('|')[0].trim();
                 }
                 
-                const response = await fetch('api/mark_attendance.php', {
+                const response = await fetch(attendanceEndpoint, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                    body: `lrn=${encodeURIComponent(lrn)}`
+                    body: `${identityFieldName}=${encodeURIComponent(identifier)}&source=qr`
                 });
 
                 if (!response.ok) {
@@ -418,19 +450,21 @@
         // Show Success
         function showSuccess(data) {
             const titleElement = document.getElementById('success-title');
-            if (data.status === 'time_in') {
-                titleElement.textContent = 'Welcome! ✓';
-            } else if (data.status === 'time_out') {
-                titleElement.textContent = 'See You! ✓';
+            const actionType = data.action || data.status;
+
+            if (actionType === 'time_in' || actionType === 'clock_in') {
+                titleElement.textContent = 'Welcome! ';
+            } else if (actionType === 'time_out' || actionType === 'clock_out') {
+                titleElement.textContent = 'See You! ';
             } else {
-                titleElement.textContent = 'Success! ✓';
+                titleElement.textContent = 'Success! ';
             }
             
-            document.getElementById('success-student').textContent = data.student_name || 'Student';
+            document.getElementById('success-employee').textContent = data.employee_name || 'Employee';
             
-            const timeLabel = data.status === 'time_in' ? 'Time In' : 
-                             data.status === 'time_out' ? 'Time Out' : 'Time';
-            const timeValue = data.time_in || data.time_out || new Date().toLocaleTimeString('en-US', {
+            const timeLabel = (actionType === 'time_in' || actionType === 'clock_in') ? 'Time In' :
+                             (actionType === 'time_out' || actionType === 'clock_out') ? 'Time Out' : 'Time';
+            const timeValue = data.time || data.time_in || data.time_out || new Date().toLocaleTimeString('en-US', {
                 hour: '2-digit',
                 minute: '2-digit',
                 hour12: true
@@ -481,35 +515,35 @@
         document.getElementById('manual-form').addEventListener('submit', async (e) => {
             e.preventDefault();
             
-            const lrnInput = document.getElementById('manual-lrn');
-            const lrn = lrnInput.value.trim();
-            const errorDiv = document.getElementById('lrn-error');
+            const employeeIdInput = document.getElementById('manual-employee-id');
+            const identityValue = employeeIdInput.value.trim();
+            const errorDiv = document.getElementById('employee-id-error');
             
-            if (!/^\d{11,13}$/.test(lrn)) {
-                errorDiv.textContent = 'Please enter a valid 11-13 digit LRN';
+            if (!identityPattern.test(identityValue)) {
+                errorDiv.textContent = 'Please enter a valid employee ID (3-20 letters, numbers, underscore, or dash)';
                 errorDiv.classList.add('active');
-                lrnInput.style.borderColor = '#DC2626';
+                employeeIdInput.style.borderColor = '#DC2626';
                 return;
             }
             
             errorDiv.classList.remove('active');
-            lrnInput.style.borderColor = '';
+            employeeIdInput.style.borderColor = '';
             
             closeManualEntry();
-            await handleScanResult(lrn);
+            await handleScanResult(identityValue);
             
-            lrnInput.value = '';
+            employeeIdInput.value = '';
         });
 
-        // Real-time validation for manual LRN input
-        document.getElementById('manual-lrn').addEventListener('input', (e) => {
+        // Real-time validation for manual employee ID input
+        document.getElementById('manual-employee-id').addEventListener('input', (e) => {
             const input = e.target;
             const value = input.value;
-            const errorDiv = document.getElementById('lrn-error');
+            const errorDiv = document.getElementById('employee-id-error');
             
-            input.value = value.replace(/[^\d]/g, '');
+            input.value = value.replace(/[^A-Za-z0-9_-]/g, '').toUpperCase();
             
-            if (input.value.length >= 11 && input.value.length <= 13) {
+            if (identityPattern.test(input.value)) {
                 errorDiv.classList.remove('active');
                 input.style.borderColor = 'var(--green-500)';
             } else if (input.value.length > 0) {
@@ -532,9 +566,11 @@
 
         // Initialize
         window.addEventListener('load', () => {
+            applyModeLabels();
             initializeScanner();
-            document.getElementById('schedule-info').textContent = 'Ready to scan';
+            document.getElementById('schedule-info').textContent = 'Ready to scan employees';
         });
     </script>
 </body>
 </html>
+

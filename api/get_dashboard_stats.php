@@ -8,28 +8,28 @@ try {
     
     $today = date('Y-m-d');
     
-    // Get total students
-    $total_students_query = "SELECT COUNT(*) as total FROM students";
-    $total_students_stmt = $db->prepare($total_students_query);
-    $total_students_stmt->execute();
-    $total_students = $total_students_stmt->fetch(PDO::FETCH_ASSOC)['total'];
+    // Get total employees
+    $totalEmployeesQuery = "SELECT COUNT(*) as total FROM employees WHERE is_active = 1";
+    $totalEmployeesStmt = $db->prepare($totalEmployeesQuery);
+    $totalEmployeesStmt->execute();
+    $totalEmployees = (int)$totalEmployeesStmt->fetch(PDO::FETCH_ASSOC)['total'];
     
     // Get present today
-    $present_today_query = "SELECT COUNT(*) as present FROM attendance WHERE date = :today";
-    $present_today_stmt = $db->prepare($present_today_query);
-    $present_today_stmt->bindParam(':today', $today);
-    $present_today_stmt->execute();
-    $present_today = $present_today_stmt->fetch(PDO::FETCH_ASSOC)['present'];
+    $presentTodayQuery = "SELECT COUNT(*) as present FROM employee_attendance WHERE date = :today AND time_in IS NOT NULL";
+    $presentTodayStmt = $db->prepare($presentTodayQuery);
+    $presentTodayStmt->bindParam(':today', $today);
+    $presentTodayStmt->execute();
+    $presentToday = (int)$presentTodayStmt->fetch(PDO::FETCH_ASSOC)['present'];
     
     // Calculate attendance rate
-    $attendance_rate = $total_students > 0 ? round(($present_today / $total_students) * 100, 1) : 0;
+    $attendanceRate = $totalEmployees > 0 ? round(($presentToday / $totalEmployees) * 100, 1) : 0;
     
     echo json_encode([
         'success' => true,
         'stats' => [
-            'total_students' => $total_students,
-            'present_today' => $present_today,
-            'attendance_rate' => $attendance_rate
+            'total_employees' => $totalEmployees,
+            'present_today' => $presentToday,
+            'attendance_rate' => $attendanceRate
         ]
     ]);
     

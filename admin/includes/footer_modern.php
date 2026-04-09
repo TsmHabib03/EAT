@@ -1,3 +1,16 @@
+﻿<?php
+$entityPluralFooter = 'Employees';
+$reportsLabelFooter = 'Employee Reports';
+
+$dashboardUrlFooter = 'dashboard.php';
+$employeesUrlFooter = 'view_employees.php';
+$manageEmployeesUrlFooter = 'manage_employees.php';
+$departmentsUrlFooter = 'manage_departments.php';
+$manualUrlFooter = 'manual_attendance.php';
+$reportsUrlFooter = 'attendance_reports_departments.php';
+$scannerUrlFooter = '../scan_attendance.php';
+?>
+
             </div>
         </div>
     </div>
@@ -10,9 +23,9 @@
         <div class="mobile-drawer-header">
             <div class="mobile-drawer-brand">
                 <div class="sidebar-logo-icon" style="width:36px;height:36px;">
-                    <img src="../assets/image/logo.png" alt="San Francisco High School logo" class="sidebar-logo-img">
+                    <img src="../assets/image/logo.png" alt="Employee Attendance logo" class="sidebar-logo-img">
                 </div>
-                <span style="font-weight:700;color:var(--green-700);font-size:0.95rem;">SFHS Admin</span>
+                <span style="font-weight:700;color:var(--green-700);font-size:0.95rem;">EAT Admin</span>
             </div>
             <button class="mobile-drawer-close" onclick="toggleAdminMenu()" aria-label="Close menu">
                 <i class="fa-solid fa-xmark"></i>
@@ -20,29 +33,29 @@
         </div>
         <nav class="mobile-drawer-nav" aria-label="Mobile navigation">
             <div class="mobile-drawer-label">Main</div>
-            <a href="dashboard.php" class="mobile-drawer-link <?php echo (basename($_SERVER['PHP_SELF']) == 'dashboard.php') ? 'active' : ''; ?>">
+            <a href="<?php echo $dashboardUrlFooter; ?>" class="mobile-drawer-link <?php echo (basename($_SERVER['PHP_SELF']) == 'dashboard.php') ? 'active' : ''; ?>">
                 <i class="fa-solid fa-house"></i> Dashboard
             </a>
             
             <div class="mobile-drawer-label">Management</div>
-            <a href="view_students.php" class="mobile-drawer-link <?php echo (in_array(basename($_SERVER['PHP_SELF']), ['view_students.php', 'manage_students.php'])) ? 'active' : ''; ?>">
-                <i class="fa-solid fa-user-group"></i> Students
+            <a href="<?php echo $employeesUrlFooter; ?>" class="mobile-drawer-link <?php echo (in_array(basename($_SERVER['PHP_SELF']), ['view_employees.php', 'manage_employees.php'])) ? 'active' : ''; ?>">
+                <i class="fa-solid fa-user-group"></i> <?php echo $entityPluralFooter; ?>
             </a>
-            <a href="manage_sections.php" class="mobile-drawer-link <?php echo (basename($_SERVER['PHP_SELF']) == 'manage_sections.php') ? 'active' : ''; ?>">
-                <i class="fa-solid fa-table-cells-large"></i> Sections
+            <a href="<?php echo $departmentsUrlFooter; ?>" class="mobile-drawer-link <?php echo (basename($_SERVER['PHP_SELF']) == 'manage_departments.php') ? 'active' : ''; ?>">
+                <i class="fa-solid fa-table-cells-large"></i> Departments and Shifts
             </a>
             
             <div class="mobile-drawer-label">Attendance</div>
-            <a href="manual_attendance.php" class="mobile-drawer-link <?php echo (basename($_SERVER['PHP_SELF']) == 'manual_attendance.php') ? 'active' : ''; ?>">
+            <a href="<?php echo $manualUrlFooter; ?>" class="mobile-drawer-link <?php echo (basename($_SERVER['PHP_SELF']) == 'manual_attendance.php') ? 'active' : ''; ?>">
                 <i class="fa-solid fa-pen-to-square"></i> Manual Entry
             </a>
-            <a href="attendance_reports_sections.php" class="mobile-drawer-link <?php echo (basename($_SERVER['PHP_SELF']) == 'attendance_reports_sections.php') ? 'active' : ''; ?>">
-                <i class="fa-solid fa-chart-column"></i> Reports
+            <a href="<?php echo $reportsUrlFooter; ?>" class="mobile-drawer-link <?php echo (in_array(basename($_SERVER['PHP_SELF']), ['attendance_reports_departments.php', 'attendance_reports_departments.php'])) ? 'active' : ''; ?>">
+                <i class="fa-solid fa-chart-column"></i> <?php echo $reportsLabelFooter; ?>
             </a>
             
             <hr class="mobile-drawer-divider">
             <div class="mobile-drawer-label">Quick Actions</div>
-            <a href="../scan_attendance.php" class="mobile-drawer-link" target="_blank">
+            <a href="<?php echo $scannerUrlFooter; ?>" class="mobile-drawer-link" target="_blank">
                 <i class="fa-solid fa-qrcode"></i> QR Scanner
             </a>
             <a href="../index.php" class="mobile-drawer-link" target="_blank">
@@ -55,7 +68,7 @@
     </aside>
 
     <script>
-        /* ── Sidebar Collapse ────────────────────────────────────── */
+        /*  Sidebar Collapse  */
         function toggleSidebarCollapse() {
             var layout = document.querySelector('.admin-layout');
             layout.classList.toggle('sidebar-collapsed');
@@ -69,7 +82,7 @@
             }
         })();
 
-        /* ── Mobile Drawer / Desktop Collapse (combined) ─────── */
+        /*  Mobile Drawer / Desktop Collapse (combined)  */
         function toggleAdminMenu() {
             if (window.innerWidth >= 1024) {
                 toggleSidebarCollapse();
@@ -79,7 +92,7 @@
             }
         }
 
-        /* ── Dropdown Helpers ────────────────────────────────────── */
+        /*  Dropdown Helpers  */
         function closeAllDropdowns() {
             document.querySelectorAll('.topbar-dropdown, .topbar-notif-dropdown, .topbar-search-results').forEach(function(el) {
                 el.classList.remove('active');
@@ -130,20 +143,20 @@
             }
         });
 
-        /* ── Page Search ─────────────────────────────────────────── */
+        /*  Page Search  */
         (function() {
             var searchInput = document.querySelector('.topbar-search-input');
             var searchResults = document.querySelector('.topbar-search-results');
             if (!searchInput || !searchResults) return;
 
             var pages = [
-                { name: 'Dashboard',        icon: 'fa-house',               url: 'dashboard.php' },
-                { name: 'Students',          icon: 'fa-user-group',          url: 'view_students.php' },
-                { name: 'Manage Students',   icon: 'fa-user-pen',            url: 'manage_students.php' },
-                { name: 'Sections',          icon: 'fa-table-cells-large',   url: 'manage_sections.php' },
-                { name: 'Manual Entry',      icon: 'fa-pen-to-square',       url: 'manual_attendance.php' },
-                { name: 'Reports',           icon: 'fa-chart-column',        url: 'attendance_reports_sections.php' },
-                { name: 'QR Scanner',        icon: 'fa-qrcode',              url: '../scan_attendance.php' },
+                { name: 'Dashboard',         icon: 'fa-house',               url: '<?php echo $dashboardUrlFooter; ?>' },
+                { name: '<?php echo $entityPluralFooter; ?>', icon: 'fa-user-group', url: '<?php echo $employeesUrlFooter; ?>' },
+                { name: 'Manage <?php echo $entityPluralFooter; ?>', icon: 'fa-user-pen', url: '<?php echo $manageEmployeesUrlFooter; ?>' },
+                { name: 'Departments and Shifts', icon: 'fa-table-cells-large', url: '<?php echo $departmentsUrlFooter; ?>' },
+                { name: 'Manual Entry',      icon: 'fa-pen-to-square',       url: '<?php echo $manualUrlFooter; ?>' },
+                { name: '<?php echo $reportsLabelFooter; ?>', icon: 'fa-chart-column', url: '<?php echo $reportsUrlFooter; ?>' },
+                { name: 'QR Scanner',        icon: 'fa-qrcode',              url: '<?php echo $scannerUrlFooter; ?>' },
                 { name: 'View Site',         icon: 'fa-arrow-up-right-from-square', url: '../index.php' }
             ];
 
@@ -179,7 +192,7 @@
             });
         })();
 
-        /* ── Sidebar Tooltip (collapsed mode) ────────────────────── */
+        /*  Sidebar Tooltip (collapsed mode)  */
         (function() {
             var tooltip = null;
 
@@ -214,7 +227,7 @@
             });
         })();
 
-        /* ── Breadcrumb Sticky Shadow ────────────────────────────── */
+        /*  Breadcrumb Sticky Shadow  */
         (function() {
             var bar = document.getElementById('breadcrumbBar');
             if (!bar) return;
@@ -236,3 +249,5 @@
     <?php endif; ?>
 </body>
 </html>
+
+

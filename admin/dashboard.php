@@ -3,6 +3,13 @@ require_once 'config.php';
 requireAdmin();
 
 $currentAdmin = getCurrentAdmin();
+$attendanceMode = 'employee';
+$isEmployeeMode = true;
+$entitySingular = 'Employee';
+$entityPlural = 'Employees';
+$modeQuery = '';
+$reportsUrl = 'attendance_reports_departments.php';
+
 $pageTitle = 'Dashboard';
 $pageIcon = 'home';
 
@@ -15,27 +22,27 @@ function getDashboardData($pdo) {
     
     try {
         // 1. STAT CARDS DATA
-        // Total students
-        $stmt = $pdo->query("SELECT COUNT(*) as total FROM students");
-        $data['totalStudents'] = (int)$stmt->fetch()['total'];
+        // Total employees
+        $stmt = $pdo->query("SELECT COUNT(*) as total FROM employees WHERE is_active = 1");
+        $data['totalEmployees'] = (int)$stmt->fetch()['total'];
         
         // Today's attendance
         $stmt = $pdo->prepare("
             SELECT 
-                COUNT(DISTINCT lrn) as present
-            FROM attendance 
+                COUNT(DISTINCT employee_id) as present
+            FROM employee_attendance 
             WHERE date = CURDATE() AND time_in IS NOT NULL
         ");
         $stmt->execute();
         $todayStats = $stmt->fetch(PDO::FETCH_ASSOC);
         $data['presentToday'] = (int)$todayStats['present'];
         
-        // Absent students today
-        $data['absentToday'] = $data['totalStudents'] - $data['presentToday'];
+        // Absent employees today
+        $data['absentToday'] = $data['totalEmployees'] - $data['presentToday'];
         
         // Today's attendance rate
-        $data['attendanceRate'] = $data['totalStudents'] > 0 
-            ? round(($data['presentToday'] / $data['totalStudents']) * 100, 1) 
+        $data['attendanceRate'] = $data['totalEmployees'] > 0 
+            ? round(($data['presentToday'] / $data['totalEmployees']) * 100, 1) 
             : 0;
         
         // 2. WEEKLY ATTENDANCE TREND (Last 7 days - Present vs Absent)
@@ -49,39 +56,40 @@ function getDashboardData($pdo) {
             )
             SELECT 
                 dates.date,
-                COALESCE(COUNT(DISTINCT a.lrn), 0) as present,
-                (SELECT COUNT(*) FROM students) - COALESCE(COUNT(DISTINCT a.lrn), 0) as absent
+                COALESCE(COUNT(DISTINCT a.employee_id), 0) as present,
+                (SELECT COUNT(*) FROM employees WHERE is_active = 1) - COALESCE(COUNT(DISTINCT a.employee_id), 0) as absent
             FROM dates
-            LEFT JOIN attendance a ON dates.date = a.date
+            LEFT JOIN employee_attendance a ON dates.date = a.date
             GROUP BY dates.date
             ORDER BY dates.date ASC
         ");
         $stmt->execute();
         $data['weeklyTrend'] = $stmt->fetchAll(PDO::FETCH_ASSOC);
         
-        // 3. ATTENDANCE BY SECTION (Today)
+        // 3. ATTENDANCE BY DEPARTMENT (Today)
         $stmt = $pdo->prepare("
             SELECT 
-                COALESCE(s.section, 'No Section') as section,
-                COUNT(DISTINCT CASE WHEN a.date = CURDATE() AND a.time_in IS NOT NULL THEN a.lrn END) as present,
-                COUNT(DISTINCT s.lrn) as total
-            FROM students s
-            LEFT JOIN attendance a ON s.lrn = a.lrn
-            GROUP BY s.section
+                COALESCE(s.department_code, 'No Department') as department,
+                COUNT(DISTINCT CASE WHEN a.date = CURDATE() AND a.time_in IS NOT NULL THEN a.employee_id END) as present,
+                COUNT(DISTINCT s.employee_id) as total
+            FROM employees s
+            LEFT JOIN employee_attendance a ON s.employee_id = a.employee_id
+            WHERE s.is_active = 1
+            GROUP BY s.department_code
             HAVING total > 0
-            ORDER BY section
+            ORDER BY department
         ");
         $stmt->execute();
-        $data['sectionAttendance'] = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $data['departmentAttendance'] = $stmt->fetchAll(PDO::FETCH_ASSOC);
         
         // 4. RECENT ACTIVITY (Last 10 records with time_out info)
         $stmt = $pdo->prepare("
             SELECT 
                 a.id,
-                a.lrn,
+                a.employee_id,
                 s.first_name,
                 s.last_name,
-                COALESCE(s.section, 'N/A') as section,
+                COALESCE(s.department_code, 'N/A') as department,
                 a.time_in,
                 a.time_out,
                 a.date,
@@ -91,9 +99,9 @@ function getDashboardData($pdo) {
                     ELSE 'present'
                 END as status,
                 a.created_at
-            FROM attendance a
-            JOIN students s ON a.lrn = s.lrn
-            ORDER BY a.created_at DESC
+            FROM employee_attendance a
+            JOIN employees s ON a.employee_id = s.employee_id
+            ORDER BY a.updated_at DESC
             LIMIT 10
         ");
         $stmt->execute();
@@ -103,15 +111,15 @@ function getDashboardData($pdo) {
         $stmt = $pdo->prepare("
             SELECT 
                 a.id,
-                a.lrn,
+                a.employee_id,
                 s.first_name,
                 s.last_name,
-                COALESCE(s.section, 'N/A') as section,
+                COALESCE(s.department_code, 'N/A') as department,
                 a.date,
                 a.time_in,
                 DATEDIFF(CURDATE(), a.date) as days_ago
-            FROM attendance a
-            JOIN students s ON a.lrn = s.lrn
+            FROM employee_attendance a
+            JOIN employees s ON a.employee_id = s.employee_id
             WHERE a.time_out IS NULL 
             AND a.date < CURDATE()
             ORDER BY a.date DESC
@@ -121,11 +129,11 @@ function getDashboardData($pdo) {
         $data['needsAttention'] = $stmt->fetchAll(PDO::FETCH_ASSOC);
         
         // 6. ADDITIONAL STATS
-        $stmt = $pdo->query("SELECT COUNT(*) as total FROM attendance");
+        $stmt = $pdo->query("SELECT COUNT(*) as total FROM employee_attendance");
         $data['totalRecords'] = (int)$stmt->fetch()['total'];
         
-        $stmt = $pdo->query("SELECT COUNT(DISTINCT COALESCE(section, 'default')) as total FROM students");
-        $data['activeSections'] = (int)$stmt->fetch()['total'];
+        $stmt = $pdo->query("SELECT COUNT(DISTINCT COALESCE(department_code, 'default')) as total FROM employees WHERE is_active = 1");
+        $data['activeDepartments'] = (int)$stmt->fetch()['total'];
         
         return $data;
         
@@ -133,16 +141,16 @@ function getDashboardData($pdo) {
         error_log("Dashboard data fetch error: " . $e->getMessage());
         // Return safe defaults
         return [
-            'totalStudents' => 0,
+            'totalEmployees' => 0,
             'presentToday' => 0,
             'absentToday' => 0,
             'attendanceRate' => 0,
             'weeklyTrend' => [],
-            'sectionAttendance' => [],
+            'departmentAttendance' => [],
             'recentActivity' => [],
             'needsAttention' => [],
             'totalRecords' => 0,
-            'activeSections' => 0
+            'activeDepartments' => 0
         ];
     }
 }
@@ -151,19 +159,19 @@ function getDashboardData($pdo) {
 $dashboardData = getDashboardData($pdo);
 
 // Extract for easy access
-$totalStudents = $dashboardData['totalStudents'];
+$totalEmployees = $dashboardData['totalEmployees'];
 $presentToday = $dashboardData['presentToday'];
 $absentToday = $dashboardData['absentToday'];
 $attendanceRate = $dashboardData['attendanceRate'];
 $totalRecords = $dashboardData['totalRecords'];
-$activeSections = $dashboardData['activeSections'];
+$activeDepartments = $dashboardData['activeDepartments'];
 $recentAttendance = $dashboardData['recentActivity'];
 
 // Include the modern admin header
 $breadcrumb = [
     ['label' => 'Dashboard', 'icon' => 'house', 'url' => 'dashboard.php']
 ];
-$pageDescription = 'Monitor attendance activity and school statistics';
+$pageDescription = 'Monitor attendance activity and workforce statistics';
 include 'includes/header_modern.php';
 ?>
 
@@ -180,7 +188,7 @@ include 'includes/header_modern.php';
     </div>
 </div>
 
-<!-- ─── Top Stats Row ─── -->
+<!--  Top Stats Row  -->
 <div class="dash-stats-row">
     <!-- Attendance Rate Ring (feature card) -->
     <div class="dash-ring-card">
@@ -206,10 +214,10 @@ include 'includes/header_modern.php';
     <div class="dash-mini-stat">
         <div class="dash-mini-icon dash-mini-icon--green"><i class="fa-solid fa-user-group"></i></div>
         <div class="dash-mini-body">
-            <span class="dash-mini-value"><?php echo number_format($totalStudents); ?></span>
-            <span class="dash-mini-label">Total Students</span>
+            <span class="dash-mini-value"><?php echo number_format($totalEmployees); ?></span>
+            <span class="dash-mini-label">Total Employees</span>
         </div>
-        <div class="dash-mini-chip"><i class="fa-solid fa-table-cells-large"></i> <?php echo $activeSections; ?> sections</div>
+        <div class="dash-mini-chip"><i class="fa-solid fa-table-cells-large"></i> <?php echo $activeDepartments; ?> departments</div>
     </div>
 
     <div class="dash-mini-stat">
@@ -240,9 +248,9 @@ include 'includes/header_modern.php';
     </div>
 </div>
 
-<!-- ─── Main Bento Grid ─── -->
+<!--  Main Bento Grid  -->
 <div class="dash-bento">
-    <!-- Weekly Trend — wide card -->
+    <!-- Weekly Trend  wide card -->
     <div class="dash-card dash-bento-wide">
         <div class="dash-card-header">
             <h3 class="dash-card-title"><i class="fa-solid fa-chart-area"></i> Weekly Attendance Trend</h3>
@@ -255,14 +263,14 @@ include 'includes/header_modern.php';
         </div>
     </div>
 
-    <!-- Section Doughnut -->
+    <!-- Department Doughnut -->
     <div class="dash-card">
         <div class="dash-card-header">
-            <h3 class="dash-card-title"><i class="fa-solid fa-chart-pie"></i> By Section</h3>
+            <h3 class="dash-card-title"><i class="fa-solid fa-chart-pie"></i> By Department</h3>
         </div>
         <div class="dash-card-body">
             <div class="dash-chart-wrap dash-chart-wrap--sm">
-                <canvas id="sectionChart"></canvas>
+                <canvas id="departmentChart"></canvas>
             </div>
         </div>
     </div>
@@ -274,39 +282,39 @@ include 'includes/header_modern.php';
         </div>
         <div class="dash-card-body">
             <div class="dash-actions">
-                <a href="manage_students.php" class="dash-action">
+                <a href="manage_employees.php<?php echo $modeQuery; ?>" class="dash-action">
                     <div class="dash-action-icon"><i class="fa-solid fa-user-plus"></i></div>
-                    <span>Add Student</span>
+                    <span>Add <?php echo $entitySingular; ?></span>
                 </a>
-                <a href="manual_attendance.php" class="dash-action">
+                <a href="manual_attendance.php<?php echo $modeQuery; ?>" class="dash-action">
                     <div class="dash-action-icon"><i class="fa-solid fa-pen-to-square"></i></div>
                     <span>Manual Entry</span>
                 </a>
-                <a href="../scan_attendance.php" class="dash-action" target="_blank">
+                <a href="../scan_attendance.php<?php echo $modeQuery; ?>" class="dash-action" target="_blank">
                     <div class="dash-action-icon"><i class="fa-solid fa-qrcode"></i></div>
                     <span>QR Scanner</span>
                 </a>
-                <a href="attendance_reports_sections.php" class="dash-action">
+                <a href="<?php echo $reportsUrl; ?>" class="dash-action">
                     <div class="dash-action-icon"><i class="fa-solid fa-chart-column"></i></div>
                     <span>Reports</span>
                 </a>
-                <a href="view_students.php" class="dash-action">
+                <a href="view_employees.php<?php echo $modeQuery; ?>" class="dash-action">
                     <div class="dash-action-icon"><i class="fa-solid fa-list-check"></i></div>
-                    <span>Student List</span>
+                    <span><?php echo $entitySingular; ?> List</span>
                 </a>
-                <a href="manage_sections.php" class="dash-action">
+                <a href="manage_departments.php<?php echo $modeQuery; ?>" class="dash-action">
                     <div class="dash-action-icon"><i class="fa-solid fa-table-cells-large"></i></div>
-                    <span>Sections</span>
+                    <span>Departments</span>
                 </a>
             </div>
         </div>
     </div>
 
-    <!-- Recent Attendance — wide card -->
+    <!-- Recent Attendance  wide card -->
     <div class="dash-card dash-bento-wide">
         <div class="dash-card-header">
             <h3 class="dash-card-title"><i class="fa-solid fa-clock-rotate-left"></i> Recent Attendance</h3>
-            <a href="attendance_reports_sections.php" class="btn btn-sm btn-outline">View All</a>
+            <a href="<?php echo $reportsUrl; ?>" class="btn btn-sm btn-outline">View All</a>
         </div>
         <div class="dash-card-body-flush">
             <?php if (!empty($recentAttendance)): ?>
@@ -318,7 +326,7 @@ include 'includes/header_modern.php';
                             </div>
                             <div class="dash-activity-info">
                                 <div class="dash-activity-name"><?php echo sanitizeOutput($record['first_name'] . ' ' . $record['last_name']); ?></div>
-                                <div class="dash-activity-meta"><?php echo sanitizeOutput($record['section']); ?> &bull; In: <?php echo date('g:i A', strtotime($record['time_in'])); ?><?php echo $record['time_out'] ? ' &bull; Out: ' . date('g:i A', strtotime($record['time_out'])) : ''; ?></div>
+                                <div class="dash-activity-meta"><?php echo sanitizeOutput($record['department']); ?> &bull; In: <?php echo date('g:i A', strtotime($record['time_in'])); ?><?php echo $record['time_out'] ? ' &bull; Out: ' . date('g:i A', strtotime($record['time_out'])) : ''; ?></div>
                             </div>
                         </div>
                         <span class="dash-badge dash-badge-<?php echo $record['status'] === 'incomplete' ? 'warning' : ($record['status'] === 'complete' ? 'success' : 'primary'); ?>">
@@ -342,7 +350,7 @@ include 'includes/header_modern.php';
                 <i class="fa-solid fa-triangle-exclamation" style="color: var(--amber-600);"></i>
                 Needs Attention
             </h3>
-            <a href="manual_attendance.php" class="btn btn-sm btn-outline">Fix</a>
+            <a href="manual_attendance.php<?php echo $modeQuery; ?>" class="btn btn-sm btn-outline">Fix</a>
         </div>
         <div class="dash-card-body-flush" style="max-height: 380px; overflow-y: auto;">
             <div id="needsAttentionList">
@@ -357,14 +365,14 @@ include 'includes/header_modern.php';
 
 <script>
 /**
- * SFHS Dashboard — Enhanced Charts & Interactions
+ * Employee Dashboard - Enhanced Charts & Interactions
  */
 (function() {
     'use strict';
     const data = window.dashboardData;
     if (!data) { console.error('Dashboard data not available'); return; }
 
-    let weeklyChart = null, sectionChart = null;
+    let weeklyChart = null, departmentChart = null;
 
     const tooltipStyle = {
         backgroundColor: 'rgba(255,255,255,0.94)',
@@ -385,7 +393,7 @@ include 'includes/header_modern.php';
         usePointStyle: true
     };
 
-    /* ── Weekly Attendance: stacked area chart ── */
+    /*  Weekly Attendance: stacked area chart  */
     function initWeeklyChart() {
         const ctx = document.getElementById('weeklyChart');
         if (!ctx) return;
@@ -491,20 +499,20 @@ include 'includes/header_modern.php';
         });
     }
 
-    /* ── Section Attendance: doughnut ── */
-    function initSectionChart() {
-        const ctx = document.getElementById('sectionChart');
+    /*  Department Attendance: doughnut  */
+    function initDepartmentChart() {
+        const ctx = document.getElementById('departmentChart');
         if (!ctx) return;
-        const sections = data.sectionAttendance || [];
-        const labels    = sections.map(s => s.section || 'Unknown');
-        const presData  = sections.map(s => parseInt(s.present) || 0);
-        const totData   = sections.map(s => parseInt(s.total)   || 0);
+        const departments = data.departmentAttendance || [];
+        const labels    = departments.map(d => d.department || 'Unknown');
+        const presData  = departments.map(d => parseInt(d.present) || 0);
+        const totData   = departments.map(d => parseInt(d.total)   || 0);
         const palette = [
             '#178a4a','#1ea85b','#27c36a','#34b868','#5cc885',
             '#8fd9ab','#64748b','#94a3b8','#0e6e3c','#b4f0d2'
         ];
 
-        sectionChart = new Chart(ctx, {
+        departmentChart = new Chart(ctx, {
             type: 'doughnut',
             data: {
                 labels,
@@ -593,7 +601,7 @@ include 'includes/header_modern.php';
                     <div class="dash-attention-icon"><i class="fa-solid fa-exclamation"></i></div>
                     <div class="dash-attention-info">
                         <h4>${escapeHtml(r.first_name)} ${escapeHtml(r.last_name)}</h4>
-                        <p>${escapeHtml(r.section)} &bull; ${dt} &bull; In: ${ti}</p>
+                        <p>${escapeHtml(r.department || 'N/A')} &bull; ${dt} &bull; In: ${ti}</p>
                     </div>
                 </div>
                 <span class="dash-badge dash-badge-error">${days === 1 ? '1 day ago' : days+' days ago'}</span>
@@ -619,7 +627,7 @@ include 'includes/header_modern.php';
 
     function init() {
         initWeeklyChart();
-        initSectionChart();
+        initDepartmentChart();
         populateRecentActivity();
         populateNeedsAttention();
         hideLoader();
@@ -634,3 +642,4 @@ include 'includes/header_modern.php';
 </script>
 
 <?php include 'includes/footer_modern.php'; ?>
+

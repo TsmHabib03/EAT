@@ -9,6 +9,22 @@ $pageIcon = 'pen-to-square';
 // Add external CSS - matching manage_sections design
 $additionalCSS = ['../css/manual-attendance-modern.css'];
 
+$attendanceMode = 'employee';
+$isEmployeeMode = true;
+
+$entitySingular = 'Employee';
+$entityPlural = 'Employees';
+$identifierLabel = 'Employee ID';
+$identifierDescription = 'Employee ID';
+$identifierRegex = '/^[A-Za-z0-9_-]{3,20}$/';
+$identifierPattern = '[A-Za-z0-9_-]{3,20}';
+$identifierPlaceholder = 'Enter employee ID (e.g., EMP-001)';
+$identifierHelpText = 'Enter the employee identifier assigned by HR';
+$bulkPlaceholder = "EMP-001&#10;EMP-002&#10;EMP-003";
+$groupLabel = 'Department';
+$groupActionLabel = 'department';
+$groupIcon = 'building';
+
 // Handle AJAX requests
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest') {
     header('Content-Type: application/json');
@@ -23,110 +39,139 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_SERVER['HTTP_X_REQUESTED_W
         
         switch ($action) {
             case 'mark_attendance':
-                $lrn = trim($_POST['lrn'] ?? '');
+                $identifier = trim($_POST['employee_id'] ?? '');
                 $date = trim($_POST['date'] ?? '');
                 $time = trim($_POST['time'] ?? '');
                 $action_type = $_POST['action_type'] ?? 'time_in';
                 
-                if (empty($lrn) || empty($date) || empty($time)) {
+                if (empty($identifier) || empty($date) || empty($time)) {
                     throw new Exception('All fields are required.');
                 }
                 
-                if (!preg_match('/^\d{11,13}$/', $lrn)) {
-                    throw new Exception('Invalid LRN format. Must be 11-13 digits.');
+                if (!preg_match($identifierRegex, $identifier)) {
+                    throw new Exception('Invalid ' . $identifierDescription . ' format.');
                 }
-                
-                // Check if student exists
-                $student_stmt = $pdo->prepare("SELECT lrn, first_name, last_name, class as section FROM students WHERE lrn = ?");
-                $student_stmt->execute([$lrn]);
-                $student = $student_stmt->fetch(PDO::FETCH_ASSOC);
-                
-                if (!$student) {
-                    throw new Exception('Student with this LRN was not found.');
+
+                $employee_stmt = $pdo->prepare("SELECT employee_id, first_name, last_name, department_code, shift_code FROM employees WHERE employee_id = ? AND is_active = 1");
+                $employee_stmt->execute([$identifier]);
+                $employee = $employee_stmt->fetch(PDO::FETCH_ASSOC);
+
+                if (!$employee) {
+                    throw new Exception('Employee with this ID was not found.');
                 }
-                
-                $student_name = $student['first_name'] . ' ' . $student['last_name'];
-                
+
+                $employee_name = $employee['first_name'] . ' ' . $employee['last_name'];
+
                 if ($action_type === 'time_in') {
                     $stmt = $pdo->prepare(
-                        "INSERT INTO attendance (lrn, date, time_in, section, status) 
-                         VALUES (?, ?, ?, ?, 'time_in')
-                         ON DUPLICATE KEY UPDATE 
-                         time_in = VALUES(time_in), status = 'time_in', updated_at = NOW()"
+                        "INSERT INTO employee_attendance (employee_id, date, time_in, shift_code, status, source)
+                         VALUES (?, ?, ?, ?, 'clock_in', 'manual')
+                         ON DUPLICATE KEY UPDATE
+                         time_in = VALUES(time_in),
+                         shift_code = VALUES(shift_code),
+                         status = IF(time_out IS NULL, 'clock_in', 'clock_out'),
+                         updated_at = CURRENT_TIMESTAMP"
                     );
-                    $result = $stmt->execute([$lrn, $date, $time, $student['section']]);
-                    
+                    $result = $stmt->execute([$identifier, $date, $time, $employee['shift_code']]);
+
                     if ($result) {
                         $response = [
                             'success' => true,
-                            'message' => "Time In marked for {$student_name} at " . date('h:i A', strtotime($time)),
-                            'student_name' => $student_name,
+                            'message' => "Clock In marked for {$employee_name} at " . date('h:i A', strtotime($time)),
+                            'employee_name' => $employee_name,
+                            'employee_id' => $identifier,
                             'time' => date('h:i A', strtotime($time))
                         ];
-                        logAdminActivity('MANUAL_ATTENDANCE', "Marked time_in for LRN: $lrn on $date at $time");
+                        logAdminActivity('MANUAL_ATTENDANCE', "Marked clock_in for Employee ID: $identifier on $date at $time");
                     }
                 } else {
                     $stmt = $pdo->prepare(
-                        "UPDATE attendance SET time_out = ?, status = 'time_out', updated_at = NOW() 
-                         WHERE lrn = ? AND date = ? AND time_in IS NOT NULL"
+                        "UPDATE employee_attendance
+                         SET time_out = ?, status = 'clock_out', updated_at = CURRENT_TIMESTAMP
+                         WHERE employee_id = ? AND date = ? AND time_in IS NOT NULL AND time_out IS NULL"
                     );
-                    $stmt->execute([$time, $lrn, $date]);
-                    
+                    $stmt->execute([$time, $identifier, $date]);
+
                     if ($stmt->rowCount() > 0) {
                         $response = [
                             'success' => true,
-                            'message' => "Time Out marked for {$student_name} at " . date('h:i A', strtotime($time)),
-                            'student_name' => $student_name,
+                            'message' => "Clock Out marked for {$employee_name} at " . date('h:i A', strtotime($time)),
+                            'employee_name' => $employee_name,
+                            'employee_id' => $identifier,
                             'time' => date('h:i A', strtotime($time))
                         ];
-                        logAdminActivity('MANUAL_ATTENDANCE', "Marked time_out for LRN: $lrn on $date at $time");
+                        logAdminActivity('MANUAL_ATTENDANCE', "Marked clock_out for Employee ID: $identifier on $date at $time");
                     } else {
-                        throw new Exception("No 'Time In' record found for this student on the selected date. Cannot mark Time Out.");
+                        throw new Exception("No 'Clock In' record found for this employee on the selected date. Cannot mark Clock Out.");
                     }
                 }
                 break;
                 
             case 'bulk_mark':
-                $lrns = trim($_POST['bulk_lrns'] ?? '');
+                $identifiersRaw = trim($_POST['bulk_employee_ids'] ?? '');
                 $date = trim($_POST['bulk_date'] ?? '');
                 $time = trim($_POST['bulk_time'] ?? '');
+                $bulk_action_type = $_POST['bulk_action_type'] ?? 'time_in';
                 
-                if (empty($lrns) || empty($date) || empty($time)) {
+                if (!in_array($bulk_action_type, ['time_in', 'time_out'], true)) {
+                    $bulk_action_type = 'time_in';
+                }
+                
+                if (empty($identifiersRaw) || empty($date) || empty($time)) {
                     throw new Exception('All fields are required for bulk attendance.');
                 }
                 
-                $lrnList = array_filter(array_map('trim', explode("\n", $lrns)));
+                $identifierList = array_filter(array_map('trim', explode("\n", $identifiersRaw)));
                 $successCount = 0;
                 $errorCount = 0;
                 $errors = [];
                 
-                foreach ($lrnList as $lrn) {
-                    if (!preg_match('/^\d{11,13}$/', $lrn)) {
-                        $errors[] = "Invalid LRN: $lrn";
+                foreach ($identifierList as $identifier) {
+                    if (!preg_match($identifierRegex, $identifier)) {
+                        $errors[] = "Invalid {$identifierDescription}: $identifier";
                         $errorCount++;
                         continue;
                     }
                     
                     try {
-                        $student_stmt = $pdo->prepare("SELECT lrn, first_name, last_name, class as section FROM students WHERE lrn = ?");
-                        $student_stmt->execute([$lrn]);
-                        $student = $student_stmt->fetch(PDO::FETCH_ASSOC);
-                        
-                        if ($student) {
-                            $stmt = $pdo->prepare(
-                                "INSERT INTO attendance (lrn, date, time_in, section, status) 
-                                 VALUES (?, ?, ?, ?, 'time_in')
-                                 ON DUPLICATE KEY UPDATE 
-                                 time_in = VALUES(time_in), status = 'time_in', updated_at = NOW()"
-                            );
-                            $stmt->execute([$lrn, $date, $time, $student['section']]);
-                            $successCount++;
+                        $employee_stmt = $pdo->prepare("SELECT employee_id, shift_code FROM employees WHERE employee_id = ? AND is_active = 1");
+                        $employee_stmt->execute([$identifier]);
+                        $employee = $employee_stmt->fetch(PDO::FETCH_ASSOC);
+
+                        if ($employee) {
+                            if ($bulk_action_type === 'time_in') {
+                                $stmt = $pdo->prepare(
+                                    "INSERT INTO employee_attendance (employee_id, date, time_in, shift_code, status, source)
+                                     VALUES (?, ?, ?, ?, 'clock_in', 'manual')
+                                     ON DUPLICATE KEY UPDATE
+                                     time_in = VALUES(time_in),
+                                     shift_code = VALUES(shift_code),
+                                     status = IF(time_out IS NULL, 'clock_in', 'clock_out'),
+                                     updated_at = CURRENT_TIMESTAMP"
+                                );
+                                $stmt->execute([$identifier, $date, $time, $employee['shift_code']]);
+                                $successCount++;
+                            } else {
+                                $stmt = $pdo->prepare(
+                                    "UPDATE employee_attendance
+                                     SET time_out = ?, status = 'clock_out', updated_at = CURRENT_TIMESTAMP
+                                     WHERE employee_id = ? AND date = ? AND time_in IS NOT NULL AND time_out IS NULL"
+                                );
+                                $stmt->execute([$time, $identifier, $date]);
+
+                                if ($stmt->rowCount() > 0) {
+                                    $successCount++;
+                                } else {
+                                    $errors[] = "No Clock In found for: $identifier";
+                                    $errorCount++;
+                                }
+                            }
                         } else {
-                            $errors[] = "Not found: $lrn";
+                            $errors[] = "Not found: $identifier";
                             $errorCount++;
                         }
                     } catch (Exception $e) {
-                        $errors[] = "Error: $lrn";
+                        $errors[] = "Error: $identifier";
                         $errorCount++;
                     }
                 }
@@ -139,7 +184,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_SERVER['HTTP_X_REQUESTED_W
                     'errors' => array_slice($errors, 0, 5)
                 ];
                 
-                logAdminActivity('BULK_ATTENDANCE', "Bulk marked attendance: $successCount successful, $errorCount errors");
+                $bulkActionLabel = $bulk_action_type === 'time_in' ? 'time_in' : 'time_out';
+                logAdminActivity('BULK_ATTENDANCE', "Bulk marked {$bulkActionLabel}: $successCount successful, $errorCount errors ({$attendanceMode} mode)");
                 break;
                 
             default:
@@ -162,43 +208,40 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_SERVER['HTTP_X_REQUESTED_W
 $today = date('Y-m-d');
 $currentTime = date('H:i');
 
-// Get students for quick selection
+// Get records for quick selection
 try {
-    $stmt = $pdo->prepare("
-        SELECT lrn, first_name, last_name, class 
-        FROM students 
-        ORDER BY class, last_name, first_name
-    ");
+    $stmt = $pdo->prepare(
+        "SELECT employee_id, first_name, last_name, department_code
+         FROM employees
+         WHERE is_active = 1
+         ORDER BY department_code, last_name, first_name"
+    );
     $stmt->execute();
-    $students = $stmt->fetchAll(PDO::FETCH_ASSOC);
-    
-    // Get current day's schedule for time suggestions
-    $currentDay = date('l'); // Full day name (Monday, Tuesday, etc.)
-    $stmt = $pdo->prepare("
-        SELECT DISTINCT start_time, end_time, subject, class, period_number
-        FROM schedule 
-        WHERE day_of_week = ? 
-        ORDER BY start_time
-    ");
-    $stmt->execute([$currentDay]);
-    $todaysSchedule = $stmt->fetchAll(PDO::FETCH_ASSOC);
-    
-    // Get recent attendance for reference
-    $stmt = $pdo->prepare("
-        SELECT a.lrn, s.first_name, s.last_name, s.class, a.subject, a.status, a.time, a.date,
-               a.created_at
-        FROM attendance a 
-        JOIN students s ON a.lrn = s.lrn 
-        WHERE a.date >= DATE_SUB(CURDATE(), INTERVAL 7 DAYS)
-        ORDER BY a.created_at DESC 
-        LIMIT 20
-    ");
+    $employees = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    $stmt = $pdo->prepare(
+        "SELECT ea.employee_id,
+                e.first_name,
+                e.last_name,
+                e.department_code,
+                ea.status,
+                COALESCE(ea.time_out, ea.time_in) AS time,
+                ea.date,
+                ea.updated_at AS created_at
+         FROM employee_attendance ea
+         JOIN employees e ON e.employee_id = ea.employee_id
+         WHERE ea.date >= DATE_SUB(CURDATE(), INTERVAL 7 DAYS)
+         ORDER BY ea.updated_at DESC
+         LIMIT 20"
+    );
     $stmt->execute();
     $recentAttendance = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    $todaysSchedule = [];
     
 } catch (Exception $e) {
     error_log("Manual attendance query error: " . $e->getMessage());
-    $students = [];
+    $employees = [];
     $todaysSchedule = [];
     $recentAttendance = [];
 }
@@ -208,7 +251,7 @@ $breadcrumb = [
     ['label' => 'Dashboard', 'icon' => 'house', 'url' => 'dashboard.php'],
     ['label' => 'Manual Attendance', 'icon' => 'pen-to-square', 'url' => 'manual_attendance.php']
 ];
-$pageDescription = 'Record student attendance entries manually';
+$pageDescription = 'Record ' . strtolower($entitySingular) . ' attendance entries manually';
 include 'includes/header_modern.php';
 ?>
 
@@ -222,7 +265,7 @@ include 'includes/header_modern.php';
     <div class="alert-content">
         <strong>Manual Attendance System</strong>
         <p style="margin: var(--space-1) 0 0; line-height: 1.6;">
-            Use this feature to mark Time In and Time Out for students who may have forgotten their QR codes or need retroactive attendance entries. The system now supports separate Time In and Time Out tracking similar to the main scanner.
+            Use this feature to mark Time In and Time Out for <?php echo strtolower($entityPlural); ?> who may have forgotten their QR codes or need retroactive attendance entries. The system supports separate Time In and Time Out tracking similar to the main scanner.
         </p>
     </div>
 </div>
@@ -256,7 +299,7 @@ include 'includes/header_modern.php';
                         <h3 class="card-title-modern">QR Code Scanner</h3>
                         <p class="card-subtitle-modern">
                             <i class="fa-solid fa-camera"></i>
-                            <span>Scan student QR codes for instant attendance</span>
+                            <span>Scan <?php echo strtolower($entitySingular); ?> QR codes for instant attendance</span>
                         </p>
                     </div>
                 </div>
@@ -351,7 +394,7 @@ include 'includes/header_modern.php';
                         <h3 class="card-title-modern">Single Entry</h3>
                         <p class="card-subtitle-modern">
                             <i class="fa-solid fa-pen-to-square"></i>
-                            <span>Mark time in/out for individual students</span>
+                            <span>Mark time in/out for individual <?php echo strtolower($entityPlural); ?></span>
                         </p>
                     </div>
                 </div>
@@ -381,19 +424,19 @@ include 'includes/header_modern.php';
                     <input type="hidden" name="action_type" id="action_type" value="time_in">
                     
                     <div class="form-group-modern">
-                        <label for="lrn" class="form-label-modern">
+                        <label for="employee_id" class="form-label-modern">
                             <i class="fa-solid fa-id-card"></i>
-                            <span>Student LRN</span>
+                            <span><?php echo htmlspecialchars($identifierLabel); ?></span>
                             <span class="required">*</span>
                         </label>
                         <input type="text" 
-                               id="lrn" 
-                               name="lrn" 
+                               id="employee_id" 
+                               name="employee_id" 
                                class="form-input-modern" 
-                               placeholder="Enter 11-13 digit LRN" 
-                               pattern="[0-9]{11,13}"
+                               placeholder="<?php echo htmlspecialchars($identifierPlaceholder); ?>"
+                               pattern="<?php echo htmlspecialchars($identifierPattern); ?>"
                                required>
-                        <span class="form-hint">Enter the student's Learner Reference Number</span>
+                        <span class="form-hint"><?php echo htmlspecialchars($identifierHelpText); ?></span>
                     </div>
                     
                     <div class="form-grid-modern">
@@ -441,43 +484,43 @@ include 'includes/header_modern.php';
                         <i class="fa-solid fa-user-group"></i>
                     </div>
                     <div>
-                        <h3 class="card-title-modern">Quick Select Student</h3>
+                        <h3 class="card-title-modern">Quick Select <?php echo htmlspecialchars($entitySingular); ?></h3>
                         <p class="card-subtitle-modern">
                             <i class="fa-solid fa-arrow-pointer"></i>
-                            <span>Click a student to auto-fill their LRN</span>
+                            <span>Click a <?php echo strtolower($entitySingular); ?> to auto-fill their <?php echo htmlspecialchars($identifierDescription); ?></span>
                         </p>
                     </div>
                 </div>
             </div>
             <div class="card-body-modern">
                 <div class="students-list-modern">
-                    <?php if (!empty($students)): ?>
-                        <?php foreach ($students as $student): ?>
+                    <?php if (!empty($employees)): ?>
+                        <?php foreach ($employees as $employee): ?>
                             <div class="student-item-modern" 
-                                 data-action="select-student" 
-                                 data-lrn="<?php echo htmlspecialchars($student['lrn']); ?>">
+                                 data-action="select-employee" 
+                                 data-employee-id="<?php echo htmlspecialchars($employee['employee_id']); ?>">
                                 <div class="student-info-modern">
                                     <div class="student-avatar">
-                                        <?php echo strtoupper(substr($student['first_name'], 0, 1)); ?>
+                                        <?php echo strtoupper(substr($employee['first_name'], 0, 1)); ?>
                                     </div>
                                     <div>
                                         <p class="student-name">
-                                            <?php echo htmlspecialchars($student['first_name'] . ' ' . $student['last_name']); ?>
+                                            <?php echo htmlspecialchars($employee['first_name'] . ' ' . $employee['last_name']); ?>
                                         </p>
                                         <p class="student-class">
-                                            <i class="fa-solid fa-graduation-cap"></i>
-                                            <?php echo htmlspecialchars($student['class']); ?>
+                                            <i class="fa-solid fa-<?php echo $groupIcon; ?>"></i>
+                                            <?php echo htmlspecialchars($employee['department_code']); ?>
                                         </p>
                                     </div>
                                 </div>
-                                <span class="lrn-badge-modern"><?php echo htmlspecialchars($student['lrn']); ?></span>
+                                <span class="lrn-badge-modern"><?php echo htmlspecialchars($employee['employee_id']); ?></span>
                             </div>
                         <?php endforeach; ?>
                     <?php else: ?>
                         <div class="empty-state">
                             <i class="fa-solid fa-user-slash"></i>
-                            <h3>No students found</h3>
-                            <p>Add students to see them here</p>
+                            <h3>No <?php echo strtolower($entityPlural); ?> found</h3>
+                            <p>Add <?php echo strtolower($entityPlural); ?> to see them here</p>
                         </div>
                     <?php endif; ?>
                 </div>
@@ -499,7 +542,7 @@ include 'includes/header_modern.php';
                         <h3 class="card-title-modern">Bulk Entry</h3>
                         <p class="card-subtitle-modern">
                             <i class="fa-solid fa-list"></i>
-                            <span>Mark time in/out for multiple students at once</span>
+                            <span>Mark time in/out for multiple <?php echo strtolower($entityPlural); ?> at once</span>
                         </p>
                     </div>
                 </div>
@@ -529,19 +572,19 @@ include 'includes/header_modern.php';
                     <input type="hidden" name="bulk_action_type" id="bulk_action_type" value="time_in">
                     
                     <div class="form-group-modern">
-                        <label for="bulk_lrns" class="form-label-modern">
+                        <label for="bulk_employee_ids" class="form-label-modern">
                             <i class="fa-solid fa-list-ol"></i>
-                            <span>Student LRNs (One per line)</span>
+                            <span><?php echo htmlspecialchars($identifierDescription); ?> values (One per line)</span>
                             <span class="required">*</span>
                         </label>
                         <textarea 
-                            id="bulk_lrns" 
-                            name="bulk_lrns" 
+                            id="bulk_employee_ids" 
+                            name="bulk_employee_ids" 
                             class="form-textarea-modern" 
-                            placeholder="123456789012&#10;234567890123&#10;345678901234"
+                            placeholder="<?php echo $bulkPlaceholder; ?>"
                             rows="8"
                             required></textarea>
-                        <span class="form-hint">Enter one LRN per line (11-13 digits each)</span>
+                        <span class="form-hint">Enter one <?php echo htmlspecialchars($identifierDescription); ?> per line</span>
                     </div>
                     
                     <div class="form-grid-modern">
@@ -589,52 +632,52 @@ include 'includes/header_modern.php';
                         <i class="fa-solid fa-copy"></i>
                     </div>
                     <div>
-                        <h3 class="card-title-modern">Export by Class</h3>
+                        <h3 class="card-title-modern">Export by <?php echo htmlspecialchars($groupLabel); ?></h3>
                         <p class="card-subtitle-modern">
                             <i class="fa-solid fa-download"></i>
-                            <span>Copy LRNs by class for bulk operations</span>
+                            <span>Copy <?php echo htmlspecialchars($identifierDescription); ?> values by <?php echo strtolower($groupLabel); ?> for bulk operations</span>
                         </p>
                     </div>
                 </div>
             </div>
             <div class="card-body-modern">
                 <?php
-                $studentsByClass = [];
-                foreach ($students as $student) {
-                    $className = $student['class'] ?? 'Unassigned';
-                    if (!isset($studentsByClass[$className])) {
-                        $studentsByClass[$className] = [];
+                $employeesByDepartment = [];
+                foreach ($employees as $employee) {
+                    $departmentCode = $employee['department_code'] ?? 'Unassigned';
+                    if (!isset($employeesByDepartment[$departmentCode])) {
+                        $employeesByDepartment[$departmentCode] = [];
                     }
-                    $studentsByClass[$className][] = $student;
+                    $employeesByDepartment[$departmentCode][] = $employee;
                 }
-                ksort($studentsByClass);
+                ksort($employeesByDepartment);
                 ?>
                 
                 <div class="class-export-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: var(--space-4);">
-                    <?php foreach ($studentsByClass as $className => $classStudents): ?>
+                    <?php foreach ($employeesByDepartment as $departmentCode => $departmentEmployees): ?>
                         <div class="class-export-card" style="padding: var(--space-4); background: var(--gray-50); border: 2px solid var(--gray-200); border-radius: var(--radius-lg);">
                             <div class="class-export-header" style="display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--space-3);">
                                 <h4 class="class-export-title" style="display: flex; align-items: center; gap: var(--space-2); font-size: 0.9375rem; font-weight: 600; color: var(--gray-800); margin: 0;">
-                                    <i class="fa-solid fa-graduation-cap"></i>
-                                    <?php echo htmlspecialchars($className); ?>
+                                    <i class="fa-solid fa-<?php echo $groupIcon; ?>"></i>
+                                    <?php echo htmlspecialchars($departmentCode); ?>
                                 </h4>
                                 <span class="student-count-badge" style="padding: var(--space-1) var(--space-2); background: var(--primary-100); color: var(--primary-700); border-radius: var(--radius-md); font-size: 0.75rem; font-weight: 600;">
-                                    <?php echo count($classStudents); ?> students
+                                    <?php echo count($departmentEmployees); ?> <?php echo strtolower($entityPlural); ?>
                                 </span>
                             </div>
                             <textarea 
-                                id="class-<?php echo htmlspecialchars($className); ?>" 
+                                id="department-<?php echo htmlspecialchars($departmentCode); ?>" 
                                 class="form-textarea-modern" 
                                 readonly 
                                 rows="5"
-                                style="font-family: 'Courier New', monospace; font-size: 0.75rem;"><?php foreach ($classStudents as $student): ?><?php echo $student['lrn'] . "\n"; ?><?php endforeach; ?></textarea>
+                                style="font-family: 'Courier New', monospace; font-size: 0.75rem;"><?php foreach ($departmentEmployees as $employee): ?><?php echo $employee['employee_id'] . "\n"; ?><?php endforeach; ?></textarea>
                             <button 
                                 class="btn btn-primary" 
-                                data-action="copy-class-lrns" 
-                                data-class="<?php echo htmlspecialchars($className); ?>"
+                                data-action="copy-department-employee-ids" 
+                                data-department="<?php echo htmlspecialchars($departmentCode); ?>"
                                 style="width: 100%; margin-top: var(--space-3);">
                                 <i class="fa-solid fa-copy"></i>
-                                <span>Copy LRNs</span>
+                                <span>Copy <?php echo htmlspecialchars($identifierDescription); ?></span>
                             </button>
                         </div>
                     <?php endforeach; ?>
@@ -650,6 +693,15 @@ include 'includes/header_modern.php';
 <!-- JAVASCRIPT SECTION -->
 <script>
     /* ===== VARIABLES ===== */
+    const attendanceMode = 'employee';
+    const isEmployeeMode = true;
+    const scannerEndpoint = '../api/mark_employee_attendance.php';
+    const todayAttendanceEndpoint = '../api/get_today_employee_attendance.php';
+    const identityFieldName = 'employee_id';
+    const identityPattern = /^[A-Za-z0-9_-]{3,20}$/;
+    const identityLabel = 'Employee ID';
+    const entityLabel = 'Employee';
+
     let codeReader = null;
     let selectedDeviceId = null;
     let isScanning = false;
@@ -721,7 +773,7 @@ include 'includes/header_modern.php';
             // Update hidden input and button text
             const actionType = this.dataset.actionType;
             document.getElementById('action_type').value = actionType;
-            
+
             const submitBtnText = document.getElementById('submit-btn-text');
             if (actionType === 'time_in') {
                 submitBtnText.innerHTML = '<i class="fa-solid fa-right-to-bracket"></i> Mark Time In';
@@ -730,54 +782,50 @@ include 'includes/header_modern.php';
             }
         });
     });
-    
+
     /* ===== ACTION TYPE SELECTION (Bulk Entry) ===== */
     document.querySelectorAll('.action-type-btn[data-bulk-action-type]').forEach(btn => {
         btn.addEventListener('click', function() {
-            // Remove active from all
+            // Remove active from all bulk buttons
             document.querySelectorAll('.action-type-btn[data-bulk-action-type]').forEach(b => b.classList.remove('active'));
-            
+
             // Add active to clicked
             this.classList.add('active');
-            
+
             // Update hidden input and button text
             const actionType = this.dataset.bulkActionType;
             document.getElementById('bulk_action_type').value = actionType;
-            
+
             const submitBtnText = document.getElementById('bulk-submit-btn-text');
             if (actionType === 'time_in') {
-                submitBtnText.textContent = 'Mark Bulk Time In';
+                submitBtnText.innerHTML = '<i class="fa-solid fa-right-to-bracket"></i> Mark Bulk Time In';
             } else {
-                submitBtnText.textContent = 'Mark Bulk Time Out';
+                submitBtnText.innerHTML = '<i class="fa-solid fa-right-from-bracket"></i> Mark Bulk Time Out';
             }
         });
     });
     
     /* ===== QR SCANNER FUNCTIONS ===== */
     function updateScannerStats() {
-        const statsContainer = document.getElementById('scanner-stats');
-        if (!statsContainer) return;
-        
-        if (isScanning) {
-            statsContainer.style.display = 'flex';
-        }
-        
-        document.getElementById('scan-count').textContent = scanCount;
-        document.getElementById('success-count').textContent = successCount;
-        
-        if (processingTimes.length > 0) {
-            const avgTime = Math.round(processingTimes.reduce((a, b) => a + b, 0) / processingTimes.length);
-            document.getElementById('avg-time').textContent = avgTime + 'ms';
-        }
+        const scannerStats = document.getElementById('scanner-stats');
+        const avgTime = processingTimes.length
+            ? Math.round(processingTimes.reduce((total, value) => total + value, 0) / processingTimes.length)
+            : 0;
+
+        document.getElementById('scan-count').textContent = String(scanCount);
+        document.getElementById('success-count').textContent = String(successCount);
+        document.getElementById('avg-time').textContent = avgTime + 'ms';
+
+        scannerStats.style.display = scanCount > 0 ? 'grid' : 'none';
     }
-    
+
     function resetScannerStats() {
         scanCount = 0;
         successCount = 0;
         processingTimes = [];
         updateScannerStats();
     }
-    
+
     function updateScannerStatus(message, type = '') {
         const statusElement = document.getElementById('scanner-status');
         const icons = {
@@ -793,7 +841,7 @@ include 'includes/header_modern.php';
     
     async function initializeQRScanner() {
         try {
-            console.log('🚀 Initializing QR Scanner...');
+            console.log(' Initializing QR Scanner...');
             
             const hints = new Map();
             const formats = [ZXing.BarcodeFormat.QR_CODE];
@@ -810,7 +858,7 @@ include 'includes/header_modern.php';
                 updateScannerStatus('No camera devices found', 'error');
             }
         } catch (error) {
-            console.error('❌ Error initializing scanner:', error);
+            console.error(' Error initializing scanner:', error);
             if (error.name === 'NotAllowedError') {
                 updateScannerStatus('Camera access denied. Please allow camera permissions.', 'error');
             } else if (error.name === 'NotFoundError') {
@@ -834,9 +882,9 @@ include 'includes/header_modern.php';
             document.getElementById('stop-scan-btn').style.display = 'inline-flex';
             document.querySelector('.scanner-overlay').style.display = 'block';
             
-            updateScannerStatus('🚀 Starting scanner...', 'scanning');
+            updateScannerStatus(' Starting scanner...', 'scanning');
             updateScannerStats();
-            console.log('▶️ Scanner starting...');
+            console.log(' Scanner starting...');
 
             let video = document.querySelector('#qr-reader video');
             if (!video) {
@@ -896,11 +944,11 @@ include 'includes/header_modern.php';
                 }
             });
 
-            console.log('✅ Scanner active!');
-            updateScannerStatus('⚡ Camera active. Scan QR codes now!', 'scanning');
+            console.log(' Scanner active!');
+            updateScannerStatus(' Camera active. Scan QR codes now!', 'scanning');
 
         } catch (error) {
-            console.error('❌ Error starting scanner:', error);
+            console.error(' Error starting scanner:', error);
             if (error.name === 'NotAllowedError') {
                 updateScannerStatus('Camera access denied. Please allow camera permissions.', 'error');
             } else if (error.name === 'NotFoundError') {
@@ -918,7 +966,7 @@ include 'includes/header_modern.php';
                 codeReader.reset();
             }
         } catch (error) {
-            console.error('❌ Error stopping scanner:', error);
+            console.error(' Error stopping scanner:', error);
         }
         
         isScanning = false;
@@ -927,8 +975,8 @@ include 'includes/header_modern.php';
         document.querySelector('.scanner-overlay').style.display = 'none';
         
         const sessionSummary = scanCount > 0 ? ` (${scanCount} scan${scanCount !== 1 ? 's' : ''}, ${successCount} successful)` : '';
-        updateScannerStatus('⏸️ Scanner stopped. Click "Start Scanner" to begin scanning.' + sessionSummary, '');
-        console.log(`📊 Session stats: ${scanCount} total scans, ${successCount} successful`);
+        updateScannerStatus(' Scanner stopped. Click "Start Scanner" to begin scanning.' + sessionSummary, '');
+        console.log(` Session stats: ${scanCount} total scans, ${successCount} successful`);
         
         if (scanCount > 0) {
             showNotification(`Session complete: ${successCount}/${scanCount} successful scans`, 'info');
@@ -937,26 +985,26 @@ include 'includes/header_modern.php';
 
     async function handleQRCodeScan(qrData) {
         if (isProcessing) {
-            console.log('⚠️ Already processing a scan, ignoring...');
+            console.log(' Already processing a scan, ignoring...');
             return;
         }
         
         isProcessing = true;
         scanCount++;
-        console.log(`🎯 QR Code scanned #${scanCount}:`, qrData.substring(0, 20) + '...');
+        console.log(` QR Code scanned #${scanCount}:`, qrData.substring(0, 20) + '...');
         
         showQuickFeedback();
         updateScannerStatus(`Processing scan #${scanCount}...`, 'scanning');
 
         try {
-            const lrn = qrData.split('|')[0].trim();
-            console.log('📤 Sending attendance for LRN:', lrn);
+            const identityValue = qrData.split('|')[0].trim();
+            console.log(' Sending attendance for ' + identityLabel + ':', identityValue);
 
             const startTime = Date.now();
-            const response = await fetch('../api/mark_attendance.php', {
+            const response = await fetch(scannerEndpoint, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                body: `lrn=${encodeURIComponent(lrn)}`
+                body: `${identityFieldName}=${encodeURIComponent(identityValue)}&source=qr`
             });
 
             if (!response.ok) {
@@ -966,8 +1014,8 @@ include 'includes/header_modern.php';
             const data = await response.json();
             const processingTime = Date.now() - startTime;
             
-            console.log('📥 Response:', data);
-            console.log(`⏱️ Processing completed in ${processingTime}ms`);
+            console.log(' Response:', data);
+            console.log(` Processing completed in ${processingTime}ms`);
             
             processingTimes.push(processingTime);
             if (processingTimes.length > 10) {
@@ -977,18 +1025,18 @@ include 'includes/header_modern.php';
             if (data.success) {
                 successCount++;
                 showScanResult(true, data);
-                updateScannerStatus(`✓ Success! Scan #${scanCount}: ${data.student_name || 'Student'}`, 'success');
+                updateScannerStatus(` Success! Scan #${scanCount}: ${data.employee_name || entityLabel}`, 'success');
                 playSuccessSound();
                 loadTodayAttendance();
             } else {
                 showScanResult(false, data);
-                updateScannerStatus(`✗ Error on scan #${scanCount}: ${data.message}`, 'error');
+                updateScannerStatus(` Error on scan #${scanCount}: ${data.message}`, 'error');
             }
             
             updateScannerStats();
 
         } catch (error) {
-            console.error('❌ Error processing QR code:', error);
+            console.error(' Error processing QR code:', error);
             
             let errorMessage = 'Network error. Please check your connection and try again.';
             if (error.message.includes('HTTP')) {
@@ -996,7 +1044,7 @@ include 'includes/header_modern.php';
             }
             
             showScanResult(false, { message: errorMessage });
-            updateScannerStatus(`✗ Error on scan #${scanCount}: ${errorMessage}`, 'error');
+            updateScannerStatus(` Error on scan #${scanCount}: ${errorMessage}`, 'error');
         } finally {
             setTimeout(() => {
                 isProcessing = false;
@@ -1032,14 +1080,20 @@ include 'includes/header_modern.php';
         container.style.animation = 'fadeIn 0.3s ease';
         
         if (success) {
+            const displayName = result.employee_name || entityLabel;
+            const displayIdentity = result.employee_id || 'N/A';
+            const displayStatus = (result.action || result.status || 'recorded').toString().replace(/_/g, ' ');
+            const statusClass = (result.action || result.status || 'recorded').toString().replace(/[^a-zA-Z0-9_-]/g, '_');
+            const displayTime = result.time || result.time_in || result.time_out || new Date().toLocaleTimeString();
+
             resultDiv.className = 'scan-result scan-result-success';
             resultDiv.innerHTML = `
                 <h4><i class="fa-solid fa-circle-check"></i> Attendance Marked Successfully</h4>
                 <div class="scan-result-details">
-                    <p><strong>Student:</strong> <span>${result.student_name || 'Unknown'}</span></p>
-                    <p><strong>LRN:</strong> <span>${result.lrn || 'N/A'}</span></p>
-                    <p><strong>Status:</strong> <span class="status-badge status-${result.status}">${result.status}</span></p>
-                    <p><strong>Time:</strong> <span>${result.time || new Date().toLocaleTimeString()}</span></p>
+                    <p><strong>${entityLabel}:</strong> <span>${displayName}</span></p>
+                    <p><strong>${identityLabel}:</strong> <span>${displayIdentity}</span></p>
+                    <p><strong>Status:</strong> <span class="status-badge status-${statusClass}">${displayStatus}</span></p>
+                    <p><strong>Time:</strong> <span>${displayTime}</span></p>
                 </div>
             `;
         } else {
@@ -1060,7 +1114,7 @@ include 'includes/header_modern.php';
 
     async function loadTodayAttendance() {
         try {
-            const response = await fetch('../api/get_today_attendance.php');
+            const response = await fetch(todayAttendanceEndpoint);
             const result = await response.json();
             
             const listContainer = document.getElementById('today-attendance-list');
@@ -1068,16 +1122,19 @@ include 'includes/header_modern.php';
             if (result.success && result.attendance && result.attendance.length > 0) {
                 let html = '';
                 result.attendance.forEach((record, index) => {
+                    const recordGroup = record.department_code || 'N/A';
+                    const recordTime = record.time || record.time_out || record.time_in || 'N/A';
+                    const groupIcon = isEmployeeMode ? 'building' : 'graduation-cap';
                     html += `
                         <div class="attendance-item" style="animation-delay: ${index * 0.05}s;">
                             <div class="attendance-avatar">
-                                ${record.first_name ? record.first_name.charAt(0).toUpperCase() : 'S'}
+                                ${record.first_name ? record.first_name.charAt(0).toUpperCase() : entityLabel.charAt(0)}
                             </div>
                             <div class="attendance-info">
                                 <p class="attendance-name">${record.first_name || ''} ${record.last_name || 'Unknown'}</p>
                                 <p class="attendance-details">
-                                    <i class="fa-solid fa-clock"></i> ${record.time || 'N/A'}
-                                    <i class="fa-solid fa-graduation-cap"></i> ${record.class || 'N/A'}
+                                    <i class="fa-solid fa-clock"></i> ${recordTime}
+                                    <i class="fa-solid fa-${groupIcon}"></i> ${recordGroup}
                                 </p>
                             </div>
                             <span class="status-badge status-${record.status}">${record.status}</span>
@@ -1113,23 +1170,23 @@ include 'includes/header_modern.php';
         
         const action = target.dataset.action;
         
-        if (action === 'select-student') {
-            const lrn = target.dataset.lrn;
-            document.getElementById('lrn').value = lrn;
-            document.getElementById('lrn').focus();
-            showNotification('LRN selected: ' + lrn, 'success');
+        if (action === 'select-employee') {
+            const employeeId = target.dataset.employeeId;
+            document.getElementById('employee_id').value = employeeId;
+            document.getElementById('employee_id').focus();
+            showNotification(identityLabel + ' selected: ' + employeeId, 'success');
             
             // Switch to single entry tab
             document.querySelector('[data-tab="single"]').click();
         }
-        else if (action === 'copy-class-lrns') {
-            const className = target.dataset.class;
-            const textarea = document.getElementById('class-' + className);
+        else if (action === 'copy-department-employee-ids') {
+            const departmentCode = target.dataset.department;
+            const textarea = document.getElementById('department-' + departmentCode);
             
             try {
                 await navigator.clipboard.writeText(textarea.value.trim());
-                document.getElementById('bulk_lrns').value = textarea.value.trim();
-                showNotification('LRNs copied for ' + className + '!', 'success');
+                document.getElementById('bulk_employee_ids').value = textarea.value.trim();
+                showNotification(identityLabel + ' values copied for ' + departmentCode + '!', 'success');
                 
                 // Switch to bulk tab
                 document.querySelector('[data-tab="bulk"]').click();
@@ -1137,8 +1194,8 @@ include 'includes/header_modern.php';
                 // Fallback
                 textarea.select();
                 document.execCommand('copy');
-                document.getElementById('bulk_lrns').value = textarea.value.trim();
-                showNotification('LRNs copied for ' + className + '!', 'success');
+                document.getElementById('bulk_employee_ids').value = textarea.value.trim();
+                showNotification(identityLabel + ' values copied for ' + departmentCode + '!', 'success');
                 document.querySelector('[data-tab="bulk"]').click();
             }
         }
@@ -1158,7 +1215,7 @@ include 'includes/header_modern.php';
             try {
                 const formData = new FormData(this);
                 
-                const response = await fetch('manual_attendance.php', {
+                const response = await fetch('manual_attendance.php?mode=employee', {
                     method: 'POST',
                     headers: { 'X-Requested-With': 'XMLHttpRequest' },
                     body: formData
@@ -1171,7 +1228,7 @@ include 'includes/header_modern.php';
                     this.reset();
                     document.getElementById('date').value = '<?php echo $today; ?>';
                     document.getElementById('time').value = '<?php echo $currentTime; ?>';
-                    document.getElementById('lrn').focus();
+                    document.getElementById('employee_id').focus();
                 } else {
                     showNotification(data.message, 'error');
                 }
@@ -1199,7 +1256,7 @@ include 'includes/header_modern.php';
             try {
                 const formData = new FormData(this);
                 
-                const response = await fetch('manual_attendance.php', {
+                const response = await fetch('manual_attendance.php?mode=employee', {
                     method: 'POST',
                     headers: { 'X-Requested-With': 'XMLHttpRequest' },
                     body: formData
@@ -1240,18 +1297,20 @@ include 'includes/header_modern.php';
         document.getElementById('start-scan-btn').addEventListener('click', startQRScanning);
         document.getElementById('stop-scan-btn').addEventListener('click', stopQRScanning);
         
-        const lrnField = document.getElementById('lrn');
-        if (lrnField) {
-            lrnField.addEventListener('keypress', function(e) {
-                if (e.key === 'Enter' && this.value.length >= 11) {
+        const employeeIdField = document.getElementById('employee_id');
+        if (employeeIdField) {
+            employeeIdField.addEventListener('keypress', function(e) {
+                const minLength = 3;
+                if (e.key === 'Enter' && this.value.length >= minLength && identityPattern.test(this.value.trim())) {
                     e.preventDefault();
                     document.getElementById('single-attendance-form').requestSubmit();
                 }
             });
         }
         
-        console.log('✅ Manual Attendance System initialized');
+        console.log(' Manual Attendance System initialized in ' + attendanceMode + ' mode');
     });
 </script>
 
 <?php include 'includes/footer_modern.php'; ?>
+

@@ -1,4 +1,4 @@
-# San Francisco High School — Copilot Instructions
+# Employee Attendance System - Copilot Instructions
 
 ## Architecture
 
@@ -11,14 +11,14 @@ XAMPP-hosted PHP 8+ / MySQL 8 attendance system with no framework — procedural
 - `includes/` — shared PHP (`database.php` Database class, `navigation.php`, `qrcode_helper.php`)
 - `config/` — `db_config.php` (DB creds + PDO), `email_config.php` (PHPMailer/Gmail SMTP)
 - `js/`, `css/` — frontend assets at project root
-- `database/attendeasev2.sql` — full schema with stored procedures and views
+- `database/employee_tracker.sql` — full schema with stored procedures and views
 
 ## Database
 
-**Key tables:** `students` (LRN as unique ID), `attendance` (unique on `lrn+date`), `sections`, `admin_users`, `admin_activity_log`.
-- `students.lrn` → `attendance.lrn` (CASCADE). Students link to sections via text `class`/`section` columns, not FK.
-- Stored procs: `MarkTimeIn()`, `MarkTimeOut()`, `GetStudentAttendance()`, `RegisterStudent()`.
-- Views: `v_daily_attendance_summary`, `v_student_roster`.
+**Key tables:** `employees` (employee_id as unique ID), `employee_attendance` (unique on `employee_id+date`), `departments`, `shifts`, `admin_users`, `attendance_corrections`.
+- `employees.employee_id` → `employee_attendance.employee_id` (CASCADE).
+- Stored procs: `MarkEmployeeClockIn()`, `MarkEmployeeClockOut()`, `GetEmployeeAttendance()`, `RegisterEmployee()`.
+- Views: `v_employee_daily_summary`, `v_employee_roster`.
 
 ## API Pattern
 
@@ -75,16 +75,16 @@ Two variable systems — both use CSS custom properties, no preprocessor:
 
 ## QR Code Flow
 
-- QR codes encode the student **LRN as plain text**.
+- QR codes encode the employee **employee_id as plain text**.
 - Server-side generation: `includes/qrcode_helper.php` calls `api.qrserver.com`, falls back to GD placeholder. Saved to `uploads/qrcodes/`.
 - Client-side rendering: `QRCode.toCanvas()` or `new QRCode()` depending on page.
-- Scanning: `scan_attendance.php` uses HTML5 camera → extracts LRN → POSTs to `api/mark_attendance.php`.
+- Scanning: `scan_attendance.php` uses HTML5 camera → extracts employee_id → POSTs to `api/mark_employee_attendance.php`.
 - Attendance logic: 1st scan/day = Time In, 2nd = Time Out, 3rd+ = rejected. Uses `SELECT ... FOR UPDATE` for concurrency.
 
 ## Naming Conventions
 
-- PHP/JS files: `snake_case` (e.g., `mark_attendance.php`, `view_students.js`)
-- CSS files: `kebab-case` (e.g., `manage-students.css`, `modern-design.css`)
+- PHP/JS files: `snake_case` (e.g., `mark_employee_attendance.php`, `view_employees.js`)
+- CSS files: `kebab-case` (e.g., `manage-employees.css`, `modern-design.css`)
 - DB columns: `snake_case`. PDO bindings: mix of named (`:param`) and positional (`?`) — prefer named for new code.
 
 ## Security Notes

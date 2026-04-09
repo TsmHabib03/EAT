@@ -1,12 +1,12 @@
-<?php
+﻿<?php
 require_once 'config.php';
 requireAdmin();
 
 $currentAdmin = getCurrentAdmin();
-$pageTitle = 'Manage Sections';
+$pageTitle = 'Manage Departments';
 $pageIcon = 'table-cells-large';
 
-// Add manage-sections CSS - New Modern Design with cache buster
+// Add departments CSS - New Modern Design with cache buster
 $additionalCSS = ['../css/manage-sections-modern.css?v=' . time()];
 
 // Initialize response array for AJAX
@@ -22,98 +22,92 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_SERVER['HTTP_X_REQUESTED_W
         $action = $_POST['action'] ?? '';
         
         if ($action === 'add') {
-            // Add new section
-            $section_name = trim($_POST['section_name'] ?? '');
-            $grade_level = trim($_POST['grade_level'] ?? '');
-            $adviser = trim($_POST['adviser'] ?? '');
-            $school_year = trim($_POST['school_year'] ?? '');
+            // Add new department
+            $department_code = trim($_POST['department_code'] ?? '');
             
-            if (empty($section_name)) {
-                throw new Exception('Section name is required');
+            if (empty($department_code)) {
+                throw new Exception('Department code is required');
             }
             
-            // Check if section already exists
-            $check_stmt = $pdo->prepare("SELECT id FROM sections WHERE section_name = ?");
-            $check_stmt->execute([$section_name]);
+            // Check if department already exists
+            $check_stmt = $pdo->prepare("SELECT id FROM departments WHERE department_code = ?");
+            $check_stmt->execute([$department_code]);
             if ($check_stmt->rowCount() > 0) {
-                throw new Exception('Section already exists');
+                throw new Exception('Department already exists');
             }
             
-            $stmt = $pdo->prepare("INSERT INTO sections (section_name, grade_level, adviser, school_year) VALUES (?, ?, ?, ?)");
-            $stmt->execute([$section_name, $grade_level, $adviser, $school_year]);
+            $stmt = $pdo->prepare("INSERT INTO departments (department_code, department_name, is_active) VALUES (?, ?, 1)");
+            $stmt->execute([$department_code, $department_code]);
             
-            logAdminActivity('ADD_SECTION', "Added section: $section_name");
+            logAdminActivity('ADD_DEPARTMENT', "Added department: $department_code");
             
-            $response = ['success' => true, 'message' => 'Section added successfully!'];
+            $response = ['success' => true, 'message' => 'Department added successfully!'];
             
         } elseif ($action === 'edit') {
-            // Edit section
+            // Edit department
             $id = intval($_POST['id'] ?? 0);
-            $section_name = trim($_POST['section_name'] ?? '');
-            $grade_level = trim($_POST['grade_level'] ?? '');
-            $adviser = trim($_POST['adviser'] ?? '');
-            $school_year = trim($_POST['school_year'] ?? '');
+            $department_code = trim($_POST['department_code'] ?? '');
             $status = $_POST['status'] ?? 'active';
             $is_active = ($status === 'active') ? 1 : 0;
             
-            if (empty($section_name)) {
-                throw new Exception('Section name is required');
+            if (empty($department_code)) {
+                throw new Exception('Department code is required');
             }
             
-            // Get old section name for updating students
-            $old_stmt = $pdo->prepare("SELECT section_name FROM sections WHERE id = ?");
+            // Get old department code for updating employees
+            $old_stmt = $pdo->prepare("SELECT department_code FROM departments WHERE id = ?");
             $old_stmt->execute([$id]);
-            $old_section = $old_stmt->fetch();
+            $old_department = $old_stmt->fetch();
             
-            if (!$old_section) {
-                throw new Exception('Section not found');
+            if (!$old_department) {
+                throw new Exception('Department not found');
             }
             
             $pdo->beginTransaction();
             
-            // Update section
-            $stmt = $pdo->prepare("UPDATE sections SET section_name = ?, grade_level = ?, adviser = ?, school_year = ?, is_active = ? WHERE id = ?");
-            $stmt->execute([$section_name, $grade_level, $adviser, $school_year, $is_active, $id]);
+            // Update department
+            $stmt = $pdo->prepare("UPDATE departments SET department_code = ?, department_name = ?, is_active = ? WHERE id = ?");
+            $stmt->execute([$department_code, $department_code, $is_active, $id]);
             
-            // Update students' section field if section name changed
-            if ($old_section['section_name'] !== $section_name) {
-                $update_students = $pdo->prepare("UPDATE students SET section = ?, class = ? WHERE section = ? OR class = ?");
-                $update_students->execute([$section_name, $section_name, $old_section['section_name'], $old_section['section_name']]);
+            // Update employees' department code if department code changed
+            if ($old_department['department_code'] !== $department_code) {
+                $updateEmployees = $pdo->prepare("UPDATE employees SET department_code = ? WHERE department_code = ?");
+                $updateEmployees->execute([$department_code, $old_department['department_code']]);
             }
             
             $pdo->commit();
             
-            logAdminActivity('EDIT_SECTION', "Updated section: $section_name");
+            logAdminActivity('EDIT_DEPARTMENT', "Updated department: $department_code");
             
-            $response = ['success' => true, 'message' => 'Section updated successfully!'];
+            $response = ['success' => true, 'message' => 'Department updated successfully!'];
             
         } elseif ($action === 'delete') {
-            // Delete section
+            // Delete department
             $id = intval($_POST['id'] ?? 0);
             
-            // Check if section has students
-            $stmt = $pdo->prepare("SELECT section_name FROM sections WHERE id = ?");
+            // Check if department has employees
+            $stmt = $pdo->prepare("SELECT department_code FROM departments WHERE id = ?");
             $stmt->execute([$id]);
-            $section = $stmt->fetch();
+            $department = $stmt->fetch();
             
-            if (!$section) {
-                throw new Exception('Section not found');
+            if (!$department) {
+                throw new Exception('Department not found');
             }
             
-            $count_stmt = $pdo->prepare("SELECT COUNT(*) as count FROM students WHERE section = ? OR class = ?");
-            $count_stmt->execute([$section['section_name'], $section['section_name']]);
+            $count_stmt = $pdo->prepare("SELECT COUNT(*) as count FROM employees WHERE department_code = ?");
+            $count_stmt->execute([$department['department_code']]);
             $count = $count_stmt->fetch()['count'];
             
             if ($count > 0) {
-                throw new Exception("Cannot delete section. It has $count student(s) enrolled. Please reassign students first.");
+                throw new Exception("Cannot delete department. It has $count employee(s) assigned. Please reassign employees first.");
             }
             
-            $delete_stmt = $pdo->prepare("DELETE FROM sections WHERE id = ?");
+            $delete_stmt = $pdo->prepare("DELETE FROM departments WHERE id = ?");
             $delete_stmt->execute([$id]);
             
-            logAdminActivity('DELETE_SECTION', "Deleted section: {$section['section_name']}");
+            logAdminActivity('DELETE_DEPARTMENT', "Deleted department: {$department['department_code']}");
             
-            $response = ['success' => true, 'message' => 'Section deleted successfully!'];
+            $response = ['success' => true, 'message' => 'Department deleted successfully!'];
         }
         
     } catch (Exception $e) {
@@ -127,37 +121,36 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_SERVER['HTTP_X_REQUESTED_W
     exit;
 }
 
-// Get all sections with student count
+// Get all departments with employee count
 try {
-    $query = "SELECT s.*, 
-              (SELECT COUNT(*) FROM students st WHERE st.section = s.section_name OR st.class = s.section_name) as student_count,
-              CASE WHEN s.is_active = 1 THEN 'active' ELSE 'inactive' END as status
-              FROM sections s
-              ORDER BY s.section_name";
+    $query = "SELECT d.id,
+              d.department_code,
+              d.is_active,
+              (SELECT COUNT(*) FROM employees e WHERE e.department_code = d.department_code) AS employee_count,
+              CASE WHEN d.is_active = 1 THEN 'active' ELSE 'inactive' END AS status
+              FROM departments d
+              ORDER BY d.department_code";
     $stmt = $pdo->query($query);
-    $sections = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    $departments = $stmt->fetchAll(PDO::FETCH_ASSOC);
     
-    // Ensure all sections have required keys to prevent undefined array key warnings
-    foreach ($sections as &$section) {
-        $section['status'] = $section['status'] ?? 'active';
-        $section['is_active'] = $section['is_active'] ?? 1;
-        $section['adviser'] = $section['adviser'] ?? '';
-        $section['school_year'] = $section['school_year'] ?? '';
-        $section['grade_level'] = $section['grade_level'] ?? '';
+    // Ensure all departments have required keys to prevent undefined array key warnings
+    foreach ($departments as &$department) {
+        $department['status'] = $department['status'] ?? 'active';
+        $department['is_active'] = $department['is_active'] ?? 1;
     }
-    unset($section); // Break reference
+    unset($department); // Break reference
 } catch (Exception $e) {
-    $sections = [];
-    $message = 'Error loading sections: ' . $e->getMessage();
+    $departments = [];
+    $message = 'Error loading departments: ' . $e->getMessage();
     $messageType = 'error';
 }
 
 $breadcrumb = [
     ['label' => 'Dashboard', 'icon' => 'house', 'url' => 'dashboard.php'],
-    ['label' => 'Manage Sections', 'icon' => 'table-cells-large', 'url' => 'manage_sections.php']
+    ['label' => 'Manage Departments', 'icon' => 'table-cells-large', 'url' => 'manage_departments.php']
 ];
-$breadcrumbAction = ['label' => 'Add Section', 'icon' => 'circle-plus', 'url' => '#', 'target' => ''];
-$pageDescription = 'Create and organize class sections and grade levels';
+$breadcrumbAction = ['label' => 'Add Department', 'icon' => 'circle-plus', 'url' => '#', 'target' => ''];
+$pageDescription = 'Create and organize employee departments';
 
 include 'includes/header_modern.php';
 ?>
@@ -174,12 +167,12 @@ include 'includes/header_modern.php';
             </div>
             <div class="stat-content">
                 <div class="stat-value-wrapper">
-                    <h3 class="stat-value" data-count="<?php echo count($sections); ?>">0</h3>
+                    <h3 class="stat-value" data-count="<?php echo count($departments); ?>">0</h3>
                     <span class="stat-trend stat-trend-up">
                         <i class="fa-solid fa-arrow-up"></i>
                     </span>
                 </div>
-                <p class="stat-label">Total Sections</p>
+                <p class="stat-label">Total Departments</p>
                 <div class="stat-progress">
                     <div class="stat-progress-bar stat-progress-green" style="width: 100%"></div>
                 </div>
@@ -187,7 +180,7 @@ include 'includes/header_modern.php';
         </div>
     </div>
     
-    <div class="stat-card stat-card-animated" data-stat="students" style="animation-delay: 0.1s;">
+    <div class="stat-card stat-card-animated" data-stat="employees" style="animation-delay: 0.1s;">
         <div class="stat-card-inner">
             <div class="stat-icon-wrapper">
                 <div class="stat-icon stat-icon-green">
@@ -197,12 +190,12 @@ include 'includes/header_modern.php';
             </div>
             <div class="stat-content">
                 <div class="stat-value-wrapper">
-                    <h3 class="stat-value" data-count="<?php echo array_sum(array_column($sections, 'student_count')); ?>">0</h3>
+                    <h3 class="stat-value" data-count="<?php echo array_sum(array_column($departments, 'employee_count')); ?>">0</h3>
                     <span class="stat-trend stat-trend-up">
                         <i class="fa-solid fa-arrow-up"></i>
                     </span>
                 </div>
-                <p class="stat-label">Total Students</p>
+                <p class="stat-label">Total Employees</p>
                 <div class="stat-progress">
                     <div class="stat-progress-bar stat-progress-green" style="width: 85%"></div>
                 </div>
@@ -220,12 +213,12 @@ include 'includes/header_modern.php';
             </div>
             <div class="stat-content">
                 <div class="stat-value-wrapper">
-                    <h3 class="stat-value" data-count="<?php echo count(array_filter($sections, fn($s) => $s['status'] === 'active')); ?>">0</h3>
+                    <h3 class="stat-value" data-count="<?php echo count(array_filter($departments, fn($d) => $d['status'] === 'active')); ?>">0</h3>
                     <span class="stat-trend stat-trend-neutral">
                         <i class="fa-solid fa-minus"></i>
                     </span>
                 </div>
-                <p class="stat-label">Active Sections</p>
+                <p class="stat-label">Active Departments</p>
                 <div class="stat-progress">
                     <div class="stat-progress-bar stat-progress-green" style="width: 92%"></div>
                 </div>
@@ -233,7 +226,7 @@ include 'includes/header_modern.php';
         </div>
     </div>
     
-    <div class="stat-card stat-card-animated" data-stat="advisers" style="animation-delay: 0.3s;">
+    <div class="stat-card stat-card-animated" data-stat="active-ratio" style="animation-delay: 0.3s;">
         <div class="stat-card-inner">
             <div class="stat-icon-wrapper">
                 <div class="stat-icon stat-icon-green">
@@ -243,12 +236,12 @@ include 'includes/header_modern.php';
             </div>
             <div class="stat-content">
                 <div class="stat-value-wrapper">
-                    <h3 class="stat-value" data-count="<?php echo count(array_unique(array_filter(array_column($sections, 'adviser')))); ?>">0</h3>
+                    <h3 class="stat-value" data-count="<?php echo count($departments) > 0 ? round((count(array_filter($departments, fn($d) => $d['status'] === 'active')) / count($departments)) * 100) : 0; ?>">0</h3>
                     <span class="stat-trend stat-trend-up">
                         <i class="fa-solid fa-arrow-up"></i>
                     </span>
                 </div>
-                <p class="stat-label">Advisers</p>
+                <p class="stat-label">Active Rate %</p>
                 <div class="stat-progress">
                     <div class="stat-progress-bar stat-progress-green" style="width: 78%"></div>
                 </div>
@@ -257,7 +250,7 @@ include 'includes/header_modern.php';
     </div>
 </div>
 
-<!-- Sections List - Enhanced -->
+<!-- Departments List - Enhanced -->
 <div class="content-card content-card-enhanced">
     <div class="card-header-modern card-header-enhanced">
         <div class="card-header-left">
@@ -266,11 +259,11 @@ include 'includes/header_modern.php';
             </div>
             <div>
                 <h2 class="card-title-modern">
-                    All Sections
+                    All Departments
                 </h2>
                 <p class="card-subtitle-modern">
                     <i class="fa-solid fa-info-circle"></i>
-                    View and manage all school sections
+                    View and manage all employee departments
                 </p>
             </div>
         </div>
@@ -278,7 +271,7 @@ include 'includes/header_modern.php';
             <div class="filter-group">
                 <div class="search-box-enhanced">
                     <i class="fa-solid fa-search search-icon"></i>
-                    <input type="text" id="searchSections" placeholder="Search sections, advisers..." autocomplete="off">
+                    <input type="text" id="searchDepartments" placeholder="Search departments..." autocomplete="off">
                     <button class="search-clear" id="clearSearch" style="display: none;">
                         <i class="fa-solid fa-times"></i>
                     </button>
@@ -293,7 +286,7 @@ include 'includes/header_modern.php';
                         <div class="filter-option">
                             <label>
                                 <input type="radio" name="statusFilter" value="all" checked>
-                                <span>All Sections</span>
+                                <span>All Departments</span>
                             </label>
                         </div>
                         <div class="filter-option">
@@ -317,8 +310,8 @@ include 'includes/header_modern.php';
                         </div>
                         <div class="filter-option">
                             <label>
-                                <input type="radio" name="sortFilter" value="students">
-                                <span>Sort by Students</span>
+                                <input type="radio" name="sortFilter" value="employees">
+                                <span>Sort by Employees</span>
                             </label>
                         </div>
                     </div>
@@ -328,7 +321,7 @@ include 'includes/header_modern.php';
     </div>
     
     <div class="card-body-modern">
-        <?php if (empty($sections)): ?>
+        <?php if (empty($departments)): ?>
             <!-- BEAUTIFUL NEW EMPTY STATE DESIGN -->
             <div class="empty-state-modern">
                 <div class="empty-state-animation">
@@ -342,80 +335,55 @@ include 'includes/header_modern.php';
                     </div>
                 </div>
                 <div class="empty-state-content-modern">
-                    <h3 class="empty-state-title-modern">No Sections Yet</h3>
+                    <h3 class="empty-state-title-modern">No Departments Yet</h3>
                     <p class="empty-state-text-modern">
-                        Sections help you organize students by grade, strand, or class.<br>
-                        Create your first section to get started!
+                        Departments help you organize employees by business function.<br>
+                        Create your first department to get started!
                     </p>
                     <div class="empty-state-features">
                         <div class="empty-feature">
                             <div class="feature-icon">
                                 <i class="fa-solid fa-user-group"></i>
                             </div>
-                            <span>Organize Students</span>
+                            <span>Organize Employees</span>
                         </div>
                         <div class="empty-feature">
                             <div class="feature-icon">
-                                <i class="fa-solid fa-graduation-cap"></i>
+                                <i class="fa-solid fa-building"></i>
                             </div>
-                            <span>Track by Grade</span>
-                        </div>
-                        <div class="empty-feature">
-                            <div class="feature-icon">
-                                <i class="fa-solid fa-chalkboard-user"></i>
-                            </div>
-                            <span>Assign Advisers</span>
+                            <span>Build Department Structure</span>
                         </div>
                     </div>
-                    <button class="btn-empty-action" data-action="add-section">
+                    <button class="btn-empty-action" data-action="add-department">
                         <span class="btn-empty-icon">
                             <i class="fa-solid fa-plus"></i>
                         </span>
-                        <span class="btn-empty-text">Create Your First Section</span>
+                        <span class="btn-empty-text">Create Your First Department</span>
                         <span class="btn-empty-shine"></span>
                     </button>
                     <p class="empty-state-help">
                         <i class="fa-solid fa-lightbulb"></i>
-                        <strong>Pro Tip:</strong> Sections are automatically created when you add students with new section names
+                        <strong>Pro Tip:</strong> Departments are automatically created when you add employees with new department codes
                     </p>
                 </div>
             </div>
         <?php else: ?>
             <div class="table-container table-container-enhanced">
                 <div class="table-wrapper">
-                    <table class="modern-table modern-table-enhanced" id="sectionsTable">
+                    <table class="modern-table modern-table-enhanced" id="departmentsTable">
                         <thead>
                             <tr>
                                 <th class="th-sortable" data-sort="name">
                                     <div class="th-content">
                                         <i class="fa-solid fa-table-cells-large th-icon"></i>
-                                        <span>Section Name</span>
+                                        <span>Department Code</span>
                                         <i class="fa-solid fa-sort sort-icon"></i>
                                     </div>
                                 </th>
-                                <th class="th-sortable" data-sort="grade">
-                                    <div class="th-content">
-                                        <i class="fa-solid fa-graduation-cap th-icon"></i>
-                                        <span>Grade Level</span>
-                                        <i class="fa-solid fa-sort sort-icon"></i>
-                                    </div>
-                                </th>
-                                <th>
-                                    <div class="th-content">
-                                        <i class="fa-solid fa-chalkboard-user th-icon"></i>
-                                        <span>Adviser</span>
-                                    </div>
-                                </th>
-                                <th>
-                                    <div class="th-content">
-                                        <i class="fa-solid fa-calendar-days th-icon"></i>
-                                        <span>School Year</span>
-                                    </div>
-                                </th>
-                                <th class="th-sortable" data-sort="students">
+                                <th class="th-sortable" data-sort="employees">
                                     <div class="th-content">
                                         <i class="fa-solid fa-user-group th-icon"></i>
-                                        <span>Students</span>
+                                        <span>Employees</span>
                                         <i class="fa-solid fa-sort sort-icon"></i>
                                     </div>
                                 </th>
@@ -433,11 +401,11 @@ include 'includes/header_modern.php';
                                 </th>
                             </tr>
                         </thead>
-                        <tbody id="sectionsTableBody">
-                            <?php foreach ($sections as $index => $section): ?>
-                            <tr data-section-id="<?php echo $section['id']; ?>" 
-                                data-status="<?php echo $section['status']; ?>"
-                                data-students="<?php echo $section['student_count']; ?>"
+                        <tbody id="departmentsTableBody">
+                            <?php foreach ($departments as $index => $department): ?>
+                            <tr data-department-id="<?php echo $department['id']; ?>" 
+                                data-status="<?php echo $department['status']; ?>"
+                                data-employees="<?php echo $department['employee_count']; ?>"
                                 class="table-row-animated" 
                                 style="animation-delay: <?php echo ($index * 0.05); ?>s;">
                                 <td class="td-primary">
@@ -446,61 +414,19 @@ include 'includes/header_modern.php';
                                             <div class="section-icon">
                                                 <i class="fa-solid fa-bookmark"></i>
                                             </div>
-                                            <strong class="section-name"><?php echo htmlspecialchars($section['section_name']); ?></strong>
+                                            <strong class="section-name"><?php echo htmlspecialchars($department['department_code']); ?></strong>
                                         </div>
                                     </div>
                                 </td>
-                                <td>
-                                    <?php if ($section['grade_level']): ?>
-                                        <span class="grade-badge grade-badge-enhanced">
-                                            <i class="fa-solid fa-graduation-cap"></i>
-                                            <span>
-                                                <?php 
-                                                // Display grade level properly
-                                                $gradeLevel = $section['grade_level'];
-                                                if (strtoupper($gradeLevel) === 'K') {
-                                                    echo 'Kindergarten';
-                                                } else {
-                                                    echo 'Grade ' . htmlspecialchars($gradeLevel);
-                                                }
-                                                ?>
-                                            </span>
-                                        </span>
-                                    <?php else: ?>
-                                        <span class="text-muted-custom">-</span>
-                                    <?php endif; ?>
-                                </td>
-                                <td class="td-adviser">
-                                    <?php if ($section['adviser']): ?>
-                                        <div class="adviser-info">
-                                            <div class="adviser-avatar">
-                                                <?php echo strtoupper(substr($section['adviser'], 0, 1)); ?>
-                                            </div>
-                                            <span><?php echo htmlspecialchars($section['adviser']); ?></span>
-                                        </div>
-                                    <?php else: ?>
-                                        <span class="text-muted-custom">No Adviser</span>
-                                    <?php endif; ?>
-                                </td>
-                                <td>
-                                    <?php if ($section['school_year']): ?>
-                                        <span class="school-year-badge">
-                                            <i class="fa-solid fa-calendar"></i>
-                                            <?php echo htmlspecialchars($section['school_year']); ?>
-                                        </span>
-                                    <?php else: ?>
-                                        <span class="text-muted-custom">-</span>
-                                    <?php endif; ?>
-                                </td>
                                 <td class="td-centered">
-                                    <span class="badge badge-info badge-enhanced">
+                                     <span class="badge badge-info badge-enhanced">
                                         <i class="fa-solid fa-user-group"></i>
-                                        <span class="badge-text"><?php echo $section['student_count']; ?> student<?php echo $section['student_count'] != 1 ? 's' : ''; ?></span>
-                                    </span>
+                                        <span class="badge-text"><?php echo $department['employee_count']; ?> employee<?php echo $department['employee_count'] != 1 ? 's' : ''; ?></span>
+                                     </span>
                                 </td>
                                 <td class="td-centered">
                                     <?php 
-                                    $status = $section['status'];
+                                    $status = $department['status'];
                                     $statusClass = strtolower($status);
                                     $statusIcon = $status === 'active' ? 'check-circle' : 'times-circle';
                                     ?>
@@ -514,18 +440,18 @@ include 'includes/header_modern.php';
                                         <button 
                                             class="btn-action btn-action-edit" 
                                             data-action="edit"
-                                            data-section='<?php echo json_encode($section); ?>'
-                                            title="Edit Section">
+                                            data-department='<?php echo json_encode($department); ?>'
+                                            title="Edit Department">
                                             <i class="fa-solid fa-pen-to-square"></i>
                                             <span class="btn-tooltip">Edit</span>
                                         </button>
                                         <button 
                                             class="btn-action btn-action-delete" 
                                             data-action="delete"
-                                            data-id="<?php echo $section['id']; ?>"
-                                            data-name="<?php echo htmlspecialchars($section['section_name']); ?>"
-                                            data-count="<?php echo $section['student_count']; ?>"
-                                            title="Delete Section">
+                                            data-id="<?php echo $department['id']; ?>"
+                                            data-name="<?php echo htmlspecialchars($department['department_code']); ?>"
+                                            data-count="<?php echo $department['employee_count']; ?>"
+                                            title="Delete Department">
                                             <i class="fa-solid fa-trash"></i>
                                             <span class="btn-tooltip">Delete</span>
                                         </button>
@@ -540,7 +466,7 @@ include 'includes/header_modern.php';
                 <!-- Table Footer with Pagination Info -->
                 <div class="table-footer">
                     <div class="table-info">
-                        Showing <strong id="visibleRows"><?php echo count($sections); ?></strong> of <strong id="totalRows"><?php echo count($sections); ?></strong> sections
+                        Showing <strong id="visibleRows"><?php echo count($departments); ?></strong> of <strong id="totalRows"><?php echo count($departments); ?></strong> departments
                     </div>
                 </div>
             </div>
@@ -548,8 +474,8 @@ include 'includes/header_modern.php';
     </div>
 </div>
 
-<!-- Add/Edit Section Modal - Enhanced -->
-<div class="modal-overlay modal-overlay-enhanced" id="sectionModal">
+<!-- Add/Edit Department Modal - Enhanced -->
+<div class="modal-overlay modal-overlay-enhanced" id="departmentModal">
     <div class="modal-container modal-container-enhanced">
         <div class="modal-content modal-content-enhanced">
             <div class="modal-header modal-header-enhanced">
@@ -558,86 +484,33 @@ include 'includes/header_modern.php';
                         <i class="fa-solid fa-table-cells-large"></i>
                     </div>
                     <div>
-                        <h3 class="modal-title" id="modalTitle">Add New Section</h3>
-                        <p class="modal-subtitle">Fill in the section details below</p>
+                        <h3 class="modal-title" id="modalTitle">Add New Department</h3>
+                        <p class="modal-subtitle">Fill in the department details below</p>
                     </div>
                 </div>
-                <button class="modal-close modal-close-enhanced" data-action="close-modal" data-modal="sectionModal">
+                <button class="modal-close modal-close-enhanced" data-action="close-modal" data-modal="departmentModal">
                     <i class="fa-solid fa-times"></i>
                 </button>
             </div>
             <div class="modal-body modal-body-enhanced">
-                <form id="sectionForm">
+                <form id="departmentForm">
                     <input type="hidden" name="action" id="formAction" value="add">
-                    <input type="hidden" name="id" id="sectionId">
+                    <input type="hidden" name="id" id="departmentId">
                     
                     <div class="form-grid">
                         <div class="form-group">
-                            <label for="section_name" class="form-label">
-                                Section Name
+                            <label for="department_code" class="form-label">
+                                Department Code
                                 <span class="required">*</span>
                             </label>
                             <input 
                                 type="text" 
-                                name="section_name" 
-                                id="section_name" 
+                                name="department_code" 
+                                id="department_code" 
                                 class="form-input" 
-                                placeholder="e.g., 12-BARBERRA, 11-A, 10-STEM" 
+                                placeholder="e.g., HR, IT, FINANCE" 
                                 required>
-                            <small class="form-help">Use format: Grade-Name (e.g., 12-BARBERRA)</small>
-                        </div>
-                    </div>
-                    
-                    <div class="form-grid two-col">
-                        <div class="form-group">
-                            <label for="grade_level" class="form-label">Grade Level</label>
-                            <select name="grade_level" id="grade_level" class="form-select">
-                                <option value="">Select Grade Level</option>
-                                <optgroup label="Early Childhood">
-                                    <option value="K">Kindergarten</option>
-                                </optgroup>
-                                <optgroup label="Elementary">
-                                    <option value="1">Grade 1</option>
-                                    <option value="2">Grade 2</option>
-                                    <option value="3">Grade 3</option>
-                                    <option value="4">Grade 4</option>
-                                    <option value="5">Grade 5</option>
-                                    <option value="6">Grade 6</option>
-                                </optgroup>
-                                <optgroup label="Junior High School">
-                                    <option value="7">Grade 7</option>
-                                    <option value="8">Grade 8</option>
-                                    <option value="9">Grade 9</option>
-                                    <option value="10">Grade 10</option>
-                                </optgroup>
-                                <optgroup label="Senior High School">
-                                    <option value="11">Grade 11</option>
-                                    <option value="12">Grade 12</option>
-                                </optgroup>
-                            </select>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="school_year" class="form-label">School Year</label>
-                            <input 
-                                type="text" 
-                                name="school_year" 
-                                id="school_year" 
-                                class="form-input" 
-                                placeholder="e.g., 2024-2025" 
-                                value="<?php echo date('Y') . '-' . (date('Y') + 1); ?>">
-                        </div>
-                    </div>
-                    
-                    <div class="form-grid">
-                        <div class="form-group">
-                            <label for="adviser" class="form-label">Section Adviser</label>
-                            <input 
-                                type="text" 
-                                name="adviser" 
-                                id="adviser" 
-                                class="form-input" 
-                                placeholder="Teacher's name">
+                            <small class="form-help">Use uppercase department identifiers for consistency.</small>
                         </div>
                     </div>
                     
@@ -650,13 +523,13 @@ include 'includes/header_modern.php';
                     </div>
                     
                     <div class="modal-actions">
-                        <button type="button" class="btn btn-secondary" data-action="close-modal" data-modal="sectionModal">
+                        <button type="button" class="btn btn-secondary" data-action="close-modal" data-modal="departmentModal">
                             <i class="fa-solid fa-times"></i>
                             <span>Cancel</span>
                         </button>
                         <button type="submit" class="btn btn-primary" id="submitBtn">
                             <i class="fa-solid fa-save"></i>
-                            <span>Save Section</span>
+                            <span>Save Department</span>
                         </button>
                     </div>
                 </form>
@@ -676,13 +549,13 @@ include 'includes/header_modern.php';
                     </div>
                     <div class="delete-icon-ripple"></div>
                 </div>
-                <h3 class="delete-title">Delete Section?</h3>
+                <h3 class="delete-title">Delete Department?</h3>
                 <p class="delete-message">
                     Are you sure you want to permanently delete<br>
-                    <strong class="delete-section-highlight" id="deleteSectionName"></strong>?
+                    <strong class="delete-section-highlight" id="deleteDepartmentName"></strong>?
                 </p>
                 <p id="deleteWarning" class="delete-warning delete-warning-enhanced" style="display: none;">
-                    <i class="fa-solid fa-graduation-cap"></i>
+                    <i class="fa-solid fa-building"></i>
                     <span></span>
                 </p>
                 
@@ -711,12 +584,12 @@ include 'includes/header_modern.php';
 
 <script>
 /**
- * Manage Sections - Modern Implementation
+ * Manage Departments - Modern Implementation
  */
 
 // State Management
-const SectionManager = {
-    currentSection: null,
+const DepartmentManager = {
+    currentDepartment: null,
     deleteId: null,
     deleteName: '',
     deleteCount: 0
@@ -788,51 +661,47 @@ function closeModal(modalId) {
     }
 }
 
-// Add Section
+// Add Department
 function openAddModal() {
     const titleElement = document.querySelector('#modalTitle');
     
-    titleElement.innerHTML = '<i class="fa-solid fa-circle-plus"></i> Add New Section';
+    titleElement.innerHTML = '<i class="fa-solid fa-circle-plus"></i> Add New Department';
     
     document.getElementById('formAction').value = 'add';
-    document.getElementById('sectionForm').reset();
-    document.getElementById('school_year').value = '<?php echo date('Y') . '-' . (date('Y') + 1); ?>';
+    document.getElementById('departmentForm').reset();
     document.getElementById('statusGroup').style.display = 'none';
     
-    openModal('sectionModal');
+    openModal('departmentModal');
 }
 
-// Edit Section
-function editSection(section) {
+// Edit Department
+function editDepartment(department) {
     const titleElement = document.querySelector('#modalTitle');
-    titleElement.innerHTML = '<i class="fa-solid fa-pen-to-square"></i> Edit Section';
+    titleElement.innerHTML = '<i class="fa-solid fa-pen-to-square"></i> Edit Department';
     
     document.getElementById('formAction').value = 'edit';
-    document.getElementById('sectionId').value = section.id;
-    document.getElementById('section_name').value = section.section_name;
-    document.getElementById('grade_level').value = section.grade_level || '';
-    document.getElementById('adviser').value = section.adviser || '';
-    document.getElementById('school_year').value = section.school_year || '';
-    document.getElementById('status').value = section.status || 'active';
+    document.getElementById('departmentId').value = department.id;
+    document.getElementById('department_code').value = department.department_code;
+    document.getElementById('status').value = department.status || 'active';
     document.getElementById('statusGroup').style.display = 'block';
     
-    SectionManager.currentSection = section;
-    openModal('sectionModal');
+    DepartmentManager.currentDepartment = department;
+    openModal('departmentModal');
 }
 
-// Delete Section
-function deleteSection(id, name, studentCount) {
-    SectionManager.deleteId = id;
-    SectionManager.deleteName = name;
-    SectionManager.deleteCount = studentCount;
+// Delete Department
+function deleteDepartment(id, name, employeeCount) {
+    DepartmentManager.deleteId = id;
+    DepartmentManager.deleteName = name;
+    DepartmentManager.deleteCount = employeeCount;
     
-    document.getElementById('deleteSectionName').textContent = name;
+    document.getElementById('deleteDepartmentName').textContent = name;
     
     const warning = document.getElementById('deleteWarning');
     const confirmBtn = document.getElementById('confirmDeleteBtn');
     
-    if (studentCount > 0) {
-        warning.querySelector('span').textContent = `This section has ${studentCount} student(s) enrolled. You must reassign or remove them first.`;
+    if (employeeCount > 0) {
+        warning.querySelector('span').textContent = `This department has ${employeeCount} employee(s) assigned. You must reassign or remove them first.`;
         warning.style.display = 'flex';
         confirmBtn.disabled = true;
         confirmBtn.style.opacity = '0.5';
@@ -849,8 +718,8 @@ function deleteSection(id, name, studentCount) {
 
 // Confirm Delete
 async function confirmDelete() {
-    if (SectionManager.deleteCount > 0) {
-        showNotification('Cannot delete section with enrolled students', 'error');
+    if (DepartmentManager.deleteCount > 0) {
+        showNotification('Cannot delete department with assigned employees', 'error');
         return;
     }
     
@@ -861,9 +730,9 @@ async function confirmDelete() {
     try {
         const formData = new FormData();
         formData.append('action', 'delete');
-        formData.append('id', SectionManager.deleteId);
+        formData.append('id', DepartmentManager.deleteId);
         
-        const response = await fetch('manage_sections.php', {
+        const response = await fetch('manage_departments.php', {
             method: 'POST',
             headers: {
                 'X-Requested-With': 'XMLHttpRequest'
@@ -878,7 +747,7 @@ async function confirmDelete() {
             closeModal('deleteModal');
             setTimeout(() => window.location.reload(), 1000);
         } else {
-            showNotification(data.message || 'Failed to delete section', 'error');
+            showNotification(data.message || 'Failed to delete department', 'error');
             confirmBtn.classList.remove('btn-loading');
             confirmBtn.disabled = false;
         }
@@ -892,20 +761,20 @@ async function confirmDelete() {
 
 // Form Submission
 document.addEventListener('DOMContentLoaded', function() {
-    const sectionForm = document.getElementById('sectionForm');
+    const departmentForm = document.getElementById('departmentForm');
     
-    if (sectionForm) {
-        sectionForm.addEventListener('submit', async function(e) {
+    if (departmentForm) {
+        departmentForm.addEventListener('submit', async function(e) {
             e.preventDefault();
             
             const submitBtn = document.getElementById('submitBtn');
             submitBtn.classList.add('btn-loading');
             submitBtn.disabled = true;
             
-            const formData = new FormData(sectionForm);
+            const formData = new FormData(departmentForm);
             
             try {
-                const response = await fetch('manage_sections.php', {
+                const response = await fetch('manage_departments.php', {
                     method: 'POST',
                     headers: {
                         'X-Requested-With': 'XMLHttpRequest'
@@ -917,10 +786,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 
                 if (data.success) {
                     showNotification(data.message, 'success');
-                    closeModal('sectionModal');
+                    closeModal('departmentModal');
                     setTimeout(() => window.location.reload(), 1000);
                 } else {
-                    showNotification(data.message || 'Failed to save section', 'error');
+                    showNotification(data.message || 'Failed to save department', 'error');
                     submitBtn.classList.remove('btn-loading');
                     submitBtn.disabled = false;
                 }
@@ -940,16 +809,16 @@ document.addEventListener('DOMContentLoaded', function() {
         
         const action = target.dataset.action;
         
-        if (action === 'add-section') {
+        if (action === 'add-department') {
             openAddModal();
         } else if (action === 'edit') {
-            const section = JSON.parse(target.dataset.section);
-            editSection(section);
+            const department = JSON.parse(target.dataset.department);
+            editDepartment(department);
         } else if (action === 'delete') {
             const id = parseInt(target.dataset.id);
             const name = target.dataset.name;
             const count = parseInt(target.dataset.count);
-            deleteSection(id, name, count);
+            deleteDepartment(id, name, count);
         } else if (action === 'close-modal') {
             const modalId = target.dataset.modal;
             closeModal(modalId);
@@ -970,13 +839,13 @@ document.addEventListener('DOMContentLoaded', function() {
     // Close modals on Escape key
     document.addEventListener('keydown', function(e) {
         if (e.key === 'Escape') {
-            closeModal('sectionModal');
+            closeModal('departmentModal');
             closeModal('deleteModal');
         }
     });
     
     // Enhanced Search Functionality
-    const searchInput = document.getElementById('searchSections');
+    const searchInput = document.getElementById('searchDepartments');
     const clearSearchBtn = document.getElementById('clearSearch');
     const totalRowsSpan = document.getElementById('totalRows');
     const visibleRowsSpan = document.getElementById('visibleRows');
@@ -984,7 +853,7 @@ document.addEventListener('DOMContentLoaded', function() {
     if (searchInput) {
         searchInput.addEventListener('input', function() {
             const searchTerm = this.value.toLowerCase().trim();
-            const rows = document.querySelectorAll('#sectionsTableBody tr');
+            const rows = document.querySelectorAll('#departmentsTableBody tr');
             let visibleCount = 0;
             
             // Show/hide clear button
@@ -1042,7 +911,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     function applyFilters() {
         const statusFilter = document.querySelector('input[name="statusFilter"]:checked')?.value || 'all';
-        const rows = document.querySelectorAll('#sectionsTableBody tr');
+        const rows = document.querySelectorAll('#departmentsTableBody tr');
         let visibleCount = 0;
         
         rows.forEach(row => {
@@ -1078,7 +947,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 <div class="empty-state-icon">
                     <i class="fa-solid fa-search"></i>
                 </div>
-                <h3>No sections found</h3>
+                <h3>No departments found</h3>
                 <p>${searchTerm ? `No results for "${searchTerm}"` : 'Try adjusting your filters'}</p>
             `;
             document.querySelector('.table-wrapper').appendChild(emptyState);
@@ -1108,8 +977,9 @@ document.addEventListener('DOMContentLoaded', function() {
     // Run animations
     setTimeout(animateStats, 100);
     
-    console.log('✅ Enhanced Sections Management initialized');
+    console.log(' Enhanced Department Management initialized');
 });
 </script>
 
 <?php include 'includes/footer_modern.php'; ?>
+

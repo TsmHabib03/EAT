@@ -1,7 +1,7 @@
 <?php
 /**
- * Get Attendance Report - Section-Based
- * Returns attendance records filtered by section, date range, and student search
+ * Get Attendance Report - Department-Based
+ * Returns employee attendance records filtered by department, date range, and employee search
  */
 
 header('Content-Type: application/json');
@@ -10,12 +10,17 @@ require_once '../includes/database.php';
 try {
     $database = new Database();
     $db = $database->getConnection();
-    
-    // Get filter parameters
-    $section = $_GET['section'] ?? '';
+
+    $employeeTable = $db->query("SHOW TABLES LIKE 'employees'")->fetch();
+    $employeeAttendanceTable = $db->query("SHOW TABLES LIKE 'employee_attendance'")->fetch();
+    if (!$employeeTable || !$employeeAttendanceTable) {
+        throw new Exception('Employee attendance tables are not available. Run database/migrations/2026_04_08_employee_tracker_phase1.sql first.');
+    }
+
+    $department = $_GET['department'] ?? '';
     $start_date = $_GET['start_date'] ?? '';
     $end_date = $_GET['end_date'] ?? '';
-    $student_search = trim($_GET['student_search'] ?? '');
+    $employee_search = trim($_GET['employee_search'] ?? '');
     
     // Validate required dates
     if (empty($start_date) || empty($end_date)) {
@@ -27,44 +32,44 @@ try {
         throw new Exception('Invalid date format. Use YYYY-MM-DD');
     }
     
-    // Build query
-    $query = "SELECT 
-                a.id,
-                a.lrn,
-                a.section,
-                a.date,
-                a.time_in,
-                a.time_out,
-                a.status,
-                CONCAT(s.first_name, ' ', IFNULL(CONCAT(s.middle_name, ' '), ''), s.last_name) as student_name,
-                s.email as parent_email
-              FROM attendance a
-              INNER JOIN students s ON a.lrn = s.lrn
-              WHERE a.date BETWEEN :start_date AND :end_date";
+    $query = "SELECT
+                ea.id,
+                ea.employee_id,
+                e.department_code,
+                ea.date,
+                ea.time_in,
+                ea.time_out,
+                ea.status,
+                CONCAT(e.first_name, ' ', IFNULL(CONCAT(e.middle_name, ' '), ''), e.last_name) AS employee_name,
+                e.work_email
+            FROM employee_attendance ea
+            INNER JOIN employees e ON ea.employee_id = e.employee_id
+            WHERE ea.date BETWEEN :start_date AND :end_date";
     
     $params = [
         ':start_date' => $start_date,
         ':end_date' => $end_date
     ];
     
-    // Add section filter
-    if (!empty($section)) {
-        $query .= " AND a.section = :section";
-        $params[':section'] = $section;
+    // Add department filter
+    if (!empty($department)) {
+        $query .= " AND e.department_code = :department";
+        $params[':department'] = $department;
     }
     
-    // Add student search filter
-    if (!empty($student_search)) {
+    // Add employee search filter
+    if (!empty($employee_search)) {
         $query .= " AND (
-            s.lrn LIKE :search 
-            OR s.first_name LIKE :search 
-            OR s.last_name LIKE :search
-            OR CONCAT(s.first_name, ' ', s.last_name) LIKE :search
+            e.employee_id LIKE :search
+            OR e.first_name LIKE :search
+            OR e.last_name LIKE :search
+            OR e.work_email LIKE :search
+            OR CONCAT(e.first_name, ' ', e.last_name) LIKE :search
         )";
-        $params[':search'] = '%' . $student_search . '%';
+        $params[':search'] = '%' . $employee_search . '%';
     }
     
-    $query .= " ORDER BY a.date DESC, a.section ASC, s.last_name ASC";
+    $query .= " ORDER BY ea.date DESC, e.department_code ASC, e.last_name ASC";
     
     $stmt = $db->prepare($query);
     
@@ -79,7 +84,7 @@ try {
     $formatted_records = [];
     $completed_count = 0;
     $incomplete_count = 0;
-    $sections_set = [];
+    $departmentsSet = [];
     
     foreach ($records as $record) {
         $time_in_obj = $record['time_in'] ? strtotime($record['time_in']) : null;
@@ -98,23 +103,23 @@ try {
             $incomplete_count++;
         }
         
-        // Track unique sections
-        if (!in_array($record['section'], $sections_set)) {
-            $sections_set[] = $record['section'];
+        // Track unique departments
+        if (!in_array($record['department_code'], $departmentsSet, true)) {
+            $departmentsSet[] = $record['department_code'];
         }
         
         $formatted_records[] = [
             'id' => $record['id'],
-            'lrn' => $record['lrn'],
-            'student_name' => $record['student_name'],
-            'section' => $record['section'],
+            'employee_id' => $record['employee_id'],
+            'employee_name' => $record['employee_name'],
+            'department' => $record['department_code'],
             'date' => $record['date'],
             'date_formatted' => date('F j, Y', strtotime($record['date'])),
             'time_in' => $record['time_in'] ? date('h:i A', strtotime($record['time_in'])) : null,
             'time_out' => $record['time_out'] ? date('h:i A', strtotime($record['time_out'])) : null,
             'duration' => $duration,
             'status' => $record['status'],
-            'parent_email' => $record['parent_email']
+            'work_email' => $record['work_email']
         ];
     }
     
@@ -123,9 +128,9 @@ try {
         'total_records' => count($formatted_records),
         'completed_count' => $completed_count,
         'incomplete_count' => $incomplete_count,
-        'sections_count' => count($sections_set),
+        'departments_count' => count($departmentsSet),
         'date_range' => date('M j, Y', strtotime($start_date)) . ' - ' . date('M j, Y', strtotime($end_date)),
-        'sections' => $sections_set
+        'departments' => $departmentsSet
     ];
     
     echo json_encode([
@@ -133,10 +138,10 @@ try {
         'records' => $formatted_records,
         'summary' => $summary,
         'filters' => [
-            'section' => $section ?: 'All Sections',
+            'department' => $department ?: 'All Departments',
             'start_date' => $start_date,
             'end_date' => $end_date,
-            'student_search' => $student_search
+            'employee_search' => $employee_search
         ]
     ]);
     

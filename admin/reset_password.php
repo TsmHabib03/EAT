@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 session_start();
 require_once '../config/db_config.php';
 
@@ -47,9 +47,9 @@ if (!isset($_GET['token']) || empty(trim($_GET['token']))) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Reset Your Admin Password - San Francisco High School">
+    <meta name="description" content="Reset Your Admin Password - Employee Attendance System">
     <meta name="theme-color" content="#059669">
-    <title>Reset Password - San Francisco High School</title>
+    <title>Reset Password - Employee Attendance System</title>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -57,7 +57,7 @@ if (!isset($_GET['token']) || empty(trim($_GET['token']))) {
 
     <link rel="stylesheet" href="../css/auth-glassmorphism.css?v=<?php echo time(); ?>">
 
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔑</text></svg>">
+    <link rel="icon" type="image/png" href="../assets/images/Logo.png">
 </head>
 <body class="auth-page">
     <div class="auth-wrapper">
@@ -67,7 +67,7 @@ if (!isset($_GET['token']) || empty(trim($_GET['token']))) {
                 <div class="carousel-slide"><img src="../assets/image/building1.jpg" alt="Campus Building 1"></div>
                 <div class="carousel-slide"><img src="../assets/image/building2.jpg" alt="Campus Building 2"></div>
                 <div class="carousel-slide"><img src="../assets/image/building3.jpg" alt="Campus Building 3"></div>
-                <div class="carousel-slide"><img src="../assets/images/SFHSbuildingHB.jpg" alt="SFHS Heritage Building"></div>
+                <div class="carousel-slide"><img src="../assets/images/main-campus-heritage.jpg" alt="Main Campus Heritage Building"></div>
                 <div class="carousel-slide"><img src="../assets/images/HB Building.jpg" alt="HB Building"></div>
             </div>
             <div class="carousel-indicators" id="carouselIndicators">
@@ -78,7 +78,7 @@ if (!isset($_GET['token']) || empty(trim($_GET['token']))) {
                 <button class="carousel-dot" data-index="4" aria-label="Slide 5"></button>
             </div>
             <div class="auth-hero-content">
-                <h2>San Francisco High School</h2>
+                <h2>Employee Attendance System</h2>
                 <p>Create a new secure password for your account</p>
             </div>
         </div>
@@ -133,7 +133,7 @@ if (!isset($_GET['token']) || empty(trim($_GET['token']))) {
                         </a>
                     </div>
                 <?php else: ?>
-                    <!-- Valid Token — Show Reset Form -->
+                    <!-- Valid Token - Show Reset Form -->
                     <div class="auth-header">
                         <div class="auth-logo">
                             <div class="auth-logo-icon">
@@ -477,3 +477,4 @@ if (!isset($_GET['token']) || empty(trim($_GET['token']))) {
     <script src="../js/auth-carousel.js?v=<?php echo time(); ?>"></script>
 </body>
 </html>
+
